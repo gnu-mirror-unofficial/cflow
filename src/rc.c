@@ -19,74 +19,33 @@
 #include <parser.h>
 #include <sys/stat.h>
 #include <ctype.h>
+#include <argcv.h>
 
 #ifndef LOCAL_RC
-#define LOCAL_RC ".cflowrc"
+# define LOCAL_RC ".cflowrc"
 #endif
 
-static int xargc;
-static char **xargv;
-static void parse_rc(char*);
-static void expand_args(char*);
-
-/* Process the value of the environment variable CFLOW_OPTIONS
- * and of the rc file.
- * Split the value into words and add them between (*ARGV_PTR)[0] and
- * (*ARGV_PTR[1]) modifying *ARGC_PTR accordingly.
- * NOTE: Since sourcerc() is not meant to take all SH command line processing
- *       burden, only word splitting is performed and no kind of expansion
- *       takes place. 
- */
-void
-sourcerc(int *argc_ptr, char ***argv_ptr)
+static void
+expand_argcv(int *argc_ptr, char ***argv_ptr, int argc, char **argv)
 {
-     char *env, *home;
-    
-     xargc = 1;
-     xargv = malloc(2*sizeof(xargv[0]));
+     int i;
      
-     env = getenv("CFLOW_OPTIONS");
-     if (env) {
-	  expand_args(strdup(env));
-     }
-    
-     home = getenv("HOME");
-     if (home) {
-	  int len = strlen(home);
-	  char *buf = malloc(len + sizeof(LOCAL_RC)
-			     + (home[len-1] != '/') );
-	  if (!buf)
-	       return;
-	  strcpy(buf, home);
-	  if (home[len-1] != '/')
-	       buf[len++] = '/';
-	  strcpy(buf+len, LOCAL_RC);
-	  parse_rc(buf);
-	  free(buf);
-     }
-     
-     if (xargc > 1) {
-	  int i;
-	  xargv = xrealloc(xargv, (xargc + *argc_ptr + 1)*(sizeof(xargv[0])));
-	  xargv[0] = (*argv_ptr)[0];
-	  xargc--;
-	  for (i = 1; i <= *argc_ptr; i++) {
-	       xargv[xargc+i] = (*argv_ptr)[i];
-	  }
-	  *argc_ptr += xargc;
-	  *argv_ptr = xargv;
-     }
+     *argv_ptr = xrealloc(*argv_ptr,
+			  (*argc_ptr + argc + 1) * sizeof **argv_ptr);
+     for (i = 0; i <= argc; i++)
+	  (*argv_ptr)[*argc_ptr + i] = argv[i];
+     *argc_ptr += argc;
 }
 
 /* Parse rc file
  */
 void
-parse_rc(char *name)
+parse_rc(int *argc_ptr, char ***argv_ptr, char *name)
 {
      struct stat st;
      FILE *rcfile;
      int size;
-     char *buf;
+     char *buf, *p;
      
      if (stat(name, &st))
 	  return;
@@ -103,29 +62,73 @@ parse_rc(char *name)
      size = fread(buf, 1, st.st_size, rcfile);
      buf[size] = 0;
      fclose(rcfile);
-     expand_args(buf);
+
+     for (p = strtok(buf, "\n"); p; p = strtok(NULL, "\n")) {
+	  int argc;
+	  char **argv;
+	  
+	  argcv_get(p, "", "#", &argc, &argv);
+	  expand_argcv(argc_ptr, argv_ptr, argc, argv);
+	  free(argv);
+     }
+     free(buf);
 }
 
-
+/* Process the value of the environment variable CFLOW_OPTIONS
+ * and of the rc file.
+ * Split the value into words and add them between (*ARGV_PTR)[0] and
+ * (*ARGV_PTR[1]) modifying *ARGC_PTR accordingly.
+ * NOTE: Since sourcerc() is not meant to take all SH command line processing
+ *       burden, only word splitting is performed and no kind of expansion
+ *       takes place. 
+ */
 void
-expand_args(char *buf)
+sourcerc(int *argc_ptr, char ***argv_ptr)
 {
-     char *p, *start;
+     char *env;
+     int xargc = 1;
+     char **xargv; 
 
-     p = buf;
-     while (*p) {
-	  while (*p && isspace(*p))
-	       p++;
-	  if (!*p)
-	       break;
-	  start = p;
-	  while (*p && !isspace(*p))
-	       p++;
-	  if (*p)
-	       *p++ = 0;
-	  xargv[xargc] = start;
-	  xargv = xrealloc(xargv, (xargc+2)*sizeof(xargv[0]));
-	  xargc++;
+     xargv = xmalloc(2*sizeof *xargv);
+     xargv[0] = **argv_ptr;
+     xargv[1] = NULL;
+     
+     env = getenv("CFLOW_OPTIONS");
+     if (env) {
+	  int argc;
+	  char **argv;
+	  
+	  argcv_get(env, "", "#", &argc, &argv);
+	  expand_argcv(&xargc, &xargv, argc, argv);
+	  free(argv);
+     }
+
+     env = getenv("CFLOWRC");
+     if (env) 
+	  parse_rc(&xargc, &xargv, env);
+     else {
+	  char *home = getenv("HOME");
+	  if (home) {
+	       int len = strlen(home);
+	       char *buf = malloc(len + sizeof(LOCAL_RC)
+				  + (home[len-1] != '/') );
+	       if (!buf)
+		    return;
+	       strcpy(buf, home);
+	       if (home[len-1] != '/')
+		    buf[len++] = '/';
+	       strcpy(buf+len, LOCAL_RC);
+	       parse_rc(argc_ptr, argv_ptr, buf);
+	       free(buf);
+	  }
+     }
+     
+     if (xargc > 1) {
+	  expand_argcv(&xargc, &xargv, *argc_ptr-1, *argv_ptr+1);
+	  *argc_ptr = xargc;
+	  *argv_ptr = xargv;
      }
 }
+
+
 	
