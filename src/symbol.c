@@ -1,4 +1,3 @@
-
 /* This file is part of GNU cflow
    Copyright (C) 1997,2005 Sergey Poznyakoff
 
@@ -17,142 +16,122 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA  */
 
 #include <cflow.h>
+#include <hash.h>
 
-int hash_size = 509;  /* Size of hash table */
-Symbol **symtab;      /* Symbol table */
-Symbol *statsym;      /* Static symbols are held here */
+Hash_table *symbol_table;
 
-typedef struct bucket Bucket;
-struct bucket {
-    Bucket *next; /* Next bucket */
-    int free;
-    Cons cons[1];
-};
-
-int bucket_nodes = 512;
-Bucket *root_bucket, *last_bucket;
-int symbol_count;
-
-/* Set new hashtable size
- */
-void
-set_hash_size(num)
-    int num;
+/* Calculate the hash of a string.  */
+static unsigned
+hash_symbol_hasher(void const *data, unsigned n_buckets)
 {
-    if (num <= 0) {
-	error(0, "invalid hash size value: ignored");
-	return;
-    }
-    hash_size = num;
+     Symbol *sym = data;
+     return hash_string(sym->name, n_buckets);
 }
 
-/* Init symbol table
- */
-void
-init_hash()
+/* Compare two strings for equality.  */
+static bool
+hash_symbol_compare(void const *data1, void const *data2)
 {
-    unsigned i;
-    
-    symtab = emalloc(hash_size * sizeof(symtab[0]));
-    for (i = 0; i < hash_size; i++)
-	symtab[i] = NULL;
+     Symbol *s1 = data1;
+     Symbol *s2 = data2;
+     return strcmp(s1->name, s2->name) == 0;
 }
 
-/* Compute hash-code for the given name */
-unsigned
-hash(name)
-    char *name;
-{
-    unsigned i;
-
-    for (i = 0; *name; name++) {
-        i <<= 1;
-        i ^= *(unsigned char*)name;
-    }
-    return i % hash_size;
-}
-
-/* Find a Symbol corresponding to the given name
- */
 Symbol *
-lookup(s)
-    char *s;
+lookup(char *name)
 {
-    Symbol *sp;
-
-    for (sp = symtab[hash(s)]; sp != (Symbol *) 0; sp = sp->next)
-        if (strcmp(sp->name, s) == 0) 
-            return sp;
-    return 0;
+     Symbol s;
+     if (!symbol_table)
+	  return NULL;
+     s.name = name;
+     return hash_lookup(symbol_table, &s);
 }
 
-/* Install a new symbol into the symbol table
- */
 Symbol *
-install(s)
-    char *s;
+install(char *name)
 {
-    Symbol *sp;
-    unsigned hc;
+     Symbol *sym, *s;
 
-    sp = (Symbol *) emalloc(sizeof(Symbol));
-    memset(sp, 0, sizeof(*sp));
-    sp->name = emalloc(strlen(s) + 1);
-    strcpy(sp->name, s);
-    sp->type = SymUndefined;
-    hc = hash(s);
-    sp->next = symtab[hc];
-    symtab[hc] = sp;
-    symbol_count++;
-    return sp;
+     sym = xmalloc(sizeof(*sym));
+     memset(sym, 0, sizeof(*sym));
+     sym->type = SymUndefined;
+     sym->name = name;
+     if (! ((symbol_table
+	     || (symbol_table = hash_initialize (0, 0, 
+						 hash_symbol_hasher,
+						 hash_symbol_compare, 0)))
+	    && (s = hash_insert (symbol_table, sym))))
+	  xalloc_die ();
+
+     if (s != sym) {
+	  if (s->type == SymUndefined) {
+	       *s = *sym;
+	       free(sym);
+	  } else {
+	       Symbol tmp = *s;
+	       *s = *sym;
+	       *sym = tmp;
+	       s->next = sym;
+	  }
+     }
+     return s;
 }
+
+static void
+delete_symbol(Symbol *s)
+{
+     Symbol *next = s->next;
+     if (next) {
+	  *s = *next;
+	  free(next);
+     } else {
+	  s->type = SymUndefined;
+     }
+}     
 
 /* Delete from the symbol table all static symbols defined in the current
- * source.
- * NOTE: This takes advantage of the fact that install() uses LIFO strategy,
- * so we doesn't have to check the name of the source where the symbol was
- * defined.
- * If it is static, we simply remove it.
- */
+   source.
+   NOTE: This takes advantage of the fact that install() uses LIFO strategy,
+   so we don't have to check the name of the source where the symbol was
+   defined. */
+
+static bool
+static_processor(void *data, void *proc_data)
+{
+     Symbol *s = data;
+     
+     if (s->type == SymFunction && s->v.func.storage == StaticStorage) 
+	  delete_symbol(s);
+     return true;
+}
+
 void
 delete_statics()
 {
-    int i;
-    Symbol *sp;
-    
-    for (i = 0; i < hash_size; i++) {
-	if (symtab[i] &&
-	    symtab[i]->type == SymFunction &&
-	    symtab[i]->v.func.storage == StaticStorage) {
-	    /* Delete the entry from the main symbol table */
-	    sp = symtab[i];
-	    symtab[i] = sp->next;
-	    /* Add it to the static symbol list */
-	    sp->next = statsym;
-	    statsym = sp;
-	}
-    }
+     if (globals_only) 
+	  hash_do_for_each (symbol_table, static_processor, NULL);
+}
+
+/* See NOTE above */
+bool
+auto_processor(void *data, void *proc_data)
+{
+     Symbol *s = data;
+     int *level = proc_data;
+     if (s->type == SymFunction && s->v.func.level == *level) 
+	  delete_symbol(s);
+     return true;
 }
 
 /* Delete from the symbol table all auto variables with given nesting
- * level.
- * TODO: The memory is not reclaimed.
- */
+   level. */
 void
-delete_autos(level)
-    int level;
+delete_autos(int level)
 {
-    int i;
-    
-    for (i = 0; i < hash_size; i++) {
-	if (symtab[i] &&
-	    symtab[i]->type == SymFunction &&
-	    symtab[i]->v.func.level == level) {
-	    symtab[i] = symtab[i]->next;
-	}
-    }
+     hash_do_for_each (symbol_table, auto_processor, &level);
 }
 
+
 /* Make all list pointers of the SYM ready for final processing.
  * This means for each list replace its entry point with its CAR
  * and throw away the first cons. The first cons holds pointers
@@ -160,20 +139,24 @@ delete_autos(level)
  *
  * TODO: The memory is not reclaimed
  */
-static void
-cleanup_symbol(sym)
-    Symbol *sym;
+static bool
+cleanup_processor(void *data, void *proc_data)
 {
-    if (sym->type == SymFunction) {
-	if (sym->v.func.ref_line)
-	    sym->v.func.ref_line = CAR(sym->v.func.ref_line);
-	if (sym->v.func.caller)
-	    sym->v.func.caller = CAR(sym->v.func.caller);
-	if (sym->v.func.callee)
-	    sym->v.func.callee = CAR(sym->v.func.callee);
-    }
+     Symbol *sym;
+
+     for (sym = data; sym; sym = sym->next) {
+	  if (sym->type == SymFunction) {
+	       if (sym->v.func.ref_line)
+		    sym->v.func.ref_line = CAR(sym->v.func.ref_line);
+	       if (sym->v.func.caller)
+		    sym->v.func.caller = CAR(sym->v.func.caller);
+	       if (sym->v.func.callee)
+		    sym->v.func.callee = CAR(sym->v.func.callee);
+	  }
+     }
+     return true;
 }
-    
+
 
 /* Clean up all symbols from the auxiliary information.
  * See the comment for cleanup_symbol() above
@@ -181,58 +164,99 @@ cleanup_symbol(sym)
 void
 cleanup()
 {
-    int i;
-    Symbol *sptr;
-
-    for (i = 0; i < hash_size; i++) 
-	for (sptr = symtab[i]; sptr; sptr = sptr->next) 
-	    cleanup_symbol(sptr);
-
-    for (sptr = statsym; sptr; sptr = sptr->next)
-	cleanup_symbol(sptr);
+     hash_do_for_each (symbol_table, cleanup_processor, NULL);
 }
-    
+
+struct collect_data {
+     Symbol **sym;
+     int (*sel)(Symbol *p);
+     size_t index;
+};
+
+static bool
+collect_processor(void *data, void *proc_data)
+{
+     Symbol *s;
+     struct collect_data *cd = proc_data;
+     for (s = data; s; s = s->next) {
+	  if (cd->sel(s)) {
+	       if (cd->sym)
+		    cd->sym[cd->index] = s;
+	       cd->index++;
+	  }
+     }
+     return true;
+}
+
+int
+collect_symbols(Symbol ***return_sym, int (*sel)(Symbol *p))
+{
+     struct collect_data cdata;
+
+     cdata.sym = NULL;
+     cdata.index = 0;
+     cdata.sel = sel;
+     hash_do_for_each (symbol_table, collect_processor, &cdata);
+     cdata.sym = calloc(cdata.index, sizeof(*cdata.sym));
+     if (!cdata.sym)
+	  xalloc_die();
+     cdata.index = 0;
+     hash_do_for_each (symbol_table, collect_processor, &cdata);
+     *return_sym = cdata.sym;
+     return cdata.index;
+}
+
+
+typedef struct bucket Bucket;
+struct bucket {
+     Bucket *next; /* Next bucket */
+     int free;
+     Cons cons[1];
+};
+
+static int bucket_nodes = 512;
+static Bucket *root_bucket, *last_bucket;
 
 void
 alloc_new_bucket()
 {
-    Bucket *bp;
-
-    bp = malloc(sizeof(*bp) + sizeof(Cons)*(bucket_nodes-1));
-    if (!bp)
-	return;
-    bp->next = NULL;
-    bp->free = 0;
-    if (!root_bucket) 
-	root_bucket = last_bucket = bp;
-    else {
-	last_bucket->next = bp;
-	last_bucket = bp;
-    }
+     Bucket *bp;
+     
+     bp = malloc(sizeof(*bp) + sizeof(Cons)*(bucket_nodes-1));
+     if (!bp)
+	  return;
+     bp->next = NULL;
+     bp->free = 0;
+     if (!root_bucket) 
+	  root_bucket = last_bucket = bp;
+     else {
+	  last_bucket->next = bp;
+	  last_bucket = bp;
+     }
 }
 
 Consptr
 alloc_cons_from_bucket()
 {
-    if (!last_bucket || last_bucket->free == bucket_nodes)
-	return NULL;
-    return &last_bucket->cons[last_bucket->free++];
+     if (!last_bucket || last_bucket->free == bucket_nodes)
+	  return NULL;
+     return &last_bucket->cons[last_bucket->free++];
 }
 
 Consptr
 alloc_cons()
 {
-    Consptr cp;
-
-    cp = alloc_cons_from_bucket();
-    if (!cp) {
-	alloc_new_bucket();
-	if ((cp = alloc_cons_from_bucket()) == NULL) {
-	    error(FATAL(2), "not enough core");
-	}
-    }
-    CAR(cp) = CDR(cp) = NULL;
-    return cp;
+     Consptr cp;
+     
+     cp = alloc_cons_from_bucket();
+     if (!cp) {
+	  alloc_new_bucket();
+	  if ((cp = alloc_cons_from_bucket()) == NULL) {
+	       error(2, 0, "not enough core");
+	  }
+     }
+     CAR(cp) = CDR(cp) = NULL;
+     return cp;
 }
 
 /* Append a new cons to the tail of the list
@@ -243,68 +267,37 @@ alloc_cons()
  * cdr of root cons points to  the tail of the list.
  */
 Consptr
-append_to_list(root_ptr, car)
-    Consptr *root_ptr;
-    void *car;
+append_to_list(Consptr *root_ptr, void *car)
 {
-    Consptr root, cons;
-
-    if (!*root_ptr) {
-	*root_ptr = alloc_cons();
-	/* both car and cdr are guaranteed to be NULL */ 
-    }
-    root = *root_ptr;
-    
-    cons = alloc_cons();
-    if (!CAR(root))
-	CAR(root) = cons;
-
-    /* Maintain linked list */
-    if (CDR(root))
-	CDR(CDR(root)) = cons;
-    CDR(root) = cons;
-    CAR(cons) = car;
-    return cons;
+     Consptr root, cons;
+     
+     if (!*root_ptr) {
+	  *root_ptr = alloc_cons();
+	  /* both car and cdr are guaranteed to be NULL */ 
+     }
+     root = *root_ptr;
+     
+     cons = alloc_cons();
+     if (!CAR(root))
+	  CAR(root) = cons;
+     
+     /* Maintain linked list */
+     if (CDR(root))
+	  CDR(CDR(root)) = cons;
+     CDR(root) = cons;
+     CAR(cons) = car;
+     return cons;
 }
 
 int
-symbol_in_list(sym, list)
-    Symbol *sym;
-    Consptr list;
+symbol_in_list(Symbol *sym, Consptr list)
 {
-    Consptr cons;
-    
-    if (!list)
-	return 0;
-    for (cons = CAR(list); cons; cons = CDR(cons))
-	if ((Symbol*)CAR(cons) == sym)
-	    return 1;
-    return 0;
-}
-	
-int
-collect_symbols(return_sym, sel)
-    Symbol ***return_sym;
-    int (*sel)();
-{
-    Symbol **sym, *st_ptr;
-    int i, num=0;
-
-    sym = calloc(symbol_count, sizeof(*sym));
-    if (!sym)
-	error(FATAL(2), "not enough core to sort symbols.");
-
-    /* collect usable sybols */
-    for (i = 0; i < hash_size; i++) {
-	for (st_ptr = symtab[i]; st_ptr; st_ptr = st_ptr->next)
-	    if (sel(st_ptr))
-		sym[num++] = st_ptr;
-    }
-    if (!globals_only) {
-	for (st_ptr = statsym; st_ptr; st_ptr = st_ptr->next)
-	    if (sel(st_ptr))
-		sym[num++] = st_ptr;
-    }
-    *return_sym = sym;
-    return num;
+     Consptr cons;
+     
+     if (!list)
+	  return 0;
+     for (cons = CAR(list); cons; cons = CDR(cons))
+	  if ((Symbol*)CAR(cons) == sym)
+	       return 1;
+     return 0;
 }
