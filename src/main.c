@@ -19,34 +19,57 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
+#include <varargs.h>
+#include <errno.h>
+#include "cflow.h"
 #include "version.h"
 
 void say_and_die(char *);
+void init();
 
-#define OPTSTR "hVL"
+#define OPTSTR "hVLvSCdxtH:p:"
 
 #ifdef GNU_STYLE_OPTIONS
 typedef struct option LONGOPT;
-/* Note: Internal variables go first */
 LONGOPT longopts[] = {
     "help",    no_argument, 0, 'h',
     "version", no_argument, 0, 'V',
     "licence", no_argument, 0, 'L',
-    0
-}
+    "verbose", no_argument, 0, 'v',
+    "ignore-indentation", no_argument, 0, 'S',
+    "c++", no_argument, 0, 'C',
+    "defines" , no_argument, 0, 'd',
+    "cxref", no_argument, 0, 'x',
+    "typedefs", no_argument, 0, 't',
+    "hashsize", required_argument, 0, 'H',
+    "pushdown", required_argument, 0, 'p',
+    0,
+};
 #else
 #define getopt_long(argc, argv, optstr, long_opts, iptr) \
  getopt(argc, argv, optstr)
 #endif
 
+char *progname;
+int verbose;            /* be verbose on output */
+int ignore_indentation; /* Don't rely on indentation,
+			 * i.e. don't suppose the function body
+                         * is necessarily surrounded by the curly braces
+			 * in the first column
+                         */
+int assume_cplusplus;   /* Assume C++ input always */
+int record_defines;     /* Record C preproc definitions */
+int record_typedefs;    /* Record typedefs */
+int cross_ref;          /* Generate cross-reference */
 
 int
 main(argc, argv)
     int argc;
     char **argv;
 {
-    int c;
-    
+    int c, i, num;
+
+    progname = argv[0];
     while ((c = getopt_long(argc, argv, OPTSTR, longopts, &i)) != EOF) {
 	switch (c) {
 	case 'h':
@@ -58,13 +81,48 @@ main(argc, argv)
 	case 'L':
 	    say_and_die(licence);
 	    return 0;
-	    
+	case 'v':
+	    verbose = 1;
+	    break;
+	case 'S':
+	    ignore_indentation = 1;
+	    break;
+	case 'C':
+	    assume_cplusplus = 1;
+	    break;
+	case 'd':
+	    record_defines = 1;
+	    break;
+	case 't':
+	    record_typedefs = 1;
+	    break;
+	case 'x':
+	    cross_ref = 1;
+	    break;
+	case 'H':
+	    set_hash_size(atoi(optarg));
+	case 'p':
+	    num = atoi(optarg);
+	    if (num > 0)
+		token_stack_length = num;
 	}
     }
-
+    if (argv[optind] == NULL)
+	error(FATAL(1), "No input files");
+    init();
+    collect(argc-optind, argv+optind);
+    output();
+    return 0;
 }
 
-
+void
+init()
+{
+    init_lex();
+    init_parse();
+    init_hash();
+}
+ 
 /* Print text on console and exit. Before printing scan text for
  * RCS keywords ("\$[a-zA-Z]+:\(.*\)\$") and replace them with the keyword's 
  * walue ("\1").
@@ -100,4 +158,38 @@ say_and_die(text)
     if (p > text)
 	printf("%s", text);
     exit(0);
+}
+
+
+void *
+emalloc(size)
+    int size;
+{
+    void *p = malloc(size);
+    if (!p) 
+	error(FATAL(2), "not enough core");
+    return p;
+}
+
+void
+efree(ptr)
+    void *ptr;
+{
+    free(ptr);
+}
+
+error(stat, fmt, va_alist)
+    char *fmt;
+    va_dcl
+{
+    va_list ap;
+    va_start(ap);
+    fprintf(stderr, "%s: ", progname);
+    vfprintf(stderr, fmt, ap);
+    if (stat & SYSTEM_ERROR)
+	fprintf(stderr, ": %s", strerror(errno));
+    fprintf(stderr, "\n");
+    va_end(ap);
+    if (stat & FATAL_ERROR)
+	return stat & 255;
 }
