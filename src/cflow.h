@@ -25,9 +25,11 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <errno.h>
-#define obstack_chunk_alloc emalloc
-#define obstack_chunk_free efree
+#define obstack_chunk_alloc xmalloc
+#define obstack_chunk_free free
 #include <obstack.h>
+#include <error.h>
+#include <xalloc.h>
 
 #define GNU_STYLE_OPTIONS 1
 
@@ -48,9 +50,9 @@ struct cons {
 #define CDR(a) (a)->cdr
 
 enum symtype {
-    SymUndefined,
-    SymToken,
-    SymFunction
+     SymUndefined,
+     SymToken,
+     SymFunction
 };
 
 enum storage {
@@ -134,8 +136,6 @@ extern int token_stack_increase;
 
 extern int symbol_count;
 
-void *emalloc(int);
-void efree(void*);
 Symbol *lookup(char*);
 Symbol *install(char*);
 Consptr alloc_cons();
@@ -173,11 +173,4 @@ void gnu_output_handler(cflow_output_command cmd,
 void posix_output_handler(cflow_output_command cmd,
 			  FILE *outfile, int line,
 			  void *data, void *handler_data);
-void error(int stat, const char *fmt, ...);
-
-
-
-
-
-
 
