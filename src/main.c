@@ -16,51 +16,171 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA  */
 
 #include <cflow.h>
+#include <argp.h>
 #include <stdarg.h>
 #include <parser.h>
-#include <version.h>
 
-void say_and_die(char *);
 void symbol_override();
 void init();
 void set_print_option(char*);
 static void set_level_indent(char*);
 static void parse_level_string(char*, char**);
 
-#define OPTSTR "CDH:LP:STVbdf:ghi:lm:o:p:rs:tvx"
+const char *argp_program_version = "cflow (" PACKAGE_NAME ") " VERSION;
+const char *argp_program_bug_address = "<" PACKAGE_BUGREPORT ">";
+static char doc[] = "";
 
-#ifdef GNU_STYLE_OPTIONS
-typedef struct option LONGOPT;
-LONGOPT longopts[] = {
-    "help",    no_argument, 0, 'h',
-    "version", no_argument, 0, 'V',
-    "license", no_argument, 0, 'L',
-    "verbose", no_argument, 0, 'v',
-    "ignore-indentation", no_argument, 0, 'S',
-    "c++", no_argument, 0, 'C',
-    "defines" , no_argument, 0, 'd',
-    "xref", no_argument, 0, 'x',
-    "typedefs", no_argument, 0, 't',
-    "hashsize", required_argument, 0, 'H',
-    "pushdown", required_argument, 0, 'p',
-    "symbol", required_argument, 0, 's',
-    "ansi", no_argument, 0, 'a',
-    "globals-only", no_argument, 0, 'g',
-    "print-level", no_argument, 0, 'l',
-    "tree", no_argument, 0, 'T',
-    "level-indent", required_argument, 0, 'i',
-    "print", required_argument, 0, 'P',
-    "output", required_argument, 0, 'o',
-    "main", required_argument, 0, 'm',
-    "brief", no_argument, 0, 'b',
-    "reverse", no_argument, 0, 'r',
-    "format", required_argument, 0, 'f',
-    0,
+static struct argp_option options[] = {
+     { "verbose", 'v', NULL, 0,
+       "be verbose on output", 0 },
+     { "ignore-indentation", 'S', NULL, 0,
+       "do not rely on indentation", 0 },
+     { "c++", 'C', NULL, 0,
+       "expect C++ input", 0 },
+     { "defines" , 'd', NULL, 0,
+       "record defines", 0 },
+     { "xref", 'x', NULL, 0,
+       "produce cross-reference listing only" },
+     { "typedefs", 't', NULL, 0,
+       "record typedefs" },
+     { "pushdown", 'p', "VALUE", 0,
+       "set initial token stack size to VALUE", 0 },
+     { "symbol", 's', "SYM:TYPE", 0,
+       "make cflow believe the symbol SYM is of type TYPE. Valid types are: keyword (or kw), modifier, identifier, type, wrapper. Any unambiguous abbreviation of the above is also accepted", 0 },
+     { "ansi", 'a', NULL, 0,
+       "Assume input to be written in ANSI C", 0 },
+     { "globals-only", 'g', NULL, 0,
+       "Record only global symbols" },
+     { "print-level", 'l', NULL, 0,
+       "Print nesting level along with the call tree", 0 },
+     { "tree", 'T', NULL, 0,
+       "Draw tree", 0 },
+     { "level-indent", 'i', "STRING", 0,
+       "Use STRING when indenting to each new level", 0 },
+     { "print", 'P', "OPT", 0,
+       "Set printing option to OPT. Valid OPT values are: xref (or cross-ref), tree. Any unambiguous abbreviation of the above is also accepted" },
+     { "output", 'o', "FILE", 0,
+       "set output file name (default -, meaning stdout)" },
+     { "main", 'm', "NAME", 0,
+       "Assume main function to be called NAME", 0 },
+     { "brief", 'b', NULL, 0,
+       "brief output" },
+     { "reverse", 'r', NULL, 0,
+       "Print reverse call tree", 0 },
+     { "format", 'f', "NAME", 0,
+       "use given output format NAME. Valid names are gnu (default) and posix", 0},
+     { "license", 'L', 0, 0,
+       "Print license and exit", 0 },
+     { 0, }
 };
-#else
-#define getopt_long(argc, argv, optstr, long_opts, iptr) \
- getopt(argc, argv, optstr)
-#endif
+
+char *cflow_license_text =
+"   GNU cflow is free software; you can redistribute it and/or modify\n"
+"   it under the terms of the GNU General Public License as published by\n"
+"   the Free Software Foundation; either version 2 of the License, or\n"
+"   (at your option) any later version.\n"
+"\n"
+"   GNU cflow is distributed in the hope that it will be useful,\n"
+"   but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+"   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+"   GNU General Public License for more details.\n"
+"\n"
+"   You should have received a copy of the GNU General Public License\n"
+"   along with GNU cflow; if not, write to the Free Software\n"
+"   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA\n\n";
+
+static error_t
+parse_opt (int key, char *arg, struct argp_state *state)
+{
+     int num;
+     
+     switch (key) {
+     case 'a':
+	  strict_ansi = 1;
+	  break;
+     case 'C':
+	  assume_cplusplus = 1;
+	  break;
+     case 'D':
+	  debug = 1;
+	  break;
+     case 'L':
+	  printf("License for %s:\n\n", argp_program_version);
+	  printf("%s", cflow_license_text);
+	  exit(0);
+     case 'P':
+	  set_print_option(arg);
+	  break;
+     case 'S':
+	  ignore_indentation = 1;
+	  break;
+     case 'T':
+	  print_as_tree = 1;
+	  level_indent[0] = "  "; /* two spaces */
+	  level_indent[1] = "| ";
+	  level_end[0] = "+-";
+	  level_end[1] = "\\-";
+	  break;
+     case 'b':
+	  brief_listing = 1;
+	  break;
+     case 'd':
+	  record_defines = 1;
+	  break;
+     case 'f':
+	  if (select_output_driver(arg))
+	       argp_error(state, "%s: No such output driver", optarg);
+	  break;
+     case 'g':
+	  globals_only = 1;
+	  break;
+     case 'i':
+	  set_level_indent(arg);
+	  break;
+     case 'l':
+	  print_levels = 1;
+	  break;	
+     case 'm':
+	  start_name = strdup(arg);
+	  break;
+     case 'o':
+	  outname = strdup(arg);
+	  break;
+     case 'p':
+	  num = atoi(arg);
+	  if (num > 0)
+	       token_stack_length = num;
+	  break;
+     case 'r':
+	  reverse_tree = 1;
+	  break;
+     case 's':
+	  symbol_override(arg);
+	  break;
+     case 't':
+	  record_typedefs = 1;
+	  break;
+     case 'v':
+	  verbose = 1;
+	  break;
+     case 'x':
+	  print_option = PRINT_XREF;
+	  break;
+     default:
+	  return ARGP_ERR_UNKNOWN;
+     }
+     return 0;
+}
+
+static struct argp argp = {
+  options,
+  parse_opt,
+  "[FILE]...",
+  doc,
+  NULL,
+  NULL,
+  NULL
+};
 
 /* Structure representing various arguments of command line options */
 struct option_type {
@@ -115,123 +235,35 @@ char *level_begin = "";
 
 char *start_name = "main"; /* Name of start symbol */
 
-/* Structs of this type are used to temporarily hold user-provided
- * symbol information */
-struct symbol_holder {
-    char *name;
-    int type;
-};
-
-static struct obstack temp_symbol_stack;
-/* Actually it is the stack of struct symbol_holder elements.
- * This stack is used to temporarily hold symbol information obtained
- * from the command line. It is necessary since the symbol tables are not
- * initialized at the time of command line processing.
- */
-int temp_symbol_count; /* number of symbols stored in temp_symbol_stack */
+void
+xalloc_die(void)
+{
+     error(1, ENOMEM, "");
+}
 
 int
 main(int argc, char **argv)
 {
-     int c, i, num;
+     int i;
+     int index;
 
      progname = argv[0];
-     obstack_init(&temp_symbol_stack);
      register_output("gnu", gnu_output_handler, NULL);
      register_output("posix", posix_output_handler, NULL);
      sourcerc(&argc, &argv);
+
+     if (argp_parse (&argp, argc, argv, 0, &index, NULL))
+	  exit (1);
      
-     while ((c = getopt_long(argc, argv, OPTSTR, longopts, &i)) != EOF) {
-	  switch (c) {
-	  case 'a':
-	       strict_ansi = 1;
-	       break;
-	  case 'C':
-	       assume_cplusplus = 1;
-	       break;
-	  case 'D':
-	       debug = 1;
-	       break;
-	  case 'H':
-	       set_hash_size(atoi(optarg));
-	       break;
-	  case 'L':
-	       say_and_die(licence);
-	       return 0;
-	  case 'P':
-	       set_print_option(optarg);
-	       break;
-	  case 'S':
-	       ignore_indentation = 1;
-	       break;
-	  case 'T':
-	       print_as_tree = 1;
-	       level_indent[0] = "  "; /* two spaces */
-	       level_indent[1] = "| ";
-	       level_end[0] = "+-";
-	       level_end[1] = "\\-";
-	       break;
-	  case 'V':
-	       say_and_die(version);
-	       return 0;
-	  case 'b':
-	       brief_listing = 1;
-	       break;
-	  case 'd':
-	       record_defines = 1;
-	       break;
-	  case 'f':
-	       if (select_output_driver(optarg))
-		    error(FATAL(1), "%s: No such output driver", optarg);
-	       break;
-	  case 'g':
-	       globals_only = 1;
-	       break;
-	  case 'h':
-	       say_and_die(usage);
-	       return 0;
-	  case 'i':
-	       set_level_indent(optarg);
-	       break;
-	  case 'l':
-	       print_levels = 1;
-	       break;	
-	  case 'm':
-	       start_name = strdup(optarg);
-	       break;
-	  case 'o':
-	       outname = strdup(optarg);
-	       break;
-	  case 'p':
-	       num = atoi(optarg);
-	       if (num > 0)
-		    token_stack_length = num;
-	       break;
-	  case 'r':
-	       reverse_tree = 1;
-	       break;
-	  case 's':
-	       symbol_override(optarg);
-	       break;
-	  case 't':
-	       record_typedefs = 1;
-	       break;
-	  case 'v':
-	       verbose = 1;
-	       break;
-	  case 'x':
-	       print_option = PRINT_XREF;
-	       break;
-	  }
-     }
      if (argv[optind] == NULL)
-	  error(FATAL(1), "No input files");
+	  error(1, 0, "No input files");
      if (print_option == 0)
 	  print_option = PRINT_TREE;
+
      init();
 
-     argc -= optind;
-     argv += optind;
+     argc -= index;
+     argv += index;
      while (argc--) {
 	  if (source(*argv++) == 0)
 	       yyparse();
@@ -245,33 +277,15 @@ main(int argc, char **argv)
 void
 init()
 {
-     struct symbol_holder *hold;
      int i;
-     Symbol *sp;
      
      if (level_indent[0] == NULL) {
 	  level_indent[0] = level_indent[1] = "    "; /* 4 spaces */
 	  level_end[0] = level_end[1] = "";
      }
      
-     init_hash();
      init_lex();
      init_parse();
-
-     /* Now that we have symbol tables, pass there all user-provided symbols
-      */
-     if (temp_symbol_count) {
-	  hold = obstack_finish(&temp_symbol_stack);
-	  for (i = 0; i < temp_symbol_count; i++, hold++) {
-	       sp = install(hold->name);
-	       sp->type = SymToken;
-	       sp->v.type.token_type = hold->type;
-	       sp->v.type.source = NULL;
-	       sp->v.type.def_line = -1;
-	       sp->v.type.ref_line = NULL;
-	  }
-     }
-     obstack_free(&temp_symbol_stack, NULL);
 }
 
 
@@ -300,24 +314,28 @@ find_option_type(struct option_type *optype, char *str)
 void
 symbol_override(char *str)
 {
-     struct symbol_holder sym;
+     int type;
      char *ptr;
+     Symbol *sp;
      
      ptr = str;
      while (*ptr && *ptr != ':') 
 	  ptr++;
      if (*ptr == ':') {
 	  *ptr++ = 0;
-	  sym.type = find_option_type(symbol_optype, ptr);
-	  if (sym.type == 0) {
-	       error(0, "unknown symbol type: %s", ptr);
+	  type = find_option_type(symbol_optype, ptr);
+	  if (type == 0) {
+	       error(0, 0, "unknown symbol type: %s", ptr);
 	       return;
 	  }
      } else
-	  sym.type = IDENTIFIER;
-     sym.name = str;
-     obstack_grow(&temp_symbol_stack, &sym, sizeof(sym));
-     temp_symbol_count++;
+	  type = IDENTIFIER;
+     sp = install(str);
+     sp->type = SymToken;
+     sp->v.type.token_type = type;
+     sp->v.type.source = NULL;
+     sp->v.type.def_line = -1;
+     sp->v.type.ref_line = NULL;
 }
 
 void
@@ -327,7 +345,7 @@ set_print_option(char *str)
      
      opt = find_option_type(print_optype, str);
      if (opt == 0) {
-	  error(0, "unknown print option: %s", str);
+	  error(0, 0, "unknown print option: %s", str);
 	  return;
      }
      print_option |= opt;
@@ -396,7 +414,7 @@ set_level_indent(char *str)
      p = str;
      while (*p != '=') {
 	  if (*p == 0) {
-	       error(0, "level-indent syntax");
+	       error(0, 0, "level-indent syntax");
 	       return;
 	  }
 	  p++;
@@ -420,7 +438,7 @@ set_level_indent(char *str)
 	  parse_level_string(p, &level_end[1]);
 	  break;
      default:
-	  error(0, "unknown level indent option: %s", str);
+	  error(0, 0, "unknown level indent option: %s", str);
      }
 }
 
@@ -483,7 +501,7 @@ parse_level_string(char *str, char **return_ptr)
 	       for (i = 1; i < num; i++) {
 		    *p++ = c;
 		    if (*p == 0) {
-			 error(0, "level indent string too long");
+			 error(0, 0, "level indent string too long");
 			 return;
 		    }
 	       }
@@ -492,7 +510,7 @@ parse_level_string(char *str, char **return_ptr)
 	  copy:
 	       *p++ = *str++;
 	       if (*p == 0) {
-		    error(0, "level indent string is too long");
+		    error(0, 0, "level indent string is too long");
 		    return;
 	       }
 	  }
@@ -501,80 +519,7 @@ parse_level_string(char *str, char **return_ptr)
      *return_ptr = strdup(text);
 }
 
-/* Print text on console and exit. Before printing scan text for
- * RCS keywords ("\$[a-zA-Z]+:\(.*\)\$") and replace them with the keyword's 
- * walue ("\1").
- * NOTE: The function does not check the whole regexp above, it simply
- * assumes that every occurence of '$' in the text is a start of RCS keyword.
- * It suffices for all used messages, but if you add any messages containing
- * '$' on it's own, you have to modify helptext() accordingly.
- */
-void
-say_and_die(char *text)
-{
-     char *p;
-     
-     p = text;
-     while (*p) {
-	  if (*p == '$') {
-	       *p = 0;
-	       printf("%s", text);
-	       *p = '$';
-	       while (*p++ != ':')
-		    ;
-	       text = p;
-	       while (*p != '$')
-		    p++;
-	       *p = 0;
-	       printf("%s", text);
-	       *p++ = '$';
-	       text = p;
-	  } else
-	       p++;
-     }
-     if (p > text)
-	  printf("%s", text);
-     exit(0);
-}
 
-
-/* malloc() with error reporting
- */
-void *
-emalloc(int size)
-{
-     void *p = malloc(size);
-     if (!p) 
-	  error(FATAL(2), "not enough core");
-     return p;
-}
-
-/* just for symmetry with emalloc() */
-void
-efree(void *ptr)
-{
-     free(ptr);
-}
-
-/* Report an error condition.
- * STAT is the message status bitmask:
- *    SYSTEM_ERROR bits mean do perror() after printing the message
- *    FATAL_ERROR bits mean exit().
- */
-void
-error(int stat, const char *fmt, ...)
-{
-     va_list ap;
-     va_start(ap, fmt);
-     fprintf(stderr, "%s: ", progname);
-     vfprintf(stderr, fmt, ap);
-     if (stat & SYSTEM_ERROR)
-	  fprintf(stderr, ": %s", strerror(errno));
-     fprintf(stderr, "\n");
-     va_end(ap);
-     if (stat & FATAL_ERROR)
-	  exit(stat & 255);
-}
 
 
 
