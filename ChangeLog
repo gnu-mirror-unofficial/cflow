@@ -3,6 +3,7 @@
 	* doc/Makefile.am: Updated
 	* doc/cflow.texi: Documentation framework
 	* doc/fdl.texi: GNU FDL
+	* doc/rendition.texi: Rendition macros
 	* doc/gendocs_template: Template for index.html
 	* doc/.cvsignore: Updated
 
