@@ -22,11 +22,21 @@ char *level_mark;
 /* Tree level information. level_mark[i] contains 1 if there are more
  * leafs on the level `i', otherwise it contains 0
  */
-int level_mark_size=1000;
-/* Arbitrary size of level mark. Seems to be more than enough */
+int level_mark_size = 0;   /* Actual size of level_mark */
+int level_mark_incr = 128; /* level_mark is expanded by this number of bytes */
 
 int out_line = 1; /* Current output line number */
 FILE *outfile;    /* Output file */
+
+static void
+set_level_mark(int lev, int mark)
+{
+     if (lev > level_mark_size) {
+	  level_mark_size += level_mark_incr;
+	  level_mark = xrealloc(level_mark, level_mark_size);
+     }
+     level_mark[lev] = mark;
+}
 
 
 /* Low level output functions */
@@ -146,19 +156,13 @@ static int
 is_var(Symbol *symp)
 {
      if (include_symbol(symp)) {
-	  if (symp->type == SymFunction) 
-	       return symp->v.func.storage == ExternStorage ||
-	 	      symp->v.func.storage == StaticStorage;
+	  if (symp->type == SymIdentifier) 
+	       return symp->storage == ExternStorage ||
+	 	      symp->storage == StaticStorage;
 	  else
 	       return 1;
      }
      return 0;
-}
-
-static int
-is_fun(Symbol *symp)
-{
-     return symp->type == SymFunction && symp->v.func.argc >= 0;
 }
 
 static void
@@ -186,24 +190,24 @@ print_refs(char *name, Consptr cons)
 static void
 print_function(Symbol *symp)
 {
-     if (symp->v.func.source) {
+     if (symp->source) {
 	  fprintf(outfile, "%s * %s:%d %s\n",
 		  symp->name,
-		  symp->v.func.source,
-		  symp->v.func.def_line,
-		  symp->v.func.type);
+		  symp->source,
+		  symp->def_line,
+		  symp->decl);
      }
-     print_refs(symp->name, symp->v.func.ref_line);
+     print_refs(symp->name, symp->ref_line);
 }
 
 static void
 print_type(Symbol *symp)
 {
-     if (symp->v.type.source)
+     if (symp->source)
 	  fprintf(outfile, "%s t %s:%d\n",
 		  symp->name,
-		  symp->v.type.source,
-		  symp->v.type.def_line);
+		  symp->source,
+		  symp->def_line);
 }
    
 void
@@ -219,7 +223,7 @@ xref_output()
      for (i = 0; i < num; i++) {
 	  symp = symbols[i];
 	  switch (symp->type) {
-	  case SymFunction:
+	  case SymIdentifier:
 	       print_function(symp);
 	       break;
 	  case SymToken:
@@ -246,11 +250,11 @@ scan_tree(int lev, Symbol *sym)
      if (sym->type == SymUndefined)
 	  return;
      if (sym->active) {
-	  sym->v.func.recursive = 1;
+	  sym->recursive = 1;
 	  return;
      }
      sym->active = 1;
-     for (cons = sym->v.func.callee; cons; cons = CDR(cons)) {
+     for (cons = sym->callee; cons; cons = CDR(cons)) {
 	  scan_tree(lev+1, (Symbol*)CAR(cons));
      }
      sym->active = 0;
@@ -280,8 +284,8 @@ direct_tree(int lev, int last, Symbol *sym)
      if (rc || sym->active)
 	  return;
      set_active(sym);
-     for (cons = sym->v.func.callee; cons; cons = CDR(cons)) {
-	  level_mark[lev+1] = CDR(cons) != NULL;
+     for (cons = sym->callee; cons; cons = CDR(cons)) {
+	  set_level_mark(lev+1, CDR(cons) != NULL);
 	  direct_tree(lev+1, CDR(cons) == NULL, (Symbol*)CAR(cons));
      }
      clear_active(sym);
@@ -304,8 +308,8 @@ inverted_tree(int lev, int last, Symbol *sym)
      if (rc || sym->active)
 	  return;
      set_active(sym);
-     for (cons = sym->v.func.caller; cons; cons = CDR(cons)) {
-	  level_mark[lev+1] = CDR(cons) != NULL;
+     for (cons = sym->caller; cons; cons = CDR(cons)) {
+	  set_level_mark(lev+1, CDR(cons) != NULL);
 	  inverted_tree(lev+1, CDR(cons) == NULL, (Symbol*)CAR(cons));
      }
      clear_active(sym);
@@ -318,11 +322,11 @@ tree_output()
      int i, num;
      
      /* Collect and sort symbols */
-     num = collect_symbols(&symbols, is_fun);
+     num = collect_symbols(&symbols, is_var);
      qsort(symbols, num, sizeof(*symbols), compare);
      /* Scan and mark the recursive ones */
      for (i = 0; i < num; i++) {
-	  if (symbols[i]->v.func.callee)
+	  if (symbols[i]->callee)
 	       scan_tree(0, symbols[i]);
      }
      
@@ -343,7 +347,7 @@ tree_output()
 	      separator();
 	 } else {
 	      for (i = 0; i < num; i++) {
-		   if (symbols[i]->v.func.callee == NULL)
+		   if (symbols[i]->callee == NULL)
 			continue;
 		   direct_tree(0, 0, symbols[i]);
 		   separator();
@@ -368,7 +372,7 @@ output()
      } 
      
      level_mark = xmalloc(level_mark_size);
-     level_mark[0] = 0;
+     set_level_mark(0, 0);
      if (print_option & PRINT_XREF) {
 	  xref_output();
      }

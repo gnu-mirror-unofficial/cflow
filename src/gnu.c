@@ -35,17 +35,19 @@ print_level(int lev, int last)
 void
 print_function_name(Symbol *sym, int has_subtree)
 {
-     fprintf(outfile, "%s()", sym->name);
-     if (sym->v.func.type)
+     fprintf(outfile, "%s", sym->name);
+     if (sym->arity >= 0)
+	  fprintf(outfile, "()");
+     if (sym->decl)
 	  fprintf(outfile, " <%s at %s:%d>",
-		  sym->v.func.type,
-		  sym->v.func.source,
-		  sym->v.func.def_line);
+		  sym->decl,
+		  sym->source,
+		  sym->def_line);
      if (sym->active) {
 	  fprintf(outfile, " (recursive: see %d)", sym->active-1);
 	  return;
      }
-     if (sym->v.func.recursive)
+     if (sym->recursive)
 	  fprintf(outfile, " (R)");
      if (!print_as_tree && has_subtree)
 	  fprintf(outfile, ":");
@@ -56,8 +58,8 @@ static int
 print_symbol(FILE *outfile, int line, struct output_symbol *s)
 {
      int has_subtree = s->direct ? 
- 	                  s->sym->v.func.callee != NULL :
-	                  s->sym->v.func.caller != NULL;
+ 	                  s->sym->callee != NULL :
+	                  s->sym->caller != NULL;
      
      print_level(s->level, s->last);
      print_function_name(s->sym, has_subtree);
@@ -66,7 +68,7 @@ print_symbol(FILE *outfile, int line, struct output_symbol *s)
 	  if (s->sym->expand_line) {
 	       fprintf(outfile, " [see %d]", s->sym->expand_line);
 	       return 1;
-	  } else if (s->sym->v.func.callee)
+	  } else if (s->sym->callee)
 	       s->sym->expand_line = line;
      }
      return 0;

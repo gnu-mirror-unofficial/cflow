@@ -21,8 +21,8 @@
 static void
 print_symbol_type(FILE *outfile, Symbol *sym)
 {
-     if (sym->v.func.type) {
-	  char *p = sym->v.func.type;
+     if (sym->decl) {
+	  char *p = sym->decl;
 	       
 	  while (*p) {
 	       char *q = p;
@@ -47,8 +47,8 @@ print_symbol_type(FILE *outfile, Symbol *sym)
 	  
 	  fprintf(outfile, "%s, <%s %d>",
 		  p,
-		  sym->v.func.source,
-		  sym->v.func.def_line);
+		  sym->source,
+		  sym->def_line);
      } else
 	  fprintf(outfile, "<>");
 }
@@ -65,7 +65,7 @@ print_symbol(FILE *outfile, int line, struct output_symbol *s)
 	  if (s->sym->expand_line) {
 	       fprintf(outfile, "%d", s->sym->expand_line);
 	       return 1;
-	  } else if (s->sym->v.func.callee)
+	  } else if (s->sym->callee)
 	       s->sym->expand_line = line;
      }
      print_symbol_type(outfile, s->sym);

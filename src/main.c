@@ -58,7 +58,7 @@ static struct argp_option options[] = {
      { "ignore-indentation", 'S', NULL, 0,
        "do not rely on indentation", 11 },
      { "defines" , OPT_DEFINES, NULL, 0,
-       "record defines", 11 },
+       "record defines (not implemented yet)", 11 },
      { "ansi", 'a', NULL, 0,
        "Assume input to be written in ANSI C", 11 },
      { "pushdown", 'p', "VALUE", 0,
@@ -148,16 +148,14 @@ int print_as_tree;      /* Print as tree */
 int brief_listing;      /* Produce short listing */
 int reverse_tree;       /* Generate reverse tree */
 int max_depth;          /* The depth at which the flowgraph is cut off */
-char *included_symbols = "s";
-                        /* A list of symbols included in the graph.
+char *included_symbols; /* A list of symbols included in the graph.
 			   Consists of the following letters:
 			     x   Include (external and static) data symbols;
 			     _   Include names that begin with an underscore;
 			     s   Include static functions;
 			     t   Include typedefs (for cross-references only);
 			*/
-char *excluded_symbols = "";
-                        /* A list of symbols *not* included in the graph.
+char *excluded_symbols; /* A list of symbols *not* included in the graph.
 			   Overrides included_symbols */
 
 char *level_indent[] = { NULL, NULL };
@@ -209,17 +207,24 @@ parse_opt (int key, char *arg, struct argp_state *state)
      case 'f':
 	  if (select_output_driver(arg))
 	       argp_error(state, "%s: No such output driver", optarg);
-	  else if (strcmp (arg, "posix") == 0)
+	  else if (strcmp(arg, "posix") == 0)
 	       brief_listing = 1;
 	  break;
      case OPT_LEVEL_INDENT:
 	  set_level_indent(arg);
 	  break;
      case 'i':
-	  if (arg[0] == '^')
-	       excluded_symbols = arg+1;
-	  else
-	       included_symbols = arg;
+	  if (arg[0] == '^') {
+	       excluded_symbols = xrealloc(excluded_symbols,
+					   strlen(excluded_symbols) +
+					   strlen(arg+1) + 1);
+	       strcat(excluded_symbols, arg+1);
+	  } else {
+	       included_symbols = xrealloc(included_symbols,
+					   strlen(included_symbols) +
+					   strlen(arg) + 1);
+	       strcat(included_symbols, arg);
+	  }
 	  break;
      case 'l':
 	  print_levels = 1;
@@ -254,13 +259,13 @@ parse_opt (int key, char *arg, struct argp_state *state)
 }
 
 static struct argp argp = {
-  options,
-  parse_opt,
-  "[FILE]...",
-  doc,
-  NULL,
-  NULL,
-  NULL
+     options,
+     parse_opt,
+     "[FILE]...",
+     doc,
+     NULL,
+     NULL,
+     NULL
 };
 
 int
@@ -279,18 +284,20 @@ globals_only()
 int
 include_symbol(Symbol *sym)
 {
-     int type;
+     int type = 0;
      
-     if (sym->name[0] == '_')
-	  type = '_';
-     else if (sym->type == SymFunction && sym->v.func.storage == StaticStorage)
-	  type = 's';
-     else if (sym->type == SymToken
-	      && sym->v.type.token_type == TYPE
-	      && sym->v.type.source)
+     if (sym->name[0] == '_' && !included_char('_'))
+	  return 0;
+
+     if (sym->type == SymIdentifier) {
+	  if (sym->arity == -1)
+	       type = 'x';
+	  else if (sym->storage == StaticStorage)
+	       type = 's';
+     } else if (sym->type == SymToken
+		&& sym->token_type == TYPE
+		&& sym->source)
 	  type = 't';
-     else /* FIXME: 'x' is not used */
-	  type = 0;
      
      if (type == 0)
 	  return 1;
@@ -359,10 +366,10 @@ symbol_override(char *str)
 	  type = IDENTIFIER;
      sp = install(str);
      sp->type = SymToken;
-     sp->v.type.token_type = type;
-     sp->v.type.source = NULL;
-     sp->v.type.def_line = -1;
-     sp->v.type.ref_line = NULL;
+     sp->token_type = type;
+     sp->source = NULL;
+     sp->def_line = -1;
+     sp->ref_line = NULL;
 }
 
 void
@@ -555,6 +562,9 @@ main(int argc, char **argv)
      register_output("posix", posix_output_handler, NULL);
      sourcerc(&argc, &argv);
 
+     included_symbols = xstrdup("s");
+     excluded_symbols = xstrdup("");
+     
      if (argp_parse (&argp, argc, argv, 0, &index, NULL))
 	  exit (1);
      

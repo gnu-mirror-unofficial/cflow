@@ -31,12 +31,6 @@
 #include <error.h>
 #include <xalloc.h>
 
-#define GNU_STYLE_OPTIONS 1
-
-#define SYSTEM_ERROR 0x0100
-#define FATAL_ERROR  0x0200
-#define FATAL(n) FATAL_ERROR|(n)
-
 #define NUMITEMS(a) sizeof(a)/sizeof((a)[0])
 
 typedef struct cons *Consptr;
@@ -50,9 +44,9 @@ struct cons {
 #define CDR(a) (a)->cdr
 
 enum symtype {
-     SymUndefined,
-     SymToken,
-     SymFunction
+     SymUndefined,  /* Undefined or deleted symbol */
+     SymToken,      /* A token */
+     SymIdentifier  /* Function or variable */
 };
 
 enum storage {
@@ -71,33 +65,30 @@ typedef struct {
 typedef struct symbol Symbol;
 
 struct symbol {
-     Symbol *next;
-     enum symtype type;
-     char *name;
-     int active;
-     int expand_line;
-     union {
-	  struct {
-	       int token_type;
-	       char *source;
-	       int def_line;
-	       Consptr ref_line;
-	  } type;
-	  struct {
-	       int token_type;
-	       char *source;
-	       int def_line;
-	       Consptr ref_line;
-	       char *type;
-	       enum storage storage;
-	       int argc;
-	       char *args;
-	       int recursive;      /* for functions only */
-	       int level;          /* for local vars only */
-	       Consptr caller;
-	       Consptr callee;
-	  } func;
-     } v;
+     Symbol *next;                 /* Next symbol with the same hash */
+     enum symtype type;            /* Type of the symbol */
+     char *name;                   /* Identifier */
+     int active;                   /* Set to 1 when the symbol's subtree is
+				      being processed, prevent recursion */
+     int expand_line;              /* Output line when this symbol was first
+				      expanded */
+
+     int token_type;               /* Type of the token */
+     char *source;                 /* Source file */
+     int def_line;                 /* Source line */
+     Consptr ref_line;             /* Referenced in */
+     
+     int level;                    /* Nesting level (for local vars only) */
+     
+     char *decl;                   /* Declaration */ 
+     enum storage storage;         /* Storage type */
+     
+     int arity;                    /* Number of parameters or -1 for
+				      variables */  
+     
+     int recursive;                /* Is the function recursive */
+     Consptr caller;               /* List of callers */
+     Consptr callee;               /* List of callees */
 };
 
 /* Output flags */

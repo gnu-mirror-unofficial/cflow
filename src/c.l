@@ -192,23 +192,23 @@ init_lex(int debug_level)
      for (i = 0; i < NUMITEMS(keywords); i++) {
 	  sp = install(keywords[i]);
 	  sp->type = SymToken;
-	  sp->v.type.token_type = WORD;
+	  sp->token_type = WORD;
      }
      
      for (i = 0; i < NUMITEMS(types); i++) {
 	  sp = install(types[i]);
 	  sp->type = SymToken;
-	  sp->v.type.token_type = TYPE;
-	  sp->v.type.source = NULL;
-	  sp->v.type.def_line = -1;
-	  sp->v.type.ref_line = NULL;
+	  sp->token_type = TYPE;
+	  sp->source = NULL;
+	  sp->def_line = -1;
+	  sp->ref_line = NULL;
      }	
      sp = install("...");
      sp->type = SymToken;
-     sp->v.type.token_type = IDENTIFIER;
-     sp->v.type.source = NULL;
-     sp->v.type.def_line = -1;
-     sp->v.type.ref_line = NULL;
+     sp->token_type = IDENTIFIER;
+     sp->source = NULL;
+     sp->def_line = -1;
+     sp->ref_line = NULL;
 }
 
 int
@@ -219,7 +219,7 @@ ident()
      sp = lookup(yytext);
      if (sp && sp->type == SymToken) {
 	  yylval.str = sp->name;
-	  return sp->v.type.token_type;
+	  return sp->token_type;
      }
      obstack_grow(&string_stk, yytext, yyleng);
      obstack_1grow(&string_stk, 0);

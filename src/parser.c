@@ -860,9 +860,10 @@ declare(Ident *ident)
      if (ident->storage == AutoStorage) {
 	  obstack_free(&text_stk, declstr);
 	  sp = install(ident->name);
-	  sp->type = SymFunction;
-	  sp->v.func.storage = ident->storage;
-	  sp->v.func.level = level;
+	  sp->type = SymIdentifier;
+	  sp->storage = ident->storage;
+	  sp->level = level;
+	  sp->arity = -1;
 	  return;
      } 
      
@@ -873,22 +874,22 @@ declare(Ident *ident)
      }
      
      sp = get_symbol(ident->name);
-     if (sp->v.func.source) {
+     if (sp->source) {
 	  error_at_line(0, 0, filename, ident->line, 
 			"%s() redefined",
 			ident->name);
-	  error_at_line(0, 0, sp->v.func.source, sp->v.func.def_line,
+	  error_at_line(0, 0, sp->source, sp->def_line,
 			"this is the place of previous definition");
      }
-     
-     sp->type = SymFunction;
-     sp->v.func.argc = ident->parmcnt;
-     sp->v.func.storage = (ident->storage == ExplicitExternStorage) ?
+
+     sp->type = SymIdentifier;
+     sp->arity = ident->parmcnt;
+     sp->storage = (ident->storage == ExplicitExternStorage) ?
 	  ExternStorage : ident->storage;
-     sp->v.func.type = declstr;
-     sp->v.func.source = filename;
-     sp->v.func.def_line = ident->line;
-     sp->v.func.level = level;
+     sp->decl = declstr;
+     sp->source = filename;
+     sp->def_line = ident->line;
+     sp->level = level;
      if (debug)
 	  printf("%s:%d: %s/%d defined to %s\n",
 		 filename,
@@ -905,15 +906,15 @@ declare_type(Ident *ident)
      finish_save();
      sp = lookup(ident->name);
      for ( ; sp; sp = sp->next)
-	  if (sp->type == SymToken && sp->v.type.token_type == TYPE)
+	  if (sp->type == SymToken && sp->token_type == TYPE)
 	       break;
      if (!sp)
 	  sp = install(ident->name);
      sp->type = SymToken;
-     sp->v.type.token_type = TYPE;
-     sp->v.type.source = filename;
-     sp->v.type.def_line = ident->line;
-     sp->v.type.ref_line = NULL;
+     sp->token_type = TYPE;
+     sp->source = filename;
+     sp->def_line = ident->line;
+     sp->ref_line = NULL;
      if (debug)
 	  printf("%s:%d: type %s\n",
 		 filename,
@@ -928,22 +929,22 @@ get_symbol(char *name)
      
      if (sp = lookup(name)) {
 	  for (; sp; sp = sp->next) {
-	       if (sp->type == SymFunction && strcmp(sp->name, name) == 0)
+	       if (sp->type == SymIdentifier && strcmp(sp->name, name) == 0)
 		    break;
 	  }
 	  if (sp)
 	       return sp;
      }
      sp = install(name);
-     sp->type = SymFunction;
-     sp->v.func.argc = -1;
-     sp->v.func.storage = ExternStorage;
-     sp->v.func.type = NULL;
-     sp->v.func.source = NULL;
-     sp->v.func.def_line = -1;
-     sp->v.func.ref_line = NULL;
-     sp->v.func.caller = sp->v.func.callee = NULL;
-     sp->v.func.level = -1;
+     sp->type = SymIdentifier;
+     sp->arity = -1;
+     sp->storage = ExternStorage;
+     sp->decl = NULL;
+     sp->source = NULL;
+     sp->def_line = -1;
+     sp->ref_line = NULL;
+     sp->caller = sp->callee = NULL;
+     sp->level = -1;
      return sp;
 }
 
@@ -953,12 +954,12 @@ add_reference(char *name, int line)
      Symbol *sp = get_symbol(name);
      Ref *refptr;
 
-     if (sp->v.func.storage == AutoStorage)
+     if (sp->storage == AutoStorage)
 	  return NULL;
      refptr = xmalloc(sizeof(*refptr));
      refptr->source = filename;
      refptr->line = line;
-     append_to_list(&sp->v.func.ref_line, refptr);
+     append_to_list(&sp->ref_line, refptr);
      return sp;
 }
 
@@ -971,20 +972,23 @@ call(char *name, int line)
      sp = add_reference(name, line);
      if (!sp)
 	  return;
-     if (sp->v.func.argc < 0)
-	  sp->v.func.argc = 0;
+     if (sp->arity < 0)
+	  sp->arity = 0;
      if (caller) {
-	  if (!symbol_in_list(caller, sp->v.func.caller))
-	       append_to_list(&sp->v.func.caller, caller);
-	  if (!symbol_in_list(sp, caller->v.func.callee))
-	       append_to_list(&caller->v.func.callee, sp);
+	  if (!symbol_in_list(caller, sp->caller))
+	       append_to_list(&sp->caller, caller);
+	  if (!symbol_in_list(sp, caller->callee))
+	       append_to_list(&caller->callee, sp);
      }
 }
 
 void
 reference(char *name, int line)
 {
-     add_reference(name, line);
+     Symbol *sp = add_reference(name, line);
+     if (!sp)
+	  return;
+     if (caller && !symbol_in_list(sp, caller->callee))
+	 append_to_list(&caller->callee, sp);
 }
-
 

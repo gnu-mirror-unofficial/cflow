@@ -100,7 +100,7 @@ static_processor(void *data, void *proc_data)
 {
      Symbol *s = data;
      
-     if (s->type == SymFunction && s->v.func.storage == StaticStorage) 
+     if (s->type == SymIdentifier && s->storage == StaticStorage) 
 	  delete_symbol(s);
      return true;
 }
@@ -118,7 +118,7 @@ auto_processor(void *data, void *proc_data)
 {
      Symbol *s = data;
      int *level = proc_data;
-     if (s->type == SymFunction && s->v.func.level == *level) 
+     if (s->type == SymIdentifier && s->level == *level) 
 	  delete_symbol(s);
      return true;
 }
@@ -145,13 +145,13 @@ cleanup_processor(void *data, void *proc_data)
      Symbol *sym;
 
      for (sym = data; sym; sym = sym->next) {
-	  if (sym->type == SymFunction) {
-	       if (sym->v.func.ref_line)
-		    sym->v.func.ref_line = CAR(sym->v.func.ref_line);
-	       if (sym->v.func.caller)
-		    sym->v.func.caller = CAR(sym->v.func.caller);
-	       if (sym->v.func.callee)
-		    sym->v.func.callee = CAR(sym->v.func.callee);
+	  if (sym->type == SymIdentifier) {
+	       if (sym->ref_line)
+		    sym->ref_line = CAR(sym->ref_line);
+	       if (sym->caller)
+		    sym->caller = CAR(sym->caller);
+	       if (sym->callee)
+		    sym->callee = CAR(sym->callee);
 	  }
      }
      return true;
