@@ -52,26 +52,27 @@ print_function_name(Symbol *sym, int has_subtree)
 }
 
 
-static void
+static int
 print_symbol(FILE *outfile, int line, struct output_symbol *s)
 {
-     if (s->direct) {
-	  print_level(s->level, s->last);
-	  print_function_name(s->sym, s->sym->v.func.callee != NULL);
+     int has_subtree = s->direct ? 
+ 	                  s->sym->v.func.callee != NULL :
+	                  s->sym->v.func.caller != NULL;
+     
+     print_level(s->level, s->last);
+     print_function_name(s->sym, has_subtree);
 	  
-	  if (brief_listing) {
-	       if (s->sym->expand_line) 
-		    fprintf(outfile, " [see %d]", s->sym->expand_line);
-	       else if (s->sym->v.func.callee)
-		    s->sym->expand_line = line;
-	  }
-     } else {
-	  print_level(s->level, s->last);
-	  print_function_name(s->sym, s->sym->v.func.caller != NULL);
+     if (brief_listing) {
+	  if (s->sym->expand_line) {
+	       fprintf(outfile, " [see %d]", s->sym->expand_line);
+	       return 1;
+	  } else if (s->sym->v.func.callee)
+	       s->sym->expand_line = line;
      }
+     return 0;
 }
 
-void
+int
 gnu_output_handler(cflow_output_command cmd,
 		   FILE *outfile, int line,
 		   void *data, void *handler_data)
@@ -85,9 +86,10 @@ gnu_output_handler(cflow_output_command cmd,
 	  fprintf(outfile, "\n");
 	  break;
      case cflow_output_text:
-	  fprintf(outfile, "%s\n", data);
+	  fprintf(outfile, "%s\n", (char*) data);
 	  break;
      case cflow_output_symbol:
-	  print_symbol(outfile, line, data);
+	  return print_symbol(outfile, line, data);
      }
+     return 0;
 }
