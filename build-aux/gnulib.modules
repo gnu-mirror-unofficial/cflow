@@ -1,0 +1,9 @@
+# List of gnulib modules needed for GNU mailutils.
+# A module name per line. Empty lines and comments are ignored.
+
+argp
+obstack
+lstat
+malloc
+error
+hash
