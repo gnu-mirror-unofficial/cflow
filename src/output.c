@@ -38,6 +38,23 @@ set_level_mark(int lev, int mark)
      level_mark[lev] = mark;
 }
 
+/* Print current tree level
+ */
+void
+print_level(int lev, int last)
+{
+     int i;
+
+     if (print_line_numbers) 
+	  fprintf(outfile, "%d ", out_line);
+     if (print_levels)
+	  fprintf(outfile, "{%4d} ", lev);
+     fprintf(outfile, "%s", level_begin);
+     for (i = 0; i < lev; i++) 
+	  fprintf(outfile, "%s", level_indent[ level_mark[i] ]);
+     fprintf(outfile, "%s", level_end[last]);
+}
+
 
 /* Low level output functions */
 
@@ -117,6 +134,15 @@ separator()
 					 output_driver[driver_index].handler_data);
 }
 
+static void
+print_text(char *buf)
+{
+     output_driver[driver_index].handler(cflow_output_text,
+					 outfile, out_line,
+					 buf,
+					 output_driver[driver_index].handler_data);
+}
+
 static int
 print_symbol (int direct, int level, int last, Symbol *sym)
 {
@@ -126,21 +152,11 @@ print_symbol (int direct, int level, int last, Symbol *sym)
      output_symbol.level = level;
      output_symbol.last = last;
      output_symbol.sym = sym;
+
      return output_driver[driver_index].handler(cflow_output_symbol,
 						outfile, out_line,
 						&output_symbol,
 						output_driver[driver_index].handler_data);
-     
-}
-
-static void
-header(char *str)
-{
-     output_driver[driver_index].handler(cflow_output_text,
-					 outfile, out_line,
-					 str,
-					 output_driver[driver_index].handler_data);
-     
 }
 
 
@@ -266,6 +282,21 @@ set_active(Symbol *sym)
      sym->active = out_line;
 }
 
+static int
+is_printable(Consptr cons)
+{
+     return cons != NULL && include_symbol((Symbol*)CAR(cons));
+}
+
+static int
+is_last(Consptr cons)
+{
+     while (cons = CDR(cons)) 
+	  if (is_printable(cons))
+	       return 0;
+     return 1;
+}
+
 /* Produce direct call tree output
  */
 static void
@@ -285,8 +316,8 @@ direct_tree(int lev, int last, Symbol *sym)
 	  return;
      set_active(sym);
      for (cons = sym->callee; cons; cons = CDR(cons)) {
-	  set_level_mark(lev+1, CDR(cons) != NULL);
-	  direct_tree(lev+1, CDR(cons) == NULL, (Symbol*)CAR(cons));
+	  set_level_mark(lev+1, is_printable(CDR(cons)));
+	  direct_tree(lev+1, is_last(cons), (Symbol*)CAR(cons));
      }
      clear_active(sym);
 }
@@ -309,8 +340,8 @@ inverted_tree(int lev, int last, Symbol *sym)
 	  return;
      set_active(sym);
      for (cons = sym->caller; cons; cons = CDR(cons)) {
-	  set_level_mark(lev+1, CDR(cons) != NULL);
-	  inverted_tree(lev+1, CDR(cons) == NULL, (Symbol*)CAR(cons));
+	  set_level_mark(lev+1, is_printable(CDR(cons)));
+	  inverted_tree(lev+1, is_last(cons), (Symbol*)CAR(cons));
      }
      clear_active(sym);
 }
@@ -334,13 +365,11 @@ tree_output()
     begin();
     
     if (reverse_tree) {
-	 header("Reverse Tree");
 	 for (i = 0; i < num; i++) {
 	      inverted_tree(0, 0, symbols[i]);
 	      separator();
 	 }
     } else {
-	 header("Direct Tree");
 	 main_sym = lookup(start_name);
 	 if (main_sym) {
 	      direct_tree(0, 0, main_sym);
