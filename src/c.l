@@ -39,9 +39,9 @@ FILENAME [^\n*?]*
 ONUMBER (0[0-7]*)
 HNUMBER (0[xX][0-9a-fA-F]*)
 DNUMBER ([1-9][0-9]*)
-DIGITS  [0-9]*
+DIGITS  [0-9][0-9]*
 IDENT [a-zA-Z_][a-zA-Z0-9_]*
-WS    [ \t]* 
+WS    [ \t\f\r]* 
 %%
      /* comments */
 "/*"			BEGIN(comment);
@@ -180,11 +180,13 @@ static char *types[] = {
 };
 
 void
-init_lex()
+init_lex(int debug_level)
 {
      int i;
      Symbol *sp;
     
+     yy_flex_debug = debug_level;
+     
      obstack_init(&string_stk);
 
      for (i = 0; i < NUMITEMS(keywords); i++) {
@@ -249,25 +251,7 @@ source(char *name)
      return 0;
 }
 
-int
-backslash()
-{                                  
-     int c;
-     
-     switch (c = input()) {                        
-     case 'a':   return '\a';                  
-     case 'b':   return '\b';                  
-     case 'f':   return '\f';                  
-     case 'n':   return '\n';                  
-     case 'r':   return '\r';                  
-     case 't':   return '\t';                  
-     case 'x':   return getnum(16,2);          
-     case '0':   return getnum(8,3);           
-     }                                             
-     return c;                                         
-}                                                     
-
-int
+static int
 getnum(unsigned  base, int  count)
 {
      int  c, n;
@@ -286,5 +270,24 @@ getnum(unsigned  base, int  count)
      }
      return n;
 }
+
+int
+backslash()
+{                                  
+     int c;
+     
+     switch (c = input()) {                        
+     case 'a':   return '\a';                  
+     case 'b':   return '\b';                  
+     case 'f':   return '\f';                  
+     case 'n':   return '\n';                  
+     case 'r':   return '\r';                  
+     case 't':   return '\t';                  
+     case 'x':   return getnum(16,2);          
+     case '0':   return getnum(8,3);           
+     }                                             
+     return c;                                         
+}                                                     
+
 
     
