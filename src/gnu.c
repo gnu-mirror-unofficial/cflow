@@ -67,9 +67,9 @@ gnu_output_handler(cflow_output_command cmd,
      switch (cmd) {
      case cflow_output_begin:
      case cflow_output_end:
+     case cflow_output_separator:
 	  break;
      case cflow_output_newline:
-     case cflow_output_separator:
 	  fprintf(outfile, "\n");
 	  break;
      case cflow_output_text:
