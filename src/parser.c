@@ -706,6 +706,9 @@ dcl(Ident *idptr)
 		    continue;
 	       else if (type != MODIFIER) 
 		    break;
+	  } else if (tok.type == ')') {
+	       putback();
+	       break;
 	  }
      }
      if (idptr && idptr->type_end == -1)
