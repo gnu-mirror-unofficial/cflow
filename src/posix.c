@@ -16,50 +16,63 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA  */
 
 #include <cflow.h>
+#include <ctype.h>
 
 static void
-print_symbol(FILE *outfile, int line, struct output_symbol *s)
+print_symbol_type(FILE *outfile, Symbol *sym)
 {
-     if (s->direct) {
-	  fprintf(outfile, "%d %*s%s: ", \
-		  line,
-		  3*s->level, "",
-		  s->sym->name);
-
-	  if (s->sym->v.func.type) {
-	       char *p = s->sym->v.func.type;
+     if (sym->v.func.type) {
+	  char *p = sym->v.func.type;
 	       
-	       while (*p) {
-		    char *q = p;
+	  while (*p) {
+	       char *q = p;
 
-		    /* Skip whitespace */
-		    while (*q && isspace (*q))
-			 q++;
-
-		    if (*q == '(') {
-			 /* Do not print function name */
-			 p = q;
-			 break;
-		    }
-
-		    /* Skip identifier */
-		    while (*q && !isspace (*q))
-			 q++;
-		    
-		    for (; p < q; p++)
-			 fputc(*p, outfile);
+	       /* Skip whitespace */
+	       while (*q && isspace (*q))
+		    q++;
+	       
+	       if (*q == '(') {
+		    /* Do not print function name */
+		    p = q;
+		    break;
 	       }
 
-	       fprintf(outfile, "%s, <%s %d>",
-		       p,
-		       s->sym->v.func.source,
-		       s->sym->v.func.def_line);
-	  } else
-	       fprintf(outfile, "<>");
-     }
+	       /* Skip identifier */
+	       while (*q && !isspace (*q))
+		    q++;
+		    
+	       for (; p < q; p++)
+		    fputc(*p, outfile);
+	  }
+	  
+	  fprintf(outfile, "%s, <%s %d>",
+		  p,
+		  sym->v.func.source,
+		  sym->v.func.def_line);
+     } else
+	  fprintf(outfile, "<>");
 }
 
-void
+static int
+print_symbol(FILE *outfile, int line, struct output_symbol *s)
+{
+     fprintf(outfile, "%d %*s%s: ", \
+	     line,
+	     3*s->level, "",
+	     s->sym->name);
+     
+     if (brief_listing) {
+	  if (s->sym->expand_line) {
+	       fprintf(outfile, "%d", s->sym->expand_line);
+	       return 1;
+	  } else if (s->sym->v.func.callee)
+	       s->sym->expand_line = line;
+     }
+     print_symbol_type(outfile, s->sym);
+     return 0;
+}
+
+int
 posix_output_handler(cflow_output_command cmd,
 		     FILE *outfile, int line,
 		     void *data, void *handler_data)
@@ -67,15 +80,16 @@ posix_output_handler(cflow_output_command cmd,
      switch (cmd) {
      case cflow_output_begin:
      case cflow_output_end:
+     case cflow_output_separator:
 	  break;
      case cflow_output_newline:
-     case cflow_output_separator:
 	  fprintf(outfile, "\n");
 	  break;
      case cflow_output_text:
-	  fprintf(outfile, "%s\n", data);
+	  fprintf(outfile, "%s\n", (char*) data);
 	  break;
      case cflow_output_symbol:
-	  print_symbol(outfile, line, data);
+	  return print_symbol(outfile, line, data);
      }
+     return 0;
 }
