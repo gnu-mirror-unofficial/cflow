@@ -1,5 +1,42 @@
 2005-03-19  Sergey Poznyakoff  <gray@Noldor.runasimi.org>
 
+	* README-alpha: New file
+	* lib: New directory
+	* lib/Makefile.tmpl: New file
+	* lib/.cvsignore: New file
+	* Makefile.am (SUBDIRS): Add lib
+	* NEWS: Updated
+	* configure.ac: Raised version number to 0.2.1
+	Call cflow_GNULIB to check for missing sources
+	Call MU_DEBUG_MODE to enable debugging mode
+	* .cvsignore: Updated
+	* src/Makefile.am (INCLUDES,cflow_LDADD): Added
+
+	* build-aux: New directory
+	* build-aux/.cvsignore: New file
+	* build-aux/bootstrap: New file
+	* build-aux/debug.m4: New file
+	* build-aux/gnulib.modules: New file
+
+	* src/cflow.h: Include error.h and xalloc.h
+	(emalloc,efree): Removed. Use xmalloc instead
+	(error): Removed. Use gnulib version
+	* src/main.c: Use argp to parse arguments.
+	(temp_symbol_stack,say_and_die): Removed
+	(emalloc,efree,error): Removed
+	(xalloc_die): New function
+	(init): Updated
+	(symbol_override): Install symbols immediately
+	* src/symbol.c: Rewritten using hash module
+
+	* src/c.l: Fixed indentation
+	* src/gnu.c: Likewise
+	* src/output.c: Likewise
+	* src/parser.c: Likewise
+	* src/rc.c: Likewise
+	
+2005-03-19  Sergey Poznyakoff  <gray@Noldor.runasimi.org>
+
 	* AUTHORS: New file
 	* NEWS: New file
 	* THANKS: New file
