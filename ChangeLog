@@ -1,3 +1,7 @@
+2005-03-21  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* elisp/cflow-mode.el: Font locking support
+
 2005-03-21  Sergey Poznyakoff  <gray@Noldor.runasimi.org>
 
 	* README: Updated
