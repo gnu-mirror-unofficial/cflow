@@ -27,62 +27,76 @@ static char doc[] = "";
 #define OPT_DEFINES      256
 #define OPT_LEVEL_INDENT 257
 #define OPT_DEBUG        258
+#define OPT_PREPROCESSOR 259
 
 static struct argp_option options[] = {
+#define GROUP_ID 0
      { NULL, 0, NULL, 0,
-       "General options:", 0},
+       "General options:", GROUP_ID },
      { "depth", 'd', "NUMBER", 0,
-       "set the depth at which the flowgraph is cut off.", 1 },
+       "set the depth at which the flowgraph is cut off.", GROUP_ID+1 },
      { "include", 'i', "SPEC", 0,
-       "Increase the number of included symbols. SPEC is a string consisting of the following characters: x (include external and static data symbols), and _ (include names that begin with an underscore). If SPEC starts with ^, its meaning is reversed", 1 },
+       "Increase the number of included symbols. SPEC is a string consisting of the following characters: x (include external and static data symbols), and _ (include names that begin with an underscore). If SPEC starts with ^, its meaning is reversed", GROUP_ID+1 },
      { "format", 'f', "NAME", 0,
        "use given output format NAME. Valid names are gnu (default) and posix",
-       1 },
+       GROUP_ID+1 },
      { "reverse", 'r', NULL, 0,
-       "Print reverse call tree", 1 },
+       "Print reverse call tree", GROUP_ID+1 },
      { "xref", 'x', NULL, 0,
-       "produce cross-reference listing only", 1 },
+       "produce cross-reference listing only", GROUP_ID+1 },
      { "print", 'P', "OPT", 0,
-       "Set printing option to OPT. Valid OPT values are: xref (or cross-ref), tree. Any unambiguous abbreviation of the above is also accepted", 1 },
+       "Set printing option to OPT. Valid OPT values are: xref (or cross-ref), tree. Any unambiguous abbreviation of the above is also accepted",
+       GROUP_ID+1 },
      { "output", 'o', "FILE", 0,
-       "set output file name (default -, meaning stdout)", 1 },
-
+       "set output file name (default -, meaning stdout)",
+       GROUP_ID+1 },
+#undef GROUP_ID
+#define GROUP_ID 10     
      { NULL, 0, NULL, 0,
-       "Parser control:", 10},
+       "Parser control:", GROUP_ID },
      { "ignore-indentation", 'S', NULL, 0,
-       "do not rely on indentation", 11 },
-     { "defines" , OPT_DEFINES, NULL, 0,
-       "record defines (not implemented yet)", 11 },
+       "do not rely on indentation", GROUP_ID+1 },
      { "ansi", 'a', NULL, 0,
-       "Assume input to be written in ANSI C", 11 },
+       "Assume input to be written in ANSI C", GROUP_ID+1 },
      { "pushdown", 'p', "NUMBER", 0,
-       "set initial token stack size to NUMBER", 11 },
+       "set initial token stack size to NUMBER", GROUP_ID+1 },
      { "symbol", 's', "SYM:TYPE", 0,
-       "make cflow believe the symbol SYM is of type TYPE. Valid types are: keyword (or kw), modifier, identifier, type, wrapper. Any unambiguous abbreviation of the above is also accepted", 11 },
+       "make cflow believe the symbol SYM is of type TYPE. Valid types are: keyword (or kw), modifier, identifier, type, wrapper. Any unambiguous abbreviation of the above is also accepted", GROUP_ID+1 },
      { "main", 'm', "NAME", 0,
-       "Assume main function to be called NAME", 11 },
-     
+       "Assume main function to be called NAME", GROUP_ID+1 },
+     { "define", 'D', "NAME[=DEFN]", 0,
+       "Predefine NAME as a macro.", GROUP_ID+1 },
+     { "undefine", 'U', "NAME", 0,
+       "Cancel any previous definition of NAME", GROUP_ID+1 },
+     { "include-dir", 'I', "DIR", 0,
+       "Add the directory dir to the list of directories to be searched for header files.", GROUP_ID+1 },
+     { "preprocessor", OPT_PREPROCESSOR, "COMMAND", 0,
+       "Run the specified preprocessor command", GROUP_ID+1 },
+#undef GROUP_ID
+#define GROUP_ID 20          
      { NULL, 0, NULL, 0,
-       "Output control:", 20 },
+       "Output control:", GROUP_ID },
      { "number", 'n', "BOOL", OPTION_ARG_OPTIONAL,
-       "Print line numbers", 21 },
+       "Print line numbers", GROUP_ID+1 },
      { "print-level", 'l', NULL, 0,
-       "Print nesting level along with the call tree", 21 },
+       "Print nesting level along with the call tree", GROUP_ID+1 },
      { "level-indent", OPT_LEVEL_INDENT, "STRING", 0,
-       "Use STRING when indenting to each new level", 21 },
+       "Use STRING when indenting to each new level", GROUP_ID+1 },
      { "tree", 'T', NULL, 0,
-       "Draw tree", 21 },
+       "Draw tree", GROUP_ID+1 },
      { "brief", 'b', "BOOL", OPTION_ARG_OPTIONAL,
-       "brief output", 21 },
-       
+       "brief output", GROUP_ID+1 },
+#undef GROUP_ID
+#define GROUP_ID 30                 
      { NULL, 0, NULL, 0,
-       "Informational options:", 30},
+       "Informational options:", GROUP_ID },
      { "verbose", 'v', NULL, 0,
-       "be verbose on output", 31 },
+       "be verbose on output", GROUP_ID+1 },
      { "license", 'L', 0, 0,
-       "Print license and exit", 31 },
+       "Print license and exit", GROUP_ID+1 },
      { "debug", OPT_DEBUG, "NUMBER", OPTION_ARG_OPTIONAL,
-       "set debugging level", 31 },
+       "set debugging level", GROUP_ID+1 },
+#undef GROUP_ID     
      { 0, }
 };
 
@@ -140,6 +154,8 @@ char *level_end[] = { "", "" };
 char *level_begin = "";
 
 char *start_name = "main"; /* Name of start symbol */
+
+Consptr arglist;        /* List of command line arguments */
 
 #define boolean_value(arg) ((arg) ? ((arg)[0] == 'y' || (arg)[0] == 'Y') : 1)
 
@@ -406,6 +422,20 @@ set_level_indent(const char *str)
      }
 }
 
+static void
+add_name(const char *name)
+{
+     append_to_list(&arglist, (void*) name);
+}
+
+static void
+add_preproc_option(int key, const char *arg)
+{
+     char *opt = xmalloc(3 + strlen(arg));
+     sprintf(opt, "-%c%s", key, arg);
+     add_name(opt);
+}
+
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
@@ -497,6 +527,17 @@ parse_opt (int key, char *arg, struct argp_state *state)
      case 'x':
 	  print_option = PRINT_XREF;
 	  break;
+     case OPT_PREPROCESSOR:
+	  set_preprocessor(arg);
+	  break;
+     case ARGP_KEY_ARG:
+	  add_name(arg);
+	  break;
+     case 'I':
+     case 'D':
+     case 'U':
+	  add_preproc_option(key, arg);
+	  break;
      default:
 	  return ARGP_ERR_UNKNOWN;
      }
@@ -586,15 +627,25 @@ main(int argc, char **argv)
      excluded_symbols = xstrdup("");
      
      sourcerc(&argc, &argv);
-     if (argp_parse (&argp, argc, argv, 0, &index, NULL))
+     if (argp_parse (&argp, argc, argv, ARGP_IN_ORDER, &index, NULL))
 	  exit (1);
+
+     if (!arglist)
+	  error(1, 0, "no input files");
      
-     if (argv[optind] == NULL)
-	  error(1, 0, "No input files");
      if (print_option == 0)
 	  print_option = PRINT_TREE;
 
      init();
+
+     /* See comment to cleanup_processor */
+     for (arglist = CAR(arglist); arglist; arglist = CDR(arglist)) {
+	  char *s = (char*)CAR(arglist);
+	  if (s[0] == '-')
+	       pp_option(s);
+	  else if (source(s) == 0)
+	       yyparse();
+     }
 
      argc -= index;
      argv += index;
