@@ -119,7 +119,7 @@ enum                 {yylval.str = "enum"; return STRUCT;}
     return WORD;
 }
 
-     /* strings
+      /* strings 
       * State map:
       *
       * "<string>blahblahblah"<stringwait>
@@ -128,9 +128,9 @@ enum                 {yylval.str = "enum"; return STRUCT;}
       */
 \"    BEGIN(string);
 <string>[^\\"\n]*       ;
-<string>\n              lex_error("unterminated string?"); 
+<string>\n              { ++line_num; lex_error("unterminated string?"); } 
 <string>\\.             ;
-<string>\\\n            ;
+<string>\\\n            ++line_num;
 <string>\"              BEGIN(stringwait);
 <stringwait>{WS}        ;
 <stringwait>\n          ++line_num; 
