@@ -232,23 +232,23 @@ format(num, sp)
     while (*p) {
 	switch (*p++) {
 	case TextFmt:
-	    printf("%s", p);
+	    fprintf(outfile, "%s", p);
 	    while (*p++) ;
 	    break;
 	case CurLineFmt:
-	    printf("%d", out_line);
+	    fprintf(outfile, "%d", out_line);
 	    break;
 	case NameFmt:
-	    printf("%s", sp->name);
+	    fprintf(outfile, "%s", sp->name);
 	    break;
 	case FileFmt:
-	    printf("%s", sp->v.func.source);
+	    fprintf(outfile, "%s", sp->v.func.source);
 	    break;
 	case LineFmt:
-	    printf("%d", sp->v.func.def_line);
+	    fprintf(outfile, "%d", sp->v.func.def_line);
 	    break;
 	case RefFmt:
-	    printf("%d", sp->active-1);
+	    fprintf(outfile, "%d", sp->active-1);
 	    break;
 	default:
 	    abort();

@@ -18,6 +18,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <getopt.h>
 #include <varargs.h>
 #include <errno.h>
@@ -35,7 +36,7 @@ void set_level_indent(char*);
 #ifdef DEBUG
 #define DEBUG_OPT "D"
 #endif
-#define OPTSTR "hVLvSCdxtH:p:s:glmTi:P:" DEBUG_OPT
+#define OPTSTR "hVLvSCdxtH:p:s:glMTi:P:o:m:" DEBUG_OPT
 
 
 #ifdef GNU_STYLE_OPTIONS
@@ -56,10 +57,12 @@ LONGOPT longopts[] = {
     "ansi", no_argument, 0, 'a',
     "globals-only", no_argument, 0, 'g',
     "print-level", no_argument, 0, 'l',
-    "html", no_argument, 0, 'm',
+    "html", no_argument, 0, 'M',
     "tree", no_argument, 0, 'T',
     "level-indent", required_argument, 0, 'i',
     "print", required_argument, 0, 'P',
+    "output", required_argument, 0, 'o',
+    "main", required_argument, 0, 'm', 
     0,
 };
 #else
@@ -86,6 +89,7 @@ char *progname;
 #ifdef DEBUG
 int debug;
 #endif
+char *outname = "a.cflow";
 int output_mode = OUT_TEXT;
 int print_option = 0;
 int verbose;            /* be verbose on output */
@@ -103,6 +107,9 @@ int print_levels;       /* Print level number near every branch */
 int print_as_tree;      /* Print as tree */
 
 char level_indent[80] = "    ";
+
+char *start_name = "main";
+
 
 struct symbol_holder {
     char *name;
@@ -174,7 +181,7 @@ main(argc, argv)
 	case 'l':
 	    print_levels = 1;
 	    break;
-	case 'm':
+	case 'M':
 	    output_mode = OUT_HTML;
 	    break;
 	case 'T':
@@ -182,6 +189,12 @@ main(argc, argv)
 	    break;
 	case 'i':
 	    set_level_indent(optarg);
+	    break;
+	case 'o':
+	    outname = strdup(optarg);
+	    break;
+	case 'm':
+	    start_name = strdup(optarg);
 	    break;
 #ifdef DEBUG
 	case 'D':

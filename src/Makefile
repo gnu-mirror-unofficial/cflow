@@ -1,6 +1,6 @@
 # $Id$
 CFLAGS=-ggdb
-SRCS=main.c parser.c lex.yy.c collect.c output.c symbol.c
+SRCS=main.c rc.c parser.c lex.yy.c collect.c output.c symbol.c text.c html.c
 OBJS=$(SRCS:.c=.o)
 
 cflow: $(OBJS)
@@ -10,7 +10,10 @@ lex.yy.c: c.l cflow.h
 	lex -bvpp c.l  2> cflow.lex.report
 
 
-clean:; rm $(OBJS) 
+clean:; -rm $(OBJS) 
+
+distclean: clean
+	-rm lex.yy.c
 
 TAGS:; etags $(SRCS)
 

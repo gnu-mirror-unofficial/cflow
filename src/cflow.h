@@ -107,6 +107,7 @@ extern int output_mode;
 extern int print_levels;
 extern int print_as_tree;
 extern int out_line;
+extern char *start_name;
 
 #ifdef DEBUG
 extern int debug;

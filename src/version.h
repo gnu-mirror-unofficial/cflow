@@ -29,6 +29,8 @@ The options are:\n\
     -H VALUE,\n\
     --hashsize VALUE            set the symbol hash table size to VALUE\n\
                                 (default is 509)\n\
+    -o FILENAME,\n\
+    --output FILENAME           set output file name (default stdout)\n\
     -p VALUE,\n\
     --pushdown VALUE            set initial token stack size to VALUE\n\
     -s SYM:TYPE,\n\

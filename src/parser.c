@@ -809,9 +809,21 @@ declare(ident)
 	sp->v.func.storage = ident->storage;
 	sp->v.func.level = level;
 	return;
+    } 
+
+    if (ident->parmcnt >= 0 && tok.type == ';') {
+	/* add_external()?? */
+	return;
     }
     
     sp = get_symbol(ident->name);
+    if (sp->v.func.source) {
+	error(0, "%s:%d: %s() redefined",
+	      filename, ident->line, ident->name);
+	error(0, "%s:%d: this is the place of previous definition",
+	      sp->v.func.source, sp->v.func.def_line);
+    }
+    
     sp->type = SymFunction;
     sp->v.func.argc = ident->parmcnt;
     sp->v.func.storage = ident->storage;

@@ -17,6 +17,7 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 #include <stdlib.h>
+#include <stdio.h>
 #include "cflow.h"
 #include "parser.h"
 #include "output.h"
@@ -24,7 +25,7 @@
 static void
 newline()
 {
-    printf("\n<BR>");
+    fprintf(outfile, "\n<BR>");
     out_line++;
 }
 
@@ -47,10 +48,10 @@ html_print_level(lev)
     int i;
     
     if (print_levels)
-	printf("%4d ", lev);
+	fprintf(outfile, "%4d ", lev);
     if (print_as_tree) {
 	for (i = 0; i < lev; i++) {
-	    if (mark[i])
+	    if (level_mark[i])
 		format(BRANCH, NULL);
 	    else
 		format(NOBRANCH, NULL);
@@ -69,7 +70,7 @@ html_print_function_name(sym, has_subtree)
 {
     if (sym->active) {
 	format(RECURSIVE_BOTTOM, sym);
-	printf(" ");
+	fprintf(outfile, " ");
 	if (sym->v.func.source) 
 	    format(DESCRIPTION, sym);
 	format(RECURSIVE_REF, sym);
@@ -81,7 +82,7 @@ html_print_function_name(sym, has_subtree)
 	if (sym->v.func.source) 
 	    format(DESCRIPTION, sym);
 	if (!print_as_tree && has_subtree)
-	    printf(":");
+	    fprintf(outfile, ":");
     }
     newline();
 }
