@@ -16,6 +16,7 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA  */
 
 #include <cflow.h>
+#include <parser.h>
 #include <hash.h>
 
 Hash_table *symbol_table;
@@ -56,6 +57,7 @@ install(char *name)
      memset(sym, 0, sizeof(*sym));
      sym->type = SymUndefined;
      sym->name = name;
+     sym->temp = canonical_filename && strcmp(filename, canonical_filename);
      if (! ((symbol_table
 	     || (symbol_table = hash_initialize (0, 0, 
 						 hash_symbol_hasher,
@@ -105,11 +107,22 @@ static_processor(void *data, void *proc_data)
      return true;
 }
 
+static bool
+temp_processor(void *data, void *proc_data)
+{
+     Symbol *s = data;
+     
+     if (s->temp) 
+	  delete_symbol(s);
+     return true;
+}
+
 void
 delete_statics()
 {
      if (globals_only()) 
 	  hash_do_for_each (symbol_table, static_processor, NULL);
+     hash_do_for_each (symbol_table, temp_processor, NULL);
 }
 
 /* See NOTE above */
