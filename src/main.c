@@ -33,7 +33,7 @@ void init();
 #ifdef DEBUG
 #define DEBUG_OPT "D"
 #endif
-#define OPTSTR "hVLvSCdxtH:p:s:gl" DEBUG_OPT
+#define OPTSTR "hVLvSCdxtH:p:s:glmTi:" DEBUG_OPT
 
 
 #ifdef GNU_STYLE_OPTIONS
@@ -54,6 +54,9 @@ LONGOPT longopts[] = {
     "ansi", no_argument, 0, 'a',
     "globals-only", no_argument, 0, 'g',
     "print-level", no_argument, 0, 'l',
+    "html", no_argument, 0, 'm',
+    "tree", no_argument, 0, 'T',
+    "level-indent", required_argument, 0, 'i',
     0,
 };
 #else
@@ -65,6 +68,7 @@ char *progname;
 #ifdef DEBUG
 int debug;
 #endif
+int output_mode = OUT_TEXT;
 int verbose;            /* be verbose on output */
 int ignore_indentation; /* Don't rely on indentation,
 			 * i.e. don't suppose the function body
@@ -77,9 +81,10 @@ int record_typedefs;    /* Record typedefs */
 int cross_ref;          /* Generate cross-reference */
 int strict_ansi;        /* Assume sources to be written in ANSI C */
 int globals_only;       /* List only global symbols */
-int print_level;        /* Print branch levels */
+int print_levels;       /* Print level number near every branch */
+int print_as_tree;      /* Print as tree */
 
-char level_indent[80] = ".";
+char level_indent[80] = "    ";
 
 struct symbol_holder {
     char *name;
@@ -144,7 +149,20 @@ main(argc, argv)
 	    globals_only = 1;
 	    break;
 	case 'l':
-	    print_level = 1;
+	    print_levels = 1;
+	    break;
+	case 'm':
+	    output_mode = OUT_HTML;
+	    break;
+	case 'T':
+	    print_as_tree = 1;
+	    break;
+	case 'i':
+	    if (strlen(level_indent) >= sizeof(level_indent))
+		error(0, "level indent string is too long. (max %d symbols)",
+		      sizeof(level_indent)-1);
+	    else
+		strcpy(level_indent, optarg);
 	    break;
 #ifdef DEBUG
 	case 'D':
@@ -307,5 +325,5 @@ error(stat, fmt, va_alist)
     fprintf(stderr, "\n");
     va_end(ap);
     if (stat & FATAL_ERROR)
-	return stat & 255;
+	exit(stat & 255);
 }

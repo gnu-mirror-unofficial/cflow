@@ -19,34 +19,49 @@
 #include <stdlib.h>
 #include "cflow.h"
 #include "parser.h"
+#include "output.h"
 
 void xref_output();
 void print_refs(char*,Consptr);
 void print_function(Symbol*);
 void print_type(Symbol *);
 void direct_tree(int, Symbol *);
-void direct_tree_output();
+void reverse_tree(int, Symbol *);
+void tree_output();
 
-static int line;
+void (*print_level_fun[])(int) = {
+    text_print_level,
+    html_print_level
+};
+void (*print_function_name_fun[])(Symbol*) = {
+    text_print_function_name,
+    html_print_function_name
+};
+void (*set_active_fun[])(Symbol*) = {
+    text_set_active,
+    html_set_active
+};
+void (*header_fun[])(char*) = {
+    text_header,
+    html_header,
+};
+
+
+#define print_level print_level_fun[output_mode]
+#define print_function_name print_function_name_fun[output_mode]
+#define set_active set_active_fun[output_mode]
+#define header header_fun[output_mode]
 
 void
 output()
 {
-    line = 1;
-    
     if (cross_ref) {
 	xref_output();
     } else {
-	direct_tree_output();
+	tree_output();
     }
 }
 
-void
-newline()
-{
-    printf("\n");
-    line++;
-}
 
 int
 compare(a, b)
@@ -104,7 +119,7 @@ xref_output()
 }
 
 void
-direct_tree_output()
+tree_output()
 {
     Symbol **symbols, *symp;
     int i, num;
@@ -114,98 +129,56 @@ direct_tree_output()
     num = collect_symbols(&symbols, is_fun);
     qsort(symbols, num, sizeof(*symbols), compare);
 
+    header("Direct tree");
     for (i = 0; i < num; i++) {
+	if (symbols[i]->v.func.callee == NULL)
+	    continue;
 	direct_tree(0, symbols[i]);
 	newline();
     }
+
+    header("Reverse tree");
+    for (i = 0; i < num; i++) {
+	reverse_tree(0, symbols[i]);
+	newline();
+    }
+    
     free(symbols);
 }
-
-int print_tree=1;
 
 void
 direct_tree(lev, sym)
     int lev;
     Symbol *sym;
 {
-    int i;
     Consptr cons;
 
-    if (print_level)
-	printf("%4d ", lev);
-    if (print_tree) {
-	if (lev) {
-	    printf("  ");
-	    for (i = 1; i < lev; i++)
-		printf("| ");
-	}
-	printf("+-");
-    } else {
-	for (i = 0; i < lev; i++)
-	    printf("%s", level_indent);
-    }
-    printf("%s()", sym->name);
-    if (sym->v.func.type)
-	printf(" <%s at %s:%d>",
-	       sym->v.func.type,
-	       sym->v.func.source,
-	       sym->v.func.def_line);
-    if (sym->active) {
-	printf("(recursive: see %d)", sym->active-1);
-	newline();
-	return;
-    } else
-	printf(":");
-    newline();
-    sym->active = line;
+    print_level(lev);
+    print_function_name(sym);
+    set_active(sym);
     for (cons = sym->v.func.callee; cons; cons = CDR(cons)) 
 	direct_tree(lev+1, (Symbol*)CAR(cons));
+    clear_active(sym);
+}
+
+void
+reverse_tree(lev, sym)
+    int lev;
+    Symbol *sym;
+{
+    Consptr cons;
+
+    print_level(lev);
+    print_function_name(sym);
+    set_active(sym);
+    for (cons = sym->v.func.caller; cons; cons = CDR(cons)) 
+	reverse_tree(lev+1, (Symbol*)CAR(cons));
+    clear_active(sym);
+}
+
+void
+clear_active(sym)
+    Symbol *sym;
+{
     sym->active = 0;
 }
-
-void
-print_refs(name, cons)
-    char *name;
-    Consptr cons;
-{
-    Ref *refptr;
-    
-    for ( ; cons; cons = CDR(cons)) {
-	refptr = (Ref*)CAR(cons);
-	printf("%s   %s:%d",
-	       name,
-	       refptr->source,
-	       refptr->line);
-	newline();
-    }
-}
-
-
-void
-print_function(symp)
-    Symbol *symp;
-{
-    if (symp->v.func.source) {
-	printf("%s * %s:%d %s",
-	       symp->name,
-	       symp->v.func.source,
-	       symp->v.func.def_line,
-	       symp->v.func.type);
-	newline();
-    }
-    print_refs(symp->name, symp->v.func.ref_line);
-}
-
-
-void
-print_type(symp)
-    Symbol *symp;
-{
-    printf("%s t %s:%d",
-	   symp->name,
-	   symp->v.type.source,
-	   symp->v.type.def_line,
-	   symp->v.func.type);
-    newline();
-}
-

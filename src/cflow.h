@@ -83,6 +83,10 @@ struct symbol {
     } v;
 };
 
+/* two output modes */
+#define OUT_TEXT 0
+#define OUT_HTML 1
+
 extern char *progname;
 extern int verbose;
 extern int ignore_indentation;
@@ -94,6 +98,9 @@ extern int strict_ansi;
 extern int globals_only;
 extern int print_level;
 extern char level_indent[];
+extern int output_mode;
+extern int print_levels;
+extern int print_as_tree;
 
 #ifdef DEBUG
 extern int debug;

@@ -180,6 +180,7 @@ save_token(tokptr)
     case TYPE:
     case STRUCT:
     case PARM_WRAPPER:
+    case WORD:
 	if (need_space) 
 	    obstack_1grow(&text_stk, ' ');
 	obstack_grow(&text_stk, tokptr->token, strlen(tokptr->token));
@@ -908,6 +909,8 @@ call(name, line)
     Symbol *sp = add_reference(name, line);
     Cons *cons;
 
+    if (sp->v.func.argc < 0)
+	sp->v.func.argc = 0;
     cons = alloc_cons();
     (Symbol*)CAR(cons) = caller;
     CDR(cons) = sp->v.func.caller;
