@@ -97,15 +97,19 @@ struct symbol {
 #define PRINT_XREF 0x01
 #define PRINT_TREE 0x02
 
+#ifndef CFLOW_PREPROC
+# define CFLOW_PREPROC "cc -E"
+#endif
+
 #define MAX_OUTPUT_DRIVERS 8
 
-extern char *level_mark;
+extern unsigned char *level_mark;
 extern FILE *outfile;
 extern char *outname;
 
 extern int verbose;
 extern int print_option;
-extern int ignore_indentation;
+extern int use_indentation;
 extern int assume_cplusplus;
 extern int record_defines;
 extern int strict_ansi;
@@ -129,20 +133,26 @@ extern int symbol_count;
 
 Symbol *lookup(char*);
 Symbol *install(char*);
-int source(char *name);
-int yyparse(void);
-void cleanup(void);
-void output(void);
-void init_lex(int debug_level);
-void init_parse(void);
 void delete_autos(int level);
 void delete_statics(void);
-int globals_only(void);
-int include_symbol(Symbol *sym);
-
+void cleanup(void);
 int collect_symbols(Symbol ***, int (*sel)());
 Consptr append_to_list(Consptr *, void *);
 int symbol_in_list(Symbol *sym, Consptr list);
+
+int source(char *name);
+void init_lex(int debug_level);
+void set_preprocessor(const char *arg);
+void pp_option(const char *arg); 
+
+void init_parse(void);
+int yyparse(void);
+
+void output(void);
+void print_level(int lev, int last);
+int globals_only(void);
+int include_symbol(Symbol *sym);
+
 void sourcerc(int *, char ***);
 
 typedef enum {
