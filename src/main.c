@@ -30,47 +30,63 @@ const char *argp_program_version = "cflow (" PACKAGE_NAME ") " VERSION;
 const char *argp_program_bug_address = "<" PACKAGE_BUGREPORT ">";
 static char doc[] = "";
 
+#define OPT_DEFINES      256
+#define OPT_LEVEL_INDENT 257
+#define OPT_DEBUG        258
+
 static struct argp_option options[] = {
-     { "verbose", 'v', NULL, 0,
-       "be verbose on output", 0 },
-     { "ignore-indentation", 'S', NULL, 0,
-       "do not rely on indentation", 0 },
-     { "c++", 'C', NULL, 0,
-       "expect C++ input", 0 },
-     { "defines" , 'd', NULL, 0,
-       "record defines", 0 },
-     { "xref", 'x', NULL, 0,
-       "produce cross-reference listing only" },
-     { "typedefs", 't', NULL, 0,
-       "record typedefs" },
-     { "pushdown", 'p', "VALUE", 0,
-       "set initial token stack size to VALUE", 0 },
-     { "symbol", 's', "SYM:TYPE", 0,
-       "make cflow believe the symbol SYM is of type TYPE. Valid types are: keyword (or kw), modifier, identifier, type, wrapper. Any unambiguous abbreviation of the above is also accepted", 0 },
-     { "ansi", 'a', NULL, 0,
-       "Assume input to be written in ANSI C", 0 },
-     { "globals-only", 'g', NULL, 0,
-       "Record only global symbols" },
-     { "print-level", 'l', NULL, 0,
-       "Print nesting level along with the call tree", 0 },
-     { "tree", 'T', NULL, 0,
-       "Draw tree", 0 },
-     { "level-indent", 'i', "STRING", 0,
-       "Use STRING when indenting to each new level", 0 },
-     { "print", 'P', "OPT", 0,
-       "Set printing option to OPT. Valid OPT values are: xref (or cross-ref), tree. Any unambiguous abbreviation of the above is also accepted" },
-     { "output", 'o', "FILE", 0,
-       "set output file name (default -, meaning stdout)" },
-     { "main", 'm', "NAME", 0,
-       "Assume main function to be called NAME", 0 },
-     { "brief", 'b', NULL, 0,
-       "brief output" },
-     { "reverse", 'r', NULL, 0,
-       "Print reverse call tree", 0 },
+     { NULL, 0, NULL, 0,
+       "General options:", 0},
+     { "depth", 'd', "NUMBER", 0,
+       "set the depth at which the flowgraph is cut off.", 1 },
+     { "include", 'i', "SPEC", 0,
+       "Increase the number of included symbols. SPEC is a string consisting of the following characters: x (include external and static data symbols), and _ (include names that begin with an underscore). If SPEC starts with ^, its meaning is reversed", 1 },
      { "format", 'f', "NAME", 0,
-       "use given output format NAME. Valid names are gnu (default) and posix", 0},
+       "use given output format NAME. Valid names are gnu (default) and posix",
+       1 },
+     { "reverse", 'r', NULL, 0,
+       "Print reverse call tree", 1 },
+     { "xref", 'x', NULL, 0,
+       "produce cross-reference listing only", 1 },
+     { "print", 'P', "OPT", 0,
+       "Set printing option to OPT. Valid OPT values are: xref (or cross-ref), tree. Any unambiguous abbreviation of the above is also accepted", 1 },
+     { "output", 'o', "FILE", 0,
+       "set output file name (default -, meaning stdout)", 1 },
+
+     { NULL, 0, NULL, 0,
+       "Parser control:", 10},
+     { "ignore-indentation", 'S', NULL, 0,
+       "do not rely on indentation", 11 },
+     { "defines" , OPT_DEFINES, NULL, 0,
+       "record defines", 11 },
+     { "ansi", 'a', NULL, 0,
+       "Assume input to be written in ANSI C", 11 },
+     { "pushdown", 'p', "VALUE", 0,
+       "set initial token stack size to VALUE", 11 },
+     { "symbol", 's', "SYM:TYPE", 0,
+       "make cflow believe the symbol SYM is of type TYPE. Valid types are: keyword (or kw), modifier, identifier, type, wrapper. Any unambiguous abbreviation of the above is also accepted", 11 },
+     { "main", 'm', "NAME", 0,
+       "Assume main function to be called NAME", 11 },
+     
+     { NULL, 0, NULL, 0,
+       "Output control:", 20},
+     { "print-level", 'l', NULL, 0,
+       "Print nesting level along with the call tree", 21 },
+     { "level-indent", OPT_LEVEL_INDENT, "STRING", 0,
+       "Use STRING when indenting to each new level", 21 },
+     { "tree", 'T', NULL, 0,
+       "Draw tree", 21 },
+     { "brief", 'b', "BOOL", OPTION_ARG_OPTIONAL,
+       "brief output", 21 },
+       
+     { NULL, 0, NULL, 0,
+       "Informational options:", 30},
+     { "verbose", 'v', NULL, 0,
+       "be verbose on output", 31 },
      { "license", 'L', 0, 0,
-       "Print license and exit", 0 },
+       "Print license and exit", 31 },
+     { "debug", OPT_DEBUG, "NUMBER", OPTION_ARG_OPTIONAL,
+       "set debugging level", 31 },
      { 0, }
 };
 
@@ -89,6 +105,67 @@ char *cflow_license_text =
 "   along with GNU cflow; if not, write to the Free Software\n"
 "   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA\n\n";
 
+/* Structure representing various arguments of command line options */
+struct option_type {
+    char *str;           /* optarg value */
+    int min_match;       /* minimal number of characters to match */
+    int type;            /* data associated with the arg */
+};
+
+static int find_option_type(struct option_type *, char *);
+
+/* Args for --print option */
+struct option_type print_optype[] = {
+     { "xref", 1, PRINT_XREF },
+     { "cross-ref", 1, PRINT_XREF },
+     { "tree", 1, PRINT_TREE },
+     { 0 },
+};
+/* Args for --symbol option */
+struct option_type symbol_optype[] = {
+     { "keyword", 2, WORD },
+     { "kw", 2, WORD },
+     { "modifier", 1, MODIFIER },
+     { "identifier", 1, IDENTIFIER },
+     { "type", 1, TYPE },
+     { "wrapper", 1, PARM_WRAPPER },
+     { 0 },
+};
+
+int debug;              /* debug level */
+char *outname = "-";    /* default output file name */
+int print_option = 0;   /* what to print. */
+int verbose;            /* be verbose on output */
+int ignore_indentation; /* Don't rely on indentation,
+			 * i.e. don't suppose the function body
+                         * is necessarily surrounded by the curly braces
+			 * in the first column
+                         */
+int record_defines;     /* Record macro definitions */
+int strict_ansi;        /* Assume sources to be written in ANSI C */
+int print_levels;       /* Print level number near every branch */
+int print_as_tree;      /* Print as tree */
+int brief_listing;      /* Produce short listing */
+int reverse_tree;       /* Generate reverse tree */
+int max_depth;          /* The depth at which the flowgraph is cut off */
+char *included_symbols = "s";
+                        /* A list of symbols included in the graph.
+			   Consists of the following letters:
+			     x   Include (external and static) data symbols;
+			     _   Include names that begin with an underscore;
+			     s   Include static functions;
+			     t   Include typedefs (for cross-references only);
+			*/
+char *excluded_symbols = "";
+                        /* A list of symbols *not* included in the graph.
+			   Overrides included_symbols */
+
+char *level_indent[] = { NULL, NULL };
+char *level_end[] = { "", "" };
+char *level_begin = "";
+
+char *start_name = "main"; /* Name of start symbol */
+
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
@@ -98,11 +175,8 @@ parse_opt (int key, char *arg, struct argp_state *state)
      case 'a':
 	  strict_ansi = 1;
 	  break;
-     case 'C':
-	  assume_cplusplus = 1;
-	  break;
-     case 'D':
-	  debug = 1;
+     case OPT_DEBUG:
+	  debug = arg ? atoi(arg) : 1;
 	  break;
      case 'L':
 	  printf("License for %s:\n\n", argp_program_version);
@@ -122,20 +196,30 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	  level_end[1] = "\\-";
 	  break;
      case 'b':
-	  brief_listing = 1;
+	  brief_listing = arg ? (arg[0] == 'y' || arg[0] == 'Y') : 1;
 	  break;
      case 'd':
+	  max_depth = atoi(arg);
+	  if (max_depth < 0)
+	       max_depth = 0;
+	  break;
+     case OPT_DEFINES:
 	  record_defines = 1;
 	  break;
      case 'f':
 	  if (select_output_driver(arg))
 	       argp_error(state, "%s: No such output driver", optarg);
+	  else if (strcmp (arg, "posix") == 0)
+	       brief_listing = 1;
 	  break;
-     case 'g':
-	  globals_only = 1;
+     case OPT_LEVEL_INDENT:
+	  set_level_indent(arg);
 	  break;
      case 'i':
-	  set_level_indent(arg);
+	  if (arg[0] == '^')
+	       excluded_symbols = arg+1;
+	  else
+	       included_symbols = arg;
 	  break;
      case 'l':
 	  print_levels = 1;
@@ -156,9 +240,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	  break;
      case 's':
 	  symbol_override(arg);
-	  break;
-     case 't':
-	  record_typedefs = 1;
 	  break;
      case 'v':
 	  verbose = 1;
@@ -182,58 +263,39 @@ static struct argp argp = {
   NULL
 };
 
-/* Structure representing various arguments of command line options */
-struct option_type {
-    char *str;           /* optarg value */
-    int min_match;       /* minimal number of characters to match */
-    int type;            /* data associated with the arg */
-};
+int
+included_char(int c)
+{
+     return strchr (included_symbols, c)
+	      && !strchr (excluded_symbols, c);
+}
 
-static int find_option_type(struct option_type *, char *);
+int
+globals_only()
+{
+     return !included_char('s');
+}
 
-/* Args for --print option */
-struct option_type print_optype[] = {
-    "xref", 1, PRINT_XREF,
-    "cross-ref", 1, PRINT_XREF,
-    "tree", 1, PRINT_TREE,
-    0
-};
-/* Args for --symbol option */
-struct option_type symbol_optype[] = {
-    "keyword", 2, WORD,
-    "kw", 2, WORD,
-    "modifier", 1, MODIFIER,
-    "identifier", 1, IDENTIFIER,
-    "type", 1, TYPE,
-    "wrapper", 1, PARM_WRAPPER,
-    0
-};
-
-char *progname;         /* program name */
-int debug;              /* debug mode on */
-char *outname = "-";    /* default output file name */
-int print_option = 0;   /* what to print. */
-int verbose;            /* be verbose on output */
-int ignore_indentation; /* Don't rely on indentation,
-			 * i.e. don't suppose the function body
-                         * is necessarily surrounded by the curly braces
-			 * in the first column
-                         */
-int assume_cplusplus;   /* Assume C++ input always */
-int record_defines;     /* Record macro definitions */
-int record_typedefs;    /* Record typedefs */
-int strict_ansi;        /* Assume sources to be written in ANSI C */
-int globals_only;       /* List only global symbols */
-int print_levels;       /* Print level number near every branch */
-int print_as_tree;      /* Print as tree */
-int brief_listing;      /* Produce short listing */
-int reverse_tree;       /* Generate reverse tree */
-			   
-char *level_indent[] = { NULL, NULL };
-char *level_end[] = { "", "" };
-char *level_begin = "";
-
-char *start_name = "main"; /* Name of start symbol */
+int
+include_symbol(Symbol *sym)
+{
+     int type;
+     
+     if (sym->name[0] == '_')
+	  type = '_';
+     else if (sym->type == SymFunction && sym->v.func.storage == StaticStorage)
+	  type = 's';
+     else if (sym->type == SymToken
+	      && sym->v.type.token_type == TYPE
+	      && sym->v.type.source)
+	  type = 't';
+     else /* FIXME: 'x' is not used */
+	  type = 0;
+     
+     if (type == 0)
+	  return 1;
+     return included_char(type);
+}
 
 void
 xalloc_die(void)
@@ -241,50 +303,15 @@ xalloc_die(void)
      error(1, ENOMEM, "");
 }
 
-int
-main(int argc, char **argv)
-{
-     int i;
-     int index;
-
-     progname = argv[0];
-     register_output("gnu", gnu_output_handler, NULL);
-     register_output("posix", posix_output_handler, NULL);
-     sourcerc(&argc, &argv);
-
-     if (argp_parse (&argp, argc, argv, 0, &index, NULL))
-	  exit (1);
-     
-     if (argv[optind] == NULL)
-	  error(1, 0, "No input files");
-     if (print_option == 0)
-	  print_option = PRINT_TREE;
-
-     init();
-
-     argc -= index;
-     argv += index;
-     while (argc--) {
-	  if (source(*argv++) == 0)
-	       yyparse();
-     }
-     cleanup();
-
-     output();
-     return 0;
-}
-
 void
 init()
 {
-     int i;
-     
      if (level_indent[0] == NULL) {
 	  level_indent[0] = level_indent[1] = "    "; /* 4 spaces */
 	  level_end[0] = level_end[1] = "";
      }
      
-     init_lex();
+     init_lex(debug > 1);
      init_parse();
 }
 
@@ -399,11 +426,11 @@ number(char **str_ptr, int base, int count)
 #define LEVEL_END1 5
 
 struct option_type level_indent_optype[] = {
-     "begin", 1, LEVEL_BEGIN,
-     "0", 1, LEVEL_INDENT0,
-     "1", 1, LEVEL_INDENT1,
-     "end0", 4, LEVEL_END0,
-     "end1", 4, LEVEL_END1,
+     { "begin", 1, LEVEL_BEGIN },
+     { "0", 1, LEVEL_INDENT0 },
+     { "1", 1, LEVEL_INDENT1 },
+     { "end0", 4, LEVEL_END0 },
+     { "end1", 4, LEVEL_END1 },
 };
 
 void
@@ -517,6 +544,37 @@ parse_level_string(char *str, char **return_ptr)
      }
      *p = 0;
      *return_ptr = strdup(text);
+}
+
+int
+main(int argc, char **argv)
+{
+     int index;
+
+     register_output("gnu", gnu_output_handler, NULL);
+     register_output("posix", posix_output_handler, NULL);
+     sourcerc(&argc, &argv);
+
+     if (argp_parse (&argp, argc, argv, 0, &index, NULL))
+	  exit (1);
+     
+     if (argv[optind] == NULL)
+	  error(1, 0, "No input files");
+     if (print_option == 0)
+	  print_option = PRINT_TREE;
+
+     init();
+
+     argc -= index;
+     argv += index;
+     while (argc--) {
+	  if (source(*argv++) == 0)
+	       yyparse();
+     }
+     cleanup();
+
+     output();
+     return 0;
 }
 
 
