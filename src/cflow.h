@@ -68,6 +68,8 @@ struct symbol {
      Symbol *next;                 /* Next symbol with the same hash */
      enum symtype type;            /* Type of the symbol */
      char *name;                   /* Identifier */
+     int temp;                     /* Temporary symbol. Must be deleted after
+				      processing of the current module */
      int active;                   /* Set to 1 when the symbol's subtree is
 				      being processed, prevent recursion */
      int expand_line;              /* Output line when this symbol was first
