@@ -18,7 +18,7 @@
 #include <cflow.h>
 #include <parser.h>
 
-char *level_mark;
+unsigned char *level_mark;
 /* Tree level information. level_mark[i] contains 1 if there are more
  * leafs on the level `i', otherwise it contains 0
  */
