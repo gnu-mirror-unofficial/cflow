@@ -32,6 +32,8 @@ YYSTYPE yylval;
 
 int ident();
 
+#define lex_error(msg) error_at_line(0, 0, filename, line_num, "%s", msg)
+
 %}
 FILENAME [^\n*?]*
 ONUMBER (0[0-7]*)
@@ -180,118 +182,109 @@ static char *types[] = {
 void
 init_lex()
 {
-    int i;
-    Symbol *sp;
+     int i;
+     Symbol *sp;
     
-    obstack_init(&string_stk);
+     obstack_init(&string_stk);
 
-    for (i = 0; i < NUMITEMS(keywords); i++) {
-	sp = install(keywords[i]);
-	sp->type = SymToken;
-	sp->v.type.token_type = WORD;
-    }
-
-    for (i = 0; i < NUMITEMS(types); i++) {
-	sp = install(types[i]);
-	sp->type = SymToken;
-	sp->v.type.token_type = TYPE;
-	sp->v.type.source = NULL;
-	sp->v.type.def_line = -1;
-	sp->v.type.ref_line = NULL;
-    }	
-    sp = install("...");
-    sp->type = SymToken;
-    sp->v.type.token_type = IDENTIFIER;
-    sp->v.type.source = NULL;
-    sp->v.type.def_line = -1;
-    sp->v.type.ref_line = NULL;
+     for (i = 0; i < NUMITEMS(keywords); i++) {
+	  sp = install(keywords[i]);
+	  sp->type = SymToken;
+	  sp->v.type.token_type = WORD;
+     }
+     
+     for (i = 0; i < NUMITEMS(types); i++) {
+	  sp = install(types[i]);
+	  sp->type = SymToken;
+	  sp->v.type.token_type = TYPE;
+	  sp->v.type.source = NULL;
+	  sp->v.type.def_line = -1;
+	  sp->v.type.ref_line = NULL;
+     }	
+     sp = install("...");
+     sp->type = SymToken;
+     sp->v.type.token_type = IDENTIFIER;
+     sp->v.type.source = NULL;
+     sp->v.type.def_line = -1;
+     sp->v.type.ref_line = NULL;
 }
 
 int
 ident()
 {
-    Symbol *sp;
+     Symbol *sp;
 
-    sp = lookup(yytext);
-    if (sp && sp->type == SymToken) {
-	yylval.str = sp->name;
-	return sp->v.type.token_type;
-    }
-    obstack_grow(&string_stk, yytext, yyleng);
-    obstack_1grow(&string_stk, 0);
-    yylval.str = obstack_finish(&string_stk);
-    return IDENTIFIER;
+     sp = lookup(yytext);
+     if (sp && sp->type == SymToken) {
+	  yylval.str = sp->name;
+	  return sp->v.type.token_type;
+     }
+     obstack_grow(&string_stk, yytext, yyleng);
+     obstack_1grow(&string_stk, 0);
+     yylval.str = obstack_finish(&string_stk);
+     return IDENTIFIER;
 }
 
 int
 yywrap()
 {
-    delete_statics();
-    return 1;
+     delete_statics();
+     return 1;
 }
 
 int
-source(name)
-    char *name;
+source(char *name)
 {
-    FILE *fp;
-
-    fp = fopen(name, "r");
-    if (!fp) {
-	error(SYSTEM_ERROR, "cannot open `%s'", name);
-	return 1;
-    }
-    obstack_grow(&string_stk, name, strlen(name)+1);
-    filename = obstack_finish(&string_stk);
-    line_num = 1;
-    yyrestart(fp);
-    return 0;
+     FILE *fp;
+     
+     fp = fopen(name, "r");
+     if (!fp) {
+	  error(0, errno, "cannot open `%s'", name);
+	  return 1;
+     }
+     obstack_grow(&string_stk, name, strlen(name)+1);
+     filename = obstack_finish(&string_stk);
+     line_num = 1;
+     yyrestart(fp);
+     return 0;
 }
 
 int
 backslash()
 {                                  
-    int c;
+     int c;
      
-    switch (c = input()) {                        
-    case 'a':   return '\a';                  
-    case 'b':   return '\b';                  
-    case 'f':   return '\f';                  
-    case 'n':   return '\n';                  
-    case 'r':   return '\r';                  
-    case 't':   return '\t';                  
-    case 'x':   return getnum(16,2);          
-    case '0':   return getnum(8,3);           
-    }                                             
-    return c;                                         
+     switch (c = input()) {                        
+     case 'a':   return '\a';                  
+     case 'b':   return '\b';                  
+     case 'f':   return '\f';                  
+     case 'n':   return '\n';                  
+     case 'r':   return '\r';                  
+     case 't':   return '\t';                  
+     case 'x':   return getnum(16,2);          
+     case '0':   return getnum(8,3);           
+     }                                             
+     return c;                                         
 }                                                     
 
 int
-getnum(base, count)
-    unsigned  base;
-    int  count;
+getnum(unsigned  base, int  count)
 {
-    int  c, n;
-    unsigned i;
+     int  c, n;
+     unsigned i;
 
-    for (n = 0; count; count--) {
-	if (isdigit(c = input()))
-	    i = c - '0';
-	else
-	    i = toupper(c) - 'A' + 10;
-	if (i > base) {
-	    unput(c);
-	    break;
-	}
-	n = n * base + i;
-    }
-    return n;
-}
-
-lex_error(msg)
-    char *msg;
-{
-    fprintf(stderr, "%s:%d: %s\n", filename, line_num, msg);
+     for (n = 0; count; count--) {
+	  if (isdigit(c = input()))
+	       i = c - '0';
+	  else
+	       i = toupper(c) - 'A' + 10;
+	  if (i > base) {
+	       unput(c);
+	       break;
+	  }
+	  n = n * base + i;
+     }
+     return n;
 }
 
     

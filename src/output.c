@@ -163,7 +163,7 @@ is_fun(Symbol *symp)
 static void
 clear_active(Symbol *sym)
 {
-    sym->active = 0;
+     sym->active = 0;
 }
 
 
@@ -171,28 +171,28 @@ clear_active(Symbol *sym)
 void
 print_refs(char *name, Consptr cons)
 {
-    Ref *refptr;
+     Ref *refptr;
     
-    for ( ; cons; cons = CDR(cons)) {
-	refptr = (Ref*)CAR(cons);
-	fprintf(outfile, "%s   %s:%d\n",
-		name,
-		refptr->source,
-		refptr->line);
-    }
+     for ( ; cons; cons = CDR(cons)) {
+	  refptr = (Ref*)CAR(cons);
+	  fprintf(outfile, "%s   %s:%d\n",
+		  name,
+		  refptr->source,
+		  refptr->line);
+     }
 }
 
 static void
 print_function(Symbol *symp)
 {
-    if (symp->v.func.source) {
-	 fprintf(outfile, "%s * %s:%d %s\n",
-		 symp->name,
-		 symp->v.func.source,
-		 symp->v.func.def_line,
-		 symp->v.func.type);
-    }
-    print_refs(symp->name, symp->v.func.ref_line);
+     if (symp->v.func.source) {
+	  fprintf(outfile, "%s * %s:%d %s\n",
+		  symp->name,
+		  symp->v.func.source,
+		  symp->v.func.def_line,
+		  symp->v.func.type);
+     }
+     print_refs(symp->name, symp->v.func.ref_line);
 }
 
 static void
@@ -208,25 +208,25 @@ print_type(Symbol *symp)
 void
 xref_output()
 {
-    Symbol **symbols, *symp;
-    int i, num;
-    
-    num = collect_symbols(&symbols, is_var);
-    qsort(symbols, num, sizeof(*symbols), compare);
-
-    /* produce xref output */
-    for (i = 0; i < num; i++) {
-	symp = symbols[i];
-	switch (symp->type) {
-	case SymFunction:
-	    print_function(symp);
-	    break;
-	case SymToken:
-	    print_type(symp);
-	    break;
-	}
-    }
-    free(symbols);
+     Symbol **symbols, *symp;
+     int i, num;
+     
+     num = collect_symbols(&symbols, is_var);
+     qsort(symbols, num, sizeof(*symbols), compare);
+     
+     /* produce xref output */
+     for (i = 0; i < num; i++) {
+	  symp = symbols[i];
+	  switch (symp->type) {
+	  case SymFunction:
+	       print_function(symp);
+	       break;
+	  case SymToken:
+	       print_type(symp);
+	       break;
+	  }
+     }
+     free(symbols);
 }
 
 
@@ -238,23 +238,25 @@ xref_output()
 static void
 scan_tree(int lev, Symbol *sym)
 {
-    Consptr cons;
+     Consptr cons;
 
-    if (sym->active) {
-	sym->v.func.recursive = 1;
-	return;
-    }
-    sym->active = 1;
-    for (cons = sym->v.func.callee; cons; cons = CDR(cons)) {
-	scan_tree(lev+1, (Symbol*)CAR(cons));
-    }
-    sym->active = 0;
+     if (sym->type == SymUndefined)
+	  return;
+     if (sym->active) {
+	  sym->v.func.recursive = 1;
+	  return;
+     }
+     sym->active = 1;
+     for (cons = sym->v.func.callee; cons; cons = CDR(cons)) {
+	  scan_tree(lev+1, (Symbol*)CAR(cons));
+     }
+     sym->active = 0;
 }
 
 static void
 set_active(Symbol *sym)
 {
-    sym->active = out_line;
+     sym->active = out_line;
 }
 
 /* Produce direct call tree output
@@ -262,18 +264,20 @@ set_active(Symbol *sym)
 static void
 direct_tree(int lev, int last, Symbol *sym)
 {
-    Consptr cons;
-    
-    print_symbol(1, lev, last, sym);
-    newline();
-    if (sym->active)
-	return;
-    set_active(sym);
-    for (cons = sym->v.func.callee; cons; cons = CDR(cons)) {
-	level_mark[lev+1] = CDR(cons) != NULL;
-	direct_tree(lev+1, CDR(cons) == NULL, (Symbol*)CAR(cons));
-    }
-    clear_active(sym);
+     Consptr cons;
+     
+     if (sym->type == SymUndefined)
+	  return;
+     print_symbol(1, lev, last, sym);
+     newline();
+     if (sym->active)
+	  return;
+     set_active(sym);
+     for (cons = sym->v.func.callee; cons; cons = CDR(cons)) {
+	  level_mark[lev+1] = CDR(cons) != NULL;
+	  direct_tree(lev+1, CDR(cons) == NULL, (Symbol*)CAR(cons));
+     }
+     clear_active(sym);
 }
 
 /* Produce reverse call tree output
@@ -281,59 +285,59 @@ direct_tree(int lev, int last, Symbol *sym)
 static void
 inverted_tree(int lev, int last, Symbol *sym)
 {
-    Consptr cons;
+     Consptr cons;
 
-    print_symbol(0, lev, last, sym);
-    newline();
-    if (sym->active)
-	return;
-    set_active(sym);
-    for (cons = sym->v.func.caller; cons; cons = CDR(cons)) {
-	level_mark[lev+1] = CDR(cons) != NULL;
-	inverted_tree(lev+1, CDR(cons) == NULL, (Symbol*)CAR(cons));
-    }
-    clear_active(sym);
+     print_symbol(0, lev, last, sym);
+     newline();
+     if (sym->active)
+	  return;
+     set_active(sym);
+     for (cons = sym->v.func.caller; cons; cons = CDR(cons)) {
+	  level_mark[lev+1] = CDR(cons) != NULL;
+	  inverted_tree(lev+1, CDR(cons) == NULL, (Symbol*)CAR(cons));
+     }
+     clear_active(sym);
 }
 
 static void
 tree_output()
 {
-    Symbol **symbols, *main;
-    int i, num;
-
-    /* Collect and sort symbols */
-    num = collect_symbols(&symbols, is_fun);
-    qsort(symbols, num, sizeof(*symbols), compare);
-    /* Scan and mark the recursive ones */
-    for (i = 0; i < num; i++) {
-	if (symbols[i]->v.func.callee)
-            scan_tree(0, symbols[i]);
-    }
-
-    /* Produce output */
+     Symbol **symbols, *main;
+     int i, num;
+     
+     /* Collect and sort symbols */
+     num = collect_symbols(&symbols, is_fun);
+     qsort(symbols, num, sizeof(*symbols), compare);
+     /* Scan and mark the recursive ones */
+     for (i = 0; i < num; i++) {
+	  if (symbols[i]->v.func.callee)
+	       scan_tree(0, symbols[i]);
+     }
+     
+     /* Produce output */
     begin();
     
     header("Direct Tree");
     main = lookup(start_name);
     if (main) {
-	direct_tree(0, 0, main);
-	separator();
+	 direct_tree(0, 0, main);
+	 separator();
     } else {
-	for (i = 0; i < num; i++) {
-	    if (symbols[i]->v.func.callee == NULL)
-		continue;
-	    direct_tree(0, 0, symbols[i]);
-	    separator();
-	}
+	 for (i = 0; i < num; i++) {
+	      if (symbols[i]->v.func.callee == NULL)
+		   continue;
+	      direct_tree(0, 0, symbols[i]);
+	      separator();
+	 }
     }
 
     if (!reverse_tree)
-	return;
+	 return;
     
     header("Reverse Tree");
     for (i = 0; i < num; i++) {
-	inverted_tree(0, 0, symbols[i]);
-	separator();
+	 inverted_tree(0, 0, symbols[i]);
+	 separator();
     }
 
     end();
@@ -344,23 +348,23 @@ tree_output()
 void
 output()
 {
-    if (strcmp(outname, "-") == 0) {
-	outfile = stdout;
-    } else {
-	outfile = fopen(outname, "w");
-	if (!outfile)
-	    error(SYSTEM_ERROR|FATAL(2), "cannot open file `%s'", outname);
-    } 
-	
-    level_mark = emalloc(level_mark_size);
-    level_mark[0] = 0;
-    if (print_option & PRINT_XREF) {
-	xref_output();
-    }
-    if (print_option & PRINT_TREE) {
-	tree_output();
-    }
-    fclose(outfile);
+     if (strcmp(outname, "-") == 0) {
+	  outfile = stdout;
+     } else {
+	  outfile = fopen(outname, "w");
+	  if (!outfile)
+	       error(2, errno, "cannot open file `%s'", outname);
+     } 
+     
+     level_mark = xmalloc(level_mark_size);
+     level_mark[0] = 0;
+     if (print_option & PRINT_XREF) {
+	  xref_output();
+     }
+     if (print_option & PRINT_TREE) {
+	  tree_output();
+     }
+     fclose(outfile);
 }
 
 

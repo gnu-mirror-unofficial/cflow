@@ -22,33 +22,33 @@
 static void
 print_level(int lev, int last)
 {
-    int i;
+     int i;
 
-    if (print_levels)
-	fprintf(outfile, "%4d ", lev);
-    fprintf(outfile, "%s", level_begin);
-    for (i = 0; i < lev; i++) 
-	fprintf(outfile, "%s", level_indent[ level_mark[i] ]);
-    fprintf(outfile, "%s", level_end[last]);
+     if (print_levels)
+	  fprintf(outfile, "%4d ", lev);
+     fprintf(outfile, "%s", level_begin);
+     for (i = 0; i < lev; i++) 
+	  fprintf(outfile, "%s", level_indent[ level_mark[i] ]);
+     fprintf(outfile, "%s", level_end[last]);
 }
 
 void
 print_function_name(Symbol *sym, int has_subtree)
 {
-    fprintf(outfile, "%s()", sym->name);
-    if (sym->v.func.type)
-	fprintf(outfile, " <%s at %s:%d>",
-		sym->v.func.type,
-		sym->v.func.source,
-		sym->v.func.def_line);
-    if (sym->active) {
-	 fprintf(outfile, " (recursive: see %d)", sym->active-1);
-	 return;
-    }
-    if (sym->v.func.recursive)
-	 fprintf(outfile, " (R)");
-    if (!print_as_tree && has_subtree)
-	 fprintf(outfile, ":");
+     fprintf(outfile, "%s()", sym->name);
+     if (sym->v.func.type)
+	  fprintf(outfile, " <%s at %s:%d>",
+		  sym->v.func.type,
+		  sym->v.func.source,
+		  sym->v.func.def_line);
+     if (sym->active) {
+	  fprintf(outfile, " (recursive: see %d)", sym->active-1);
+	  return;
+     }
+     if (sym->v.func.recursive)
+	  fprintf(outfile, " (R)");
+     if (!print_as_tree && has_subtree)
+	  fprintf(outfile, ":");
 }
 
 
