@@ -1,3 +1,26 @@
+2005-03-22  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* lib/argcv.c: Imported from mailutils
+	* lib/argcv.h: Imported from mailutils
+	* lib/Makefile.tmpl: Added argcv
+	* src/cflow.rc: New file
+	* src/Makefile.am: Distribute cflow.rc
+	(chart.cflow): New rule
+	* src/c.l (CFLOW_PREPROC): Moved to cflow.h
+	(set_preprocessor): Accept NULL arg
+	* src/cflow.h (CFLOW_PREPROC): New define
+	(set_preprocessor,pp_option,print_level): New prototypes
+	(level_mark): Type changed to unsigned char.
+	* src/main.c (ignore_indentation): Renamed to use_indentation,
+	sense reverted. All callers updated
+	New options: --cpp, alias to --preprocess.
+	--no-cpp, disables preprocessing
+	* src/output.c (level_mark): Type changed to unsigned char.
+	
+	* src/rc.c: Rewritten using argcv
+	* src/parser.c (ignore_indentation): Renamed to use_indentation,
+	sense reverted. All callers updated
+
 2005-03-22  Sergey Poznyakoff  <gray@Noldor.runasimi.org>
 
 	* TODO: Updated

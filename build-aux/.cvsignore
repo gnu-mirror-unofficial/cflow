@@ -2,3 +2,5 @@ depcomp
 install-sh
 missing
 config.rpath
+mdate-sh
+texinfo.tex
