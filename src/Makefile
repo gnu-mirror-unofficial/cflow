@@ -22,6 +22,9 @@ ci:; ci -l $(SRCS)
 dep:
 	$(CPP) -MM $(SRCS) > .depend
 
+cflow.cfl: main.c rc.c parser.c collect.c output.c symbol.c
+	cflow -ocflow.cfl -T main.c rc.c parser.c collect.c output.c symbol.c 
+
 #
 # include a dependency file if one exists
 #

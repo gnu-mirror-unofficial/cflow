@@ -71,16 +71,20 @@ Key bindings are:
   (set-default 'cflow-recursion-root-line nil)
 )
 
-(defun cflow-find-function (&optional dummy)
-  (interactive "p")
+;; Find the function under cursor.
+;; Switch to the proper buffer and go to the function header
+(defun cflow-find-function ()
+  (interactive)
   (let ((lst (cflow-find-default-function)))
     (cond
      (lst
       (switch-to-buffer (find-file-noselect (car lst)))
       (goto-line (car (cdr lst))))
      (t
-      nil))))
+      (error "No source/line information for this function.")))))
 
+;; Parse a cflow listing line
+;; Return (list SOURCE-NAME LINE-NUMBER)
 (defun cflow-find-default-function ()
   (save-excursion
     (cond
@@ -92,9 +96,11 @@ Key bindings are:
        (string-to-number (buffer-substring (match-beginning 2) (match-end 2)))))
      (t
       nil))))
-			 
-(defun cflow-recursion-root (&optional dummy)
-  (interactive "p")
+
+;; If the cursor stays on a recursive call, then go to the root of
+;; this call
+(defun cflow-recursion-root ()
+  (interactive)
   (let ((num (cond
 	      ((re-search-forward "(recursive: see \\([0-9]+\\))"
 				  (save-excursion (end-of-line) (point))
@@ -107,10 +113,11 @@ Key bindings are:
      ((> num 0)
       (goto-line num))
      (t
-      nil))))
-  
-(defun cflow-recursion-next (&optional dummy)
-  (interactive "p")
+      (error "Not a recursive call")))))
+
+;; Go to next recursive call
+(defun cflow-recursion-next ()
+  (interactive)
   (cond
    ((re-search-forward "(R)"
 		       (save-excursion (end-of-line) (point))
@@ -122,11 +129,12 @@ Key bindings are:
    (t
     (let ((pos (progn
 		 (next-line 1)
-		 (re-search-forward (concat "(recursive: see "
-					    (number-to-string cflow-recursion-root-line)
-					    ")")
-				    (point-max)
-		   t))))
+		 (re-search-forward
+		  (concat "(recursive: see "
+			  (number-to-string cflow-recursion-root-line)
+			  ")")
+		  (point-max)
+		  t))))
       (cond
        ((null pos)
 	(goto-line cflow-recursion-root-line)
@@ -134,7 +142,7 @@ Key bindings are:
        (t
 	(goto-char pos)
 	(beginning-of-line)))))))
-    
+
 (defun cflow-goto-direct-tree ()
   (interactive)
   (let ((pos (save-excursion

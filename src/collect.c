@@ -17,6 +17,8 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+/* Collect the information from the source files given
+ */
 void
 collect(argc, argv)
     int argc;

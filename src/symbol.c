@@ -20,9 +20,9 @@
 #include <stdlib.h>
 #include "cflow.h"
 
-int hash_size = 509;
-Symbol **symtab;
-Symbol *statsym;
+int hash_size = 509;  /* Size of hash table */
+Symbol **symtab;      /* Symbol table */
+Symbol *statsym;      /* Static symbols are held here */
 
 typedef struct bucket Bucket;
 struct bucket {
@@ -35,6 +35,8 @@ int bucket_nodes = 512;
 Bucket *root_bucket, *last_bucket;
 int symbol_count;
 
+/* Set new hashtable size
+ */
 void
 set_hash_size(num)
     int num;
@@ -46,6 +48,8 @@ set_hash_size(num)
     hash_size = num;
 }
 
+/* Init symbol table
+ */
 void
 init_hash()
 {
@@ -70,6 +74,8 @@ hash(name)
     return i % hash_size;
 }
 
+/* Find a Symbol corresponding to the given name
+ */
 Symbol *
 lookup(s)
     char *s;
@@ -82,6 +88,8 @@ lookup(s)
     return 0;
 }
 
+/* Install a new symbol into the symbol table
+ */
 Symbol *
 install(s)
     char *s;
@@ -101,6 +109,12 @@ install(s)
     return sp;
 }
 
+/* Delete from the symbol table all static symbols defined in the current
+ * source.
+ * NOTE: This takes advantage of the fact that install() uses LIFO strategy,
+ * so we have not to check the source name where the symbol was defined. If it
+ * is static, we simply remove it.
+ */
 void
 delete_statics()
 {
@@ -121,6 +135,10 @@ delete_statics()
     }
 }
 
+/* Delete from the symbol table all auto variables with given nesting
+ * level.
+ * TODO: The memory is not reclaimed.
+ */
 void
 delete_autos(level)
     int level;
@@ -136,6 +154,13 @@ delete_autos(level)
     }
 }
 
+/* Make all list pointers of the SYM ready for final processing.
+ * This means for each list replace its entry point with its CAR
+ * and throw away the first cons. The first cons holds pointers
+ * to the head and tail of the list and is used to speed up appends.
+ *
+ * TODO: The memory is not reclaimed
+ */
 static void
 cleanup_symbol(sym)
     Symbol *sym;
@@ -151,6 +176,9 @@ cleanup_symbol(sym)
 }
     
 
+/* Clean up all symbols from the auxiliary information.
+ * See the comment for cleanup_symbol() above
+ */
 void
 cleanup()
 {

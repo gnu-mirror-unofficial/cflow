@@ -69,27 +69,39 @@ LONGOPT longopts[] = {
  getopt(argc, argv, optstr)
 #endif
 
+/* Structure representing various arguments of command line options */
 struct option_type {
-    char *str;
-    int min_match;
-    int type;
+    char *str;           /* optarg value */
+    int min_match;       /* minimal number of characters to match */
+    int type;            /* data associated with the arg */
 };
 
 static int find_option_type(struct option_type *, char *);
 
+/* Args for --print option */
 struct option_type print_optype[] = {
     "xref", 1, PRINT_XREF,
     "cross-ref", 1, PRINT_XREF,
     "tree", 1, PRINT_TREE,
     0
 };
+/* Args for --symbol option */
+struct option_type symbol_optype[] = {
+    "keyword", 2, WORD,
+    "kw", 2, WORD,
+    "modifier", 1, MODIFIER,
+    "identifier", 1, IDENTIFIER,
+    "type", 1, TYPE,
+    "wrapper", 1, PARM_WRAPPER,
+    0
+};
 
-char *progname;
+char *progname;         /* program name */
 #ifdef DEBUG
-int debug;
+int debug;              /* debug mode on */
 #endif
-char *outname = "a.cflow";
-int print_option = 0;
+char *outname = "a.cflow"; /* default output file name */
+int print_option = 0;   /* what to print. */
 int verbose;            /* be verbose on output */
 int ignore_indentation; /* Don't rely on indentation,
 			 * i.e. don't suppose the function body
@@ -104,17 +116,26 @@ int globals_only;       /* List only global symbols */
 int print_levels;       /* Print level number near every branch */
 int print_as_tree;      /* Print as tree */
 
-char level_indent[80] = "    ";
+char level_indent[80] = "    "; /* string used to indent each successive
+				 * nesting level.
+				 */
 
-char *start_name = "main";
+char *start_name = "main"; /* Name of start symbol */
 
-
+/* Structs of this type are used to temporarily hold user-provided
+ * symbol information */
 struct symbol_holder {
     char *name;
     int type;
 };
+
 static struct obstack temp_symbol_stack;
-int temp_symbol_count;
+/* Actually it is the stack of struct symbol_holder elements.
+ * This stack is used to temporarily hold symbol information obtained
+ * from the command line. It is necessary since the symbol tables are not
+ * initialized at the time of command line processing.
+ */
+int temp_symbol_count; /* number of symbols stored in temp_symbol_stack */
 
 int
 main(argc, argv)
@@ -219,6 +240,8 @@ init()
     init_lex();
     init_parse();
 
+    /* Now that we have symbol tables, pass there all user-provided symbols
+     */
     if (temp_symbol_count) {
 	hold = obstack_finish(&temp_symbol_stack);
 	for (i = 0; i < temp_symbol_count; i++, hold++) {
@@ -233,16 +256,11 @@ init()
     obstack_free(&temp_symbol_stack, NULL);
 }
 
-struct option_type symbol_optype[] = {
-    "keyword", 2, WORD,
-    "kw", 2, WORD,
-    "modifier", 1, MODIFIER,
-    "identifier", 1, IDENTIFIER,
-    "type", 1, TYPE,
-    "wrapper", 1, PARM_WRAPPER,
-    0
-};
 
+/* Given the option_type array and (possibly abbreviated) option argument
+ * find the type corresponding to that argument.
+ * Return 0 if the argument does not match any one of OPTYPE entries
+ */
 static int
 find_option_type(optype, str)
     struct option_type *optype;
@@ -260,6 +278,10 @@ find_option_type(optype, str)
     return 0;
 }
 
+/* Parse the string STR and store the symbol in the temporary symbol table.
+ * STR is the string of form: NAME:TYPE
+ * NAME means symbol name, TYPE means symbol type (possibly abbreviated)
+ */
 void
 symbol_override(str)
     char *str;
@@ -298,6 +320,11 @@ set_print_option(str)
     print_option |= opt;
 }
 
+/* Convert first COUNT bytes of the string pointed to by STR_PTR
+ * to integer using BASE. Move STR_PTR to the point where the
+ * conversion stopped.
+ * Return the number obtained.
+ */
 static int
 number(str_ptr, base, count)
     char **str_ptr;
@@ -322,7 +349,13 @@ number(str_ptr, base, count)
     *str_ptr = str - 1;
     return n;
 }
-    
+
+/* Parse and set new value for level_indent.
+ * STR can contain usual C escape sequences, plus \e meaning '\033'.
+ * Apart from this any character followed by xN suffix (where N is
+ * a decimal number) is expanded to the sequence of N such characters.
+ * 'x' looses its special meaning at the start of the string.
+ */
 void
 set_level_indent(str)
     char *str;
@@ -341,6 +374,9 @@ set_level_indent(str)
 		break;
 	    case 'b':
 		*p++ = '\b';
+		break;
+	    case 'e':
+		*p++ = '\033';
 		break;
 	    case 'f':
 		*p++ = '\f';
@@ -434,6 +470,8 @@ say_and_die(text)
 }
 
 
+/* malloc() with error reporting
+ */
 void *
 emalloc(size)
     int size;
@@ -444,6 +482,7 @@ emalloc(size)
     return p;
 }
 
+/* just for symmetry with emalloc() */
 void
 efree(ptr)
     void *ptr;
@@ -451,6 +490,11 @@ efree(ptr)
     free(ptr);
 }
 
+/* Report the error condition.
+ * STAT is the message status bitmask:
+ *    SYSTEM_ERROR bits mean do perror() after printing the message
+ *    FATAL_ERROR bits mean exit().
+ */
 error(stat, fmt, va_alist)
     char *fmt;
     va_dcl
@@ -466,3 +510,8 @@ error(stat, fmt, va_alist)
     if (stat & FATAL_ERROR)
 	exit(stat & 255);
 }
+
+
+
+
+

@@ -922,8 +922,10 @@ call(name, line)
 
     if (sp->v.func.argc < 0)
 	sp->v.func.argc = 0;
-    append_to_list(&sp->v.func.caller, caller);
-    append_to_list(&caller->v.func.callee, sp);
+    if (caller) {
+	append_to_list(&sp->v.func.caller, caller);
+	append_to_list(&caller->v.func.callee, sp);
+    }
 }
 
 void

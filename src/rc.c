@@ -34,19 +34,27 @@ static char **xargv;
 static void parse_rc(char*);
 static void expand_args(char*);
 
+/* Process the value of the environment variable CFLOW_OPTIONS
+ * and of the rc file.
+ * Split the value into words and add them between (*ARGV_PTR)[0] and
+ * (*ARGV_PTR[1]) modifying *ARGC_PTR accordingly.
+ * NOTE: Since sourcerc() is not meant to take all SH command line processing
+ *       burden, only word splitting is performed and no kind of expansion
+ *       takes place. 
+ */
 void
 sourcerc(argc_ptr, argv_ptr)
     int *argc_ptr;
     char ***argv_ptr;
 {
-    char *home;
+    char *env, *home;
     
     xargc = 1;
     xargv = malloc(2*sizeof(xargv[0]));
 
-    home = getenv("CFLOW_OPTIONS");
-    if (home) {
-	expand_args(strdup(home));
+    env = getenv("CFLOW_OPTIONS");
+    if (env) {
+	expand_args(strdup(env));
     }
     
     home = getenv("HOME");
@@ -83,6 +91,8 @@ sourcerc(argc_ptr, argv_ptr)
     }
 }
 
+/* Parse rc file
+ */
 void
 parse_rc(name)
     char *name;

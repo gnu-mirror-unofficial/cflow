@@ -38,10 +38,15 @@ void begin();
 void end();
 void separator();
 
-int level_mark_size=1000;
 char *level_mark;
-int out_line = 1;
-FILE *outfile;
+/* Tree level information. level_mark[i] contains 1 if there are more
+ * leafs on the level `i', otherwise it contains 0
+ */
+int level_mark_size=1000;
+/* Arbitrary size of level mark. Seems to be more than enough */
+
+int out_line = 1; /* Current output line number */
+FILE *outfile;    /* Output file */
 
 void
 output()
@@ -55,6 +60,7 @@ output()
     } 
 	
     level_mark = emalloc(level_mark_size);
+    level_mark[0] = 0;
     if (print_option & PRINT_XREF) {
 	xref_output();
     }
@@ -165,6 +171,8 @@ tree_output()
     free(symbols);
 }
 
+/* Scan call tree. Mark the recursive calls
+ */
 void
 scan_tree(lev, sym)
     int lev;
@@ -183,6 +191,8 @@ scan_tree(lev, sym)
     sym->active = 0;
 }
 
+/* Produce direct call tree output
+ */
 void
 direct_tree(lev, sym)
     int lev;
@@ -202,6 +212,8 @@ direct_tree(lev, sym)
     clear_active(sym);
 }
 
+/* Produce reverse call tree output
+ */
 void
 inverted_tree(lev, sym)
     int lev;
@@ -252,6 +264,8 @@ separator()
     newline();
 }
 
+/* Print current tree level
+ */
 void
 print_level(lev)
     int lev;
@@ -286,7 +300,7 @@ print_function_name(sym, has_subtree)
 	       sym->v.func.source,
 	       sym->v.func.def_line);
     if (sym->active) {
-	fprintf(outfile, "(recursive: see %d)", sym->active-1);
+	fprintf(outfile, " (recursive: see %d)", sym->active-1);
 	newline();
 	return;
     }
