@@ -24,10 +24,11 @@ const char *argp_program_version = "cflow (" PACKAGE_NAME ") " VERSION;
 const char *argp_program_bug_address = "<" PACKAGE_BUGREPORT ">";
 static char doc[] = "";
 
-#define OPT_DEFINES      256
-#define OPT_LEVEL_INDENT 257
-#define OPT_DEBUG        258
-#define OPT_PREPROCESSOR 259
+#define OPT_DEFINES       256
+#define OPT_LEVEL_INDENT  257
+#define OPT_DEBUG         258
+#define OPT_PREPROCESS    259
+#define OPT_NO_PREPROCESS 260
 
 static struct argp_option options[] = {
 #define GROUP_ID 0
@@ -54,8 +55,8 @@ static struct argp_option options[] = {
 #define GROUP_ID 10     
      { NULL, 0, NULL, 0,
        "Parser control:", GROUP_ID },
-     { "ignore-indentation", 'S', NULL, 0,
-       "do not rely on indentation", GROUP_ID+1 },
+     { "use-indentation", 'S', "BOOL", OPTION_ARG_OPTIONAL,
+       "rely on indentation", GROUP_ID+1 },
      { "ansi", 'a', NULL, 0,
        "Assume input to be written in ANSI C", GROUP_ID+1 },
      { "pushdown", 'p', "NUMBER", 0,
@@ -70,8 +71,12 @@ static struct argp_option options[] = {
        "Cancel any previous definition of NAME", GROUP_ID+1 },
      { "include-dir", 'I', "DIR", 0,
        "Add the directory dir to the list of directories to be searched for header files.", GROUP_ID+1 },
-     { "preprocessor", OPT_PREPROCESSOR, "COMMAND", 0,
+     { "preprocess", OPT_PREPROCESS, "COMMAND", OPTION_ARG_OPTIONAL,
        "Run the specified preprocessor command", GROUP_ID+1 },
+     { "cpp", 0, NULL, OPTION_ALIAS, NULL, GROUP_ID+1 },
+     { "no-preprocess", OPT_NO_PREPROCESS, NULL, 0,
+       "Do not preprocess the sources", GROUP_ID+1 },
+     { "no-cpp", 0, NULL, OPTION_ALIAS, NULL, GROUP_ID+1 },
 #undef GROUP_ID
 #define GROUP_ID 20          
      { NULL, 0, NULL, 0,
@@ -126,8 +131,8 @@ int debug;              /* debug level */
 char *outname = "-";    /* default output file name */
 int print_option = 0;   /* what to print. */
 int verbose;            /* be verbose on output */
-int ignore_indentation; /* Don't rely on indentation,
-			 * i.e. don't suppose the function body
+int use_indentation;    /* Rely on indentation,
+			 * i.e. suppose the function body
                          * is necessarily surrounded by the curly braces
 			 * in the first column
                          */
@@ -456,7 +461,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	  set_print_option(arg);
 	  break;
      case 'S':
-	  ignore_indentation = 1;
+	  use_indentation = boolean_value(arg);
 	  break;
      case 'T':
 	  print_as_tree = 1;
@@ -527,8 +532,11 @@ parse_opt (int key, char *arg, struct argp_state *state)
      case 'x':
 	  print_option = PRINT_XREF;
 	  break;
-     case OPT_PREPROCESSOR:
-	  set_preprocessor(arg);
+     case OPT_PREPROCESS:
+	  set_preprocessor(arg ? arg : CFLOW_PREPROC);
+	  break;
+     case OPT_NO_PREPROCESS:
+          set_preprocessor(NULL);
 	  break;
      case ARGP_KEY_ARG:
 	  add_name(arg);
