@@ -1,31 +1,24 @@
-/*  $Id$
- *  cflow main module
- *  Copyright (C) 1997 Gray
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- */
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <getopt.h>
-#include <varargs.h>
-#include <errno.h>
-#include "cflow.h"
-#include "parser.h"
-#include "version.h"
-#include "obstack1.h"
+/* This file is part of GNU cflow
+   Copyright (C) 1997,2005 Sergey Poznyakoff
+ 
+   GNU cflow is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+ 
+   GNU cflow is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GNU cflow; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA  */
+
+#include <cflow.h>
+#include <stdarg.h>
+#include <parser.h>
+#include <version.h>
 
 void say_and_die(char *);
 void symbol_override();
@@ -34,11 +27,7 @@ void set_print_option(char*);
 static void set_level_indent(char*);
 static void parse_level_string(char*, char**);
 
-#ifdef DEBUG
-#define DEBUG_OPT "D"
-#endif
-#define OPTSTR "hVLvSCdxtH:p:s:glTi:P:o:m:br" DEBUG_OPT
-
+#define OPTSTR "CDH:LP:STVbdf:ghi:lm:o:p:rs:tvx"
 
 #ifdef GNU_STYLE_OPTIONS
 typedef struct option LONGOPT;
@@ -65,6 +54,7 @@ LONGOPT longopts[] = {
     "main", required_argument, 0, 'm',
     "brief", no_argument, 0, 'b',
     "reverse", no_argument, 0, 'r',
+    "format", required_argument, 0, 'f',
     0,
 };
 #else
@@ -100,10 +90,8 @@ struct option_type symbol_optype[] = {
 };
 
 char *progname;         /* program name */
-#ifdef DEBUG
 int debug;              /* debug mode on */
-#endif
-char *outname = "a.cflow"; /* default output file name */
+char *outname = "-";    /* default output file name */
 int print_option = 0;   /* what to print. */
 int verbose;            /* be verbose on output */
 int ignore_indentation; /* Don't rely on indentation,
@@ -143,137 +131,147 @@ static struct obstack temp_symbol_stack;
 int temp_symbol_count; /* number of symbols stored in temp_symbol_stack */
 
 int
-main(argc, argv)
-    int argc;
-    char **argv;
+main(int argc, char **argv)
 {
-    int c, i, num;
+     int c, i, num;
 
-    progname = argv[0];
-    obstack_init(&temp_symbol_stack);
-    sourcerc(&argc, &argv);
-    
-    while ((c = getopt_long(argc, argv, OPTSTR, longopts, &i)) != EOF) {
-	switch (c) {
-	case 'h':
-	    say_and_die(usage);
-	    return 0;
-	case 'V':
-	    say_and_die(version);
-	    return 0;
-	case 'L':
-	    say_and_die(licence);
-	    return 0;
-	case 'v':
-	    verbose = 1;
-	    break;
-	case 'S':
-	    ignore_indentation = 1;
-	    break;
-	case 'C':
-	    assume_cplusplus = 1;
-	    break;
-	case 'd':
-	    record_defines = 1;
-	    break;
-	case 't':
-	    record_typedefs = 1;
-	    break;
-	case 'x':
-	    print_option = PRINT_XREF;
-	    break;
-	case 'P':
-	    set_print_option(optarg);
-	    break;
-	case 'a':
-	    strict_ansi = 1;
-	    break;
-	case 'H':
-	    set_hash_size(atoi(optarg));
-	    break;
-	case 'p':
-	    num = atoi(optarg);
-	    if (num > 0)
-		token_stack_length = num;
-	    break;
-	case 's':
-	    symbol_override(optarg);
-	    break;
-	case 'g':
-	    globals_only = 1;
-	    break;
-	case 'l':
-	    print_levels = 1;
-	    break;
-	case 'T':
-	    print_as_tree = 1;
-	    level_indent[0] = "  "; /* two spaces */
-	    level_indent[1] = "| ";
-	    level_end[0] = "+-";
-	    level_end[1] = "\\-";
-	    break;
-	case 'i':
-	    set_level_indent(optarg);
-	    break;
-	case 'o':
-	    outname = strdup(optarg);
-	    break;
-	case 'm':
-	    start_name = strdup(optarg);
-	    break;
-	case 'b':
-	    brief_listing = 1;
-	    break;
-	case 'r':
-	    reverse_tree = 1;
-	    break;
-#ifdef DEBUG
-	case 'D':
-	    debug = 1;
-	    break;
-#endif
-	}
-    }
-    if (argv[optind] == NULL)
-	error(FATAL(1), "No input files");
-    if (print_option == 0)
-	print_option = PRINT_TREE;
-    init();
-    collect(argc-optind, argv+optind);
-    output();
-    return 0;
+     progname = argv[0];
+     obstack_init(&temp_symbol_stack);
+     register_output("gnu", gnu_output_handler, NULL);
+     register_output("posix", posix_output_handler, NULL);
+     sourcerc(&argc, &argv);
+     
+     while ((c = getopt_long(argc, argv, OPTSTR, longopts, &i)) != EOF) {
+	  switch (c) {
+	  case 'a':
+	       strict_ansi = 1;
+	       break;
+	  case 'C':
+	       assume_cplusplus = 1;
+	       break;
+	  case 'D':
+	       debug = 1;
+	       break;
+	  case 'H':
+	       set_hash_size(atoi(optarg));
+	       break;
+	  case 'L':
+	       say_and_die(licence);
+	       return 0;
+	  case 'P':
+	       set_print_option(optarg);
+	       break;
+	  case 'S':
+	       ignore_indentation = 1;
+	       break;
+	  case 'T':
+	       print_as_tree = 1;
+	       level_indent[0] = "  "; /* two spaces */
+	       level_indent[1] = "| ";
+	       level_end[0] = "+-";
+	       level_end[1] = "\\-";
+	       break;
+	  case 'V':
+	       say_and_die(version);
+	       return 0;
+	  case 'b':
+	       brief_listing = 1;
+	       break;
+	  case 'd':
+	       record_defines = 1;
+	       break;
+	  case 'f':
+	       if (select_output_driver(optarg))
+		    error(FATAL(1), "%s: No such output driver", optarg);
+	       break;
+	  case 'g':
+	       globals_only = 1;
+	       break;
+	  case 'h':
+	       say_and_die(usage);
+	       return 0;
+	  case 'i':
+	       set_level_indent(optarg);
+	       break;
+	  case 'l':
+	       print_levels = 1;
+	       break;	
+	  case 'm':
+	       start_name = strdup(optarg);
+	       break;
+	  case 'o':
+	       outname = strdup(optarg);
+	       break;
+	  case 'p':
+	       num = atoi(optarg);
+	       if (num > 0)
+		    token_stack_length = num;
+	       break;
+	  case 'r':
+	       reverse_tree = 1;
+	       break;
+	  case 's':
+	       symbol_override(optarg);
+	       break;
+	  case 't':
+	       record_typedefs = 1;
+	       break;
+	  case 'v':
+	       verbose = 1;
+	       break;
+	  case 'x':
+	       print_option = PRINT_XREF;
+	       break;
+	  }
+     }
+     if (argv[optind] == NULL)
+	  error(FATAL(1), "No input files");
+     if (print_option == 0)
+	  print_option = PRINT_TREE;
+     init();
+
+     argc -= optind;
+     argv += optind;
+     while (argc--) {
+	  if (source(*argv++) == 0)
+	       yyparse();
+     }
+     cleanup();
+
+     output();
+     return 0;
 }
 
 void
 init()
 {
-    struct symbol_holder *hold;
-    int i;
-    Symbol *sp;
+     struct symbol_holder *hold;
+     int i;
+     Symbol *sp;
+     
+     if (level_indent[0] == NULL) {
+	  level_indent[0] = level_indent[1] = "    "; /* 4 spaces */
+	  level_end[0] = level_end[1] = "";
+     }
+     
+     init_hash();
+     init_lex();
+     init_parse();
 
-    if (level_indent[0] == NULL) {
-	level_indent[0] = level_indent[1] = "    "; /* 4 spaces */
-	level_end[0] = level_end[1] = "";
-    }
-    
-    init_hash();
-    init_lex();
-    init_parse();
-
-    /* Now that we have symbol tables, pass there all user-provided symbols
-     */
-    if (temp_symbol_count) {
-	hold = obstack_finish(&temp_symbol_stack);
-	for (i = 0; i < temp_symbol_count; i++, hold++) {
-	    sp = install(hold->name);
-	    sp->type = SymToken;
-	    sp->v.type.token_type = hold->type;
-	    sp->v.type.source = NULL;
-	    sp->v.type.def_line = -1;
-	    sp->v.type.ref_line = NULL;
-	}
-    }
-    obstack_free(&temp_symbol_stack, NULL);
+     /* Now that we have symbol tables, pass there all user-provided symbols
+      */
+     if (temp_symbol_count) {
+	  hold = obstack_finish(&temp_symbol_stack);
+	  for (i = 0; i < temp_symbol_count; i++, hold++) {
+	       sp = install(hold->name);
+	       sp->type = SymToken;
+	       sp->v.type.token_type = hold->type;
+	       sp->v.type.source = NULL;
+	       sp->v.type.def_line = -1;
+	       sp->v.type.ref_line = NULL;
+	  }
+     }
+     obstack_free(&temp_symbol_stack, NULL);
 }
 
 
@@ -282,19 +280,17 @@ init()
  * Return 0 if the argument does not match any one of OPTYPE entries
  */
 static int
-find_option_type(optype, str)
-    struct option_type *optype;
-    char *str;
+find_option_type(struct option_type *optype, char *str)
 {
-    int len = strlen(str);
+     int len = strlen(str);
     
-    for ( ; optype->str; optype++) {
-	if (len >= optype->min_match &&
-	    strncmp(str, optype->str, len) == 0) {
-	    return optype->type;
-	}
-    }
-    return 0;
+     for ( ; optype->str; optype++) {
+	  if (len >= optype->min_match &&
+	      strncmp(str, optype->str, len) == 0) {
+	       return optype->type;
+	  }
+     }
+     return 0;
 }
 
 /* Parse the string STR and store the symbol in the temporary symbol table.
@@ -302,41 +298,39 @@ find_option_type(optype, str)
  * NAME means symbol name, TYPE means symbol type (possibly abbreviated)
  */
 void
-symbol_override(str)
-    char *str;
+symbol_override(char *str)
 {
-    struct symbol_holder sym;
-    char *ptr;
-    
-    ptr = str;
-    while (*ptr && *ptr != ':') 
-	ptr++;
-    if (*ptr == ':') {
-	*ptr++ = 0;
-	sym.type = find_option_type(symbol_optype, ptr);
-	if (sym.type == 0) {
-	    error(0, "unknown symbol type: %s", ptr);
-	    return;
-	}
-    } else
-	sym.type = IDENTIFIER;
-    sym.name = str;
-    obstack_grow(&temp_symbol_stack, &sym, sizeof(sym));
-    temp_symbol_count++;
+     struct symbol_holder sym;
+     char *ptr;
+     
+     ptr = str;
+     while (*ptr && *ptr != ':') 
+	  ptr++;
+     if (*ptr == ':') {
+	  *ptr++ = 0;
+	  sym.type = find_option_type(symbol_optype, ptr);
+	  if (sym.type == 0) {
+	       error(0, "unknown symbol type: %s", ptr);
+	       return;
+	  }
+     } else
+	  sym.type = IDENTIFIER;
+     sym.name = str;
+     obstack_grow(&temp_symbol_stack, &sym, sizeof(sym));
+     temp_symbol_count++;
 }
 
 void
-set_print_option(str)
-    char *str;
+set_print_option(char *str)
 {
-    int opt;
-    
-    opt = find_option_type(print_optype, str);
-    if (opt == 0) {
-	error(0, "unknown print option: %s", str);
-	return;
-    }
-    print_option |= opt;
+     int opt;
+     
+     opt = find_option_type(print_optype, str);
+     if (opt == 0) {
+	  error(0, "unknown print option: %s", str);
+	  return;
+     }
+     print_option |= opt;
 }
 
 /* Convert first COUNT bytes of the string pointed to by STR_PTR
@@ -345,28 +339,25 @@ set_print_option(str)
  * Return the number obtained.
  */
 static int
-number(str_ptr, base, count)
-    char **str_ptr;
-    int base;
-    int count;
+number(char **str_ptr, int base, int count)
 {
-    int  c, n;
-    unsigned i;
-    char *str = *str_ptr;
-
-    for (n = 0; *str && count; count--) {
-	c = *str++;
-	if (isdigit(c))
-	    i = c - '0';
-	else
-	    i = toupper(c) - 'A' + 10;
-	if (i > base) {
-	    break;
-	}
-	n = n * base + i;
-    }
-    *str_ptr = str - 1;
-    return n;
+     int  c, n;
+     unsigned i;
+     char *str = *str_ptr;
+     
+     for (n = 0; *str && count; count--) {
+	  c = *str++;
+	  if (isdigit(c))
+	       i = c - '0';
+	  else
+	       i = toupper(c) - 'A' + 10;
+	  if (i > base) {
+	       break;
+	  }
+	  n = n * base + i;
+     }
+     *str_ptr = str - 1;
+     return n;
 }
 
 /* Processing for --level option
@@ -390,127 +381,124 @@ number(str_ptr, base, count)
 #define LEVEL_END1 5
 
 struct option_type level_indent_optype[] = {
-    "begin", 1, LEVEL_BEGIN,
-    "0", 1, LEVEL_INDENT0,
-    "1", 1, LEVEL_INDENT1,
-    "end0", 4, LEVEL_END0,
-    "end1", 4, LEVEL_END1,
+     "begin", 1, LEVEL_BEGIN,
+     "0", 1, LEVEL_INDENT0,
+     "1", 1, LEVEL_INDENT1,
+     "end0", 4, LEVEL_END0,
+     "end1", 4, LEVEL_END1,
 };
 
 void
-set_level_indent(str)
-    char *str;
+set_level_indent(char *str)
 {
-    char *p;
+     char *p;
 
-    p = str;
-    while (*p != '=') {
-	if (*p == 0) {
-	    error(0, "level-indent syntax");
-	    return;
-	}
-	p++;
-    }
-    *p++ = 0;
+     p = str;
+     while (*p != '=') {
+	  if (*p == 0) {
+	       error(0, "level-indent syntax");
+	       return;
+	  }
+	  p++;
+     }
+     *p++ = 0;
     
-    switch (find_option_type(level_indent_optype, str)) {
-    case LEVEL_BEGIN:
-	parse_level_string(p, &level_begin);
-	break;
-    case LEVEL_INDENT0:
-	parse_level_string(p, &level_indent[0]);
-	break;
-    case LEVEL_INDENT1:
-	parse_level_string(p, &level_indent[1]);
-	break;
-    case LEVEL_END0:
-	parse_level_string(p, &level_end[0]);
-	break;
-    case LEVEL_END1:
-	parse_level_string(p, &level_end[1]);
-	break;
-    default:
-	error(0, "unknown level indent option: %s", str);
-    }
+     switch (find_option_type(level_indent_optype, str)) {
+     case LEVEL_BEGIN:
+	  parse_level_string(p, &level_begin);
+	  break;
+     case LEVEL_INDENT0:
+	  parse_level_string(p, &level_indent[0]);
+	  break;
+     case LEVEL_INDENT1:
+	  parse_level_string(p, &level_indent[1]);
+	  break;
+     case LEVEL_END0:
+	  parse_level_string(p, &level_end[0]);
+	  break;
+     case LEVEL_END1:
+	  parse_level_string(p, &level_end[1]);
+	  break;
+     default:
+	  error(0, "unknown level indent option: %s", str);
+     }
 }
 
 void
-parse_level_string(str, return_ptr)
-    char *str;
-    char **return_ptr;
+parse_level_string(char *str, char **return_ptr)
 {
-    static char text[MAXLEVELINDENT];
-    char *p;
-    int i, c, num;
+     static char text[MAXLEVELINDENT];
+     char *p;
+     int i, c, num;
     
-    p = text;
-    memset(text, ' ', sizeof(text));
-    text[sizeof(text)-1] = 0;
-    
-    while (*str) {
-	switch (*str) {
-	case '\\':
-	    switch (*++str) {
-	    case 'a':
-		*p++ = '\a';
-		break;
-	    case 'b':
-		*p++ = '\b';
-		break;
-	    case 'e':
-		*p++ = '\033';
-		break;
-	    case 'f':
-		*p++ = '\f';
-		break;
-	    case 'n':
-		*p++ = '\n';
-		break;
-	    case 'r':
-		*p++ = '\r';
-		break;
-	    case 't':
-		*p++ = '\t';
-		break;
-	    case 'x':
-	    case 'X':
-		++str;
-		*p++ = number(&str,16,2);
-		break;
-	    case '0':
-		++str;
-		*p++ = number(&str,8,3);
-		break;
-	    default:
-		*p++ = *str;
-	    }
-	    ++str;
-	    break;
-	case 'x':
-	    if (p == text) {
-		goto copy;
-	    }
-	    num = strtol(str+1, &str, 10);
-	    c = p[-1];
-	    for (i = 1; i < num; i++) {
-		*p++ = c;
-		if (*p == 0) {
-		    error(0, "level indent string too long");
+     p = text;
+     memset(text, ' ', sizeof(text));
+     text[sizeof(text)-1] = 0;
+     
+     while (*str) {
+	  switch (*str) {
+	  case '\\':
+	       switch (*++str) {
+	       case 'a':
+		    *p++ = '\a';
+		    break;
+	       case 'b':
+		    *p++ = '\b';
+		    break;
+	       case 'e':
+		    *p++ = '\033';
+		    break;
+	       case 'f':
+		    *p++ = '\f';
+		    break;
+	       case 'n':
+		    *p++ = '\n';
+		    break;
+	       case 'r':
+		    *p++ = '\r';
+		    break;
+	       case 't':
+		    *p++ = '\t';
+		    break;
+	       case 'x':
+	       case 'X':
+		    ++str;
+		    *p++ = number(&str,16,2);
+		    break;
+	       case '0':
+		    ++str;
+		    *p++ = number(&str,8,3);
+		    break;
+	       default:
+		    *p++ = *str;
+	       }
+	       ++str;
+	       break;
+	  case 'x':
+	       if (p == text) {
+		    goto copy;
+	       }
+	       num = strtol(str+1, &str, 10);
+	       c = p[-1];
+	       for (i = 1; i < num; i++) {
+		    *p++ = c;
+		    if (*p == 0) {
+			 error(0, "level indent string too long");
+			 return;
+		    }
+	       }
+	       break;
+	  default:
+	  copy:
+	       *p++ = *str++;
+	       if (*p == 0) {
+		    error(0, "level indent string is too long");
 		    return;
-		}
-	    }
-	    break;
-	default:
-	copy:
-	    *p++ = *str++;
-	    if (*p == 0) {
-		error(0, "level indent string is too long");
-		return;
-	    }
-	}
-    }
-    *p = 0;
-    *return_ptr = strdup(text);
+	       }
+	  }
+     }
+     *p = 0;
+     *return_ptr = strdup(text);
 }
 
 /* Print text on console and exit. Before printing scan text for
@@ -522,76 +510,70 @@ parse_level_string(str, return_ptr)
  * '$' on it's own, you have to modify helptext() accordingly.
  */
 void
-say_and_die(text)
-    char *text;
+say_and_die(char *text)
 {
-    char *p;
-
-    p = text;
-    while (*p) {
-	if (*p == '$') {
-	    *p = 0;
-	    printf("%s", text);
-	    *p = '$';
-	    while (*p++ != ':')
-		;
-	    text = p;
-	    while (*p != '$')
-		p++;
-	    *p = 0;
-	    printf("%s", text);
-	    *p++ = '$';
-	    text = p;
-	} else
-	    p++;
-    }
-    if (p > text)
-	printf("%s", text);
-    exit(0);
+     char *p;
+     
+     p = text;
+     while (*p) {
+	  if (*p == '$') {
+	       *p = 0;
+	       printf("%s", text);
+	       *p = '$';
+	       while (*p++ != ':')
+		    ;
+	       text = p;
+	       while (*p != '$')
+		    p++;
+	       *p = 0;
+	       printf("%s", text);
+	       *p++ = '$';
+	       text = p;
+	  } else
+	       p++;
+     }
+     if (p > text)
+	  printf("%s", text);
+     exit(0);
 }
 
 
 /* malloc() with error reporting
  */
 void *
-emalloc(size)
-    int size;
+emalloc(int size)
 {
-    void *p = malloc(size);
-    if (!p) 
-	error(FATAL(2), "not enough core");
-    return p;
+     void *p = malloc(size);
+     if (!p) 
+	  error(FATAL(2), "not enough core");
+     return p;
 }
 
 /* just for symmetry with emalloc() */
 void
-efree(ptr)
-    void *ptr;
+efree(void *ptr)
 {
-    free(ptr);
+     free(ptr);
 }
 
-/* Report the error condition.
+/* Report an error condition.
  * STAT is the message status bitmask:
  *    SYSTEM_ERROR bits mean do perror() after printing the message
  *    FATAL_ERROR bits mean exit().
  */
-/*PRINTFLIKE2*/
-error(stat, fmt, va_alist)
-    int stat;
-    char *fmt;
-    va_dcl
+void
+error(int stat, const char *fmt, ...)
 {
-    va_list ap;
-    va_start(ap);
-    fprintf(stderr, "%s: ", progname);
-    vfprintf(stderr, fmt, ap);
-    if (stat & SYSTEM_ERROR)
-	fprintf(stderr, ": %s", strerror(errno));
-    fprintf(stderr, "\n");
-    va_end(ap);
-    if (stat & FATAL_ERROR)
-	exit(stat & 255);
+     va_list ap;
+     va_start(ap, fmt);
+     fprintf(stderr, "%s: ", progname);
+     vfprintf(stderr, fmt, ap);
+     if (stat & SYSTEM_ERROR)
+	  fprintf(stderr, ": %s", strerror(errno));
+     fprintf(stderr, "\n");
+     va_end(ap);
+     if (stat & FATAL_ERROR)
+	  exit(stat & 255);
 }
 
 
