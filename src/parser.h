@@ -43,3 +43,6 @@ typedef struct {
 extern YYSTYPE yylval;
 extern char *filename;
 extern int line_num;
+
+extern int yylex(void);
+
