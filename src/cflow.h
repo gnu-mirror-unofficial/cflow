@@ -54,21 +54,30 @@ typedef struct {
 } Ref;
 
 typedef struct symbol Symbol;
+
 struct symbol {
     Symbol *next;
     enum symtype type;
     char *name;
+    int active;
     union {
-	int token_type;
 	struct {
-	    char *type;
-	    enum storage storage;
-	    int argc;
-	    int level;          /* for local vars only */
-	    char *args;
+	    int token_type;
 	    char *source;
 	    int def_line;
 	    Consptr ref_line;
+	} type;
+	struct {
+	    int token_type;
+	    char *source;
+	    int def_line;
+	    Consptr ref_line;
+	    char *type;
+	    enum storage storage;
+	    int argc;
+	    char *args;
+	    int level;          /* for local vars only */
+	    Consptr caller;
 	    Consptr callee;
 	} func;
     } v;
@@ -82,6 +91,10 @@ extern int record_defines;
 extern int record_typedefs;
 extern int cross_ref;
 extern int strict_ansi;
+extern int globals_only;
+extern int print_level;
+extern char level_indent[];
+
 #ifdef DEBUG
 extern int debug;
 #endif
@@ -95,6 +108,6 @@ void efree(void*);
 Symbol *lookup(char*);
 Symbol *install(char*);
 Consptr alloc_cons();
-int collect_symbols(Symbol ***);
+int collect_symbols(Symbol ***, int (*sel)());
 
 

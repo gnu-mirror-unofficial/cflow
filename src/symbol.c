@@ -22,6 +22,7 @@
 
 int hash_size = 509;
 Symbol **symtab;
+Symbol *statsym;
 
 typedef struct bucket Bucket;
 struct bucket {
@@ -32,6 +33,7 @@ struct bucket {
 
 int bucket_nodes = 512;
 Bucket *root_bucket, *last_bucket;
+int symbol_count;
 
 void
 set_hash_size(num)
@@ -75,7 +77,7 @@ lookup(s)
     Symbol *sp;
 
     for (sp = symtab[hash(s)]; sp != (Symbol *) 0; sp = sp->next)
-        if (strcmp(sp->name, s) == 0)
+        if (strcmp(sp->name, s) == 0) 
             return sp;
     return 0;
 }
@@ -88,13 +90,50 @@ install(s)
     unsigned hc;
 
     sp = (Symbol *) emalloc(sizeof(Symbol));
+    memset(sp, 0, sizeof(*sp));
     sp->name = emalloc(strlen(s) + 1);
     strcpy(sp->name, s);
     sp->type = SymUndefined;
     hc = hash(s);
     sp->next = symtab[hc];
     symtab[hc] = sp;
+    symbol_count++;
     return sp;
+}
+
+void
+delete_statics()
+{
+    int i;
+    Symbol *sp;
+    
+    for (i = 0; i < hash_size; i++) {
+	if (symtab[i] &&
+	    symtab[i]->type == SymFunction &&
+	    symtab[i]->v.func.storage == StaticStorage) {
+	    /* Delete the entry from the main symbol table */
+	    sp = symtab[i];
+	    symtab[i] = sp->next;
+	    /* Add it to the static symbol list */
+	    sp->next = statsym;
+	    statsym = sp;
+	}
+    }
+}
+
+void
+delete_autos(level)
+    int level;
+{
+    int i;
+    
+    for (i = 0; i < hash_size; i++) {
+	if (symtab[i] &&
+	    symtab[i]->type == SymFunction &&
+	    symtab[i]->v.func.level == level) {
+	    symtab[i] = symtab[i]->next;
+	}
+    }
 }
 
 
@@ -119,7 +158,7 @@ alloc_new_bucket()
 Consptr
 alloc_cons_from_bucket()
 {
-    if (last_bucket->free == bucket_nodes)
+    if (!last_bucket || last_bucket->free == bucket_nodes)
 	return NULL;
     return &last_bucket->cons[last_bucket->free++];
 }
@@ -137,4 +176,31 @@ alloc_cons()
 	}
     }
     return cp;
+}
+
+int
+collect_symbols(return_sym, sel)
+    Symbol ***return_sym;
+    int (*sel)();
+{
+    Symbol **sym, *st_ptr;
+    int i, num=0;
+
+    sym = calloc(symbol_count, sizeof(*sym));
+    if (!sym)
+	error(FATAL(2), "not enough core to sort symbols.");
+
+    /* collect usable sybols */
+    for (i = 0; i < hash_size; i++) {
+	for (st_ptr = symtab[i]; st_ptr; st_ptr = st_ptr->next)
+	    if (sel(st_ptr))
+		sym[num++] = st_ptr;
+    }
+    if (!globals_only) {
+	for (st_ptr = statsym; st_ptr; st_ptr = st_ptr->next)
+	    if (sel(st_ptr))
+		sym[num++] = st_ptr;
+    }
+    *return_sym = sym;
+    return num;
 }

@@ -33,6 +33,8 @@
 #define RBRACE '}'
 #define MEMBER_OF 269
 #define TYPE 270
+#define STRING 271
+#define PARM_WRAPPER 272
 
 typedef struct {
     char *str;

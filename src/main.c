@@ -33,7 +33,7 @@ void init();
 #ifdef DEBUG
 #define DEBUG_OPT "D"
 #endif
-#define OPTSTR "hVLvSCdxtH:p:s:" DEBUG_OPT
+#define OPTSTR "hVLvSCdxtH:p:s:gl" DEBUG_OPT
 
 
 #ifdef GNU_STYLE_OPTIONS
@@ -52,6 +52,8 @@ LONGOPT longopts[] = {
     "pushdown", required_argument, 0, 'p',
     "symbol", required_argument, 0, 's',
     "ansi", no_argument, 0, 'a',
+    "globals-only", no_argument, 0, 'g',
+    "print-level", no_argument, 0, 'l',
     0,
 };
 #else
@@ -74,6 +76,10 @@ int record_defines;     /* Record C preproc definitions */
 int record_typedefs;    /* Record typedefs */
 int cross_ref;          /* Generate cross-reference */
 int strict_ansi;        /* Assume sources to be written in ANSI C */
+int globals_only;       /* List only global symbols */
+int print_level;        /* Print branch levels */
+
+char level_indent[80] = ".";
 
 struct symbol_holder {
     char *name;
@@ -134,6 +140,12 @@ main(argc, argv)
 	case 's':
 	    symbol_override(optarg);
 	    break;
+	case 'g':
+	    globals_only = 1;
+	    break;
+	case 'l':
+	    print_level = 1;
+	    break;
 #ifdef DEBUG
 	case 'D':
 	    debug = 1;
@@ -165,7 +177,10 @@ init()
 	for (i = 0; i < temp_symbol_count; i++, hold++) {
 	    sp = install(hold->name);
 	    sp->type = SymToken;
-	    sp->v.token_type = hold->type;
+	    sp->v.type.token_type = hold->type;
+	    sp->v.type.source = NULL;
+	    sp->v.type.def_line = -1;
+	    sp->v.type.ref_line = NULL;
 	}
     }
     obstack_free(&temp_symbol_stack, NULL);
@@ -180,6 +195,8 @@ struct option_type {
     "kw", 2, WORD,
     "modifier", 1, MODIFIER,
     "identifier", 1, IDENTIFIER,
+    "type", 1, TYPE,
+    "wrapper", 1, PARM_WRAPPER,
 };
 
 static int
