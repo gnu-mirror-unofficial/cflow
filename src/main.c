@@ -20,12 +20,6 @@
 #include <stdarg.h>
 #include <parser.h>
 
-void symbol_override();
-void init();
-void set_print_option(char*);
-static void set_level_indent(char*);
-static void parse_level_string(char*, char**);
-
 const char *argp_program_version = "cflow (" PACKAGE_NAME ") " VERSION;
 const char *argp_program_bug_address = "<" PACKAGE_BUGREPORT ">";
 static char doc[] = "";
@@ -61,15 +55,17 @@ static struct argp_option options[] = {
        "record defines (not implemented yet)", 11 },
      { "ansi", 'a', NULL, 0,
        "Assume input to be written in ANSI C", 11 },
-     { "pushdown", 'p', "VALUE", 0,
-       "set initial token stack size to VALUE", 11 },
+     { "pushdown", 'p', "NUMBER", 0,
+       "set initial token stack size to NUMBER", 11 },
      { "symbol", 's', "SYM:TYPE", 0,
        "make cflow believe the symbol SYM is of type TYPE. Valid types are: keyword (or kw), modifier, identifier, type, wrapper. Any unambiguous abbreviation of the above is also accepted", 11 },
      { "main", 'm', "NAME", 0,
        "Assume main function to be called NAME", 11 },
      
      { NULL, 0, NULL, 0,
-       "Output control:", 20},
+       "Output control:", 20 },
+     { "number", 'n', "BOOL", OPTION_ARG_OPTIONAL,
+       "Print line numbers", 21 },
      { "print-level", 'l', NULL, 0,
        "Print nesting level along with the call tree", 21 },
      { "level-indent", OPT_LEVEL_INDENT, "STRING", 0,
@@ -112,26 +108,6 @@ struct option_type {
     int type;            /* data associated with the arg */
 };
 
-static int find_option_type(struct option_type *, char *);
-
-/* Args for --print option */
-struct option_type print_optype[] = {
-     { "xref", 1, PRINT_XREF },
-     { "cross-ref", 1, PRINT_XREF },
-     { "tree", 1, PRINT_TREE },
-     { 0 },
-};
-/* Args for --symbol option */
-struct option_type symbol_optype[] = {
-     { "keyword", 2, WORD },
-     { "kw", 2, WORD },
-     { "modifier", 1, MODIFIER },
-     { "identifier", 1, IDENTIFIER },
-     { "type", 1, TYPE },
-     { "wrapper", 1, PARM_WRAPPER },
-     { 0 },
-};
-
 int debug;              /* debug level */
 char *outname = "-";    /* default output file name */
 int print_option = 0;   /* what to print. */
@@ -143,6 +119,7 @@ int ignore_indentation; /* Don't rely on indentation,
                          */
 int record_defines;     /* Record macro definitions */
 int strict_ansi;        /* Assume sources to be written in ANSI C */
+int print_line_numbers; /* Print line numbers */
 int print_levels;       /* Print level number near every branch */
 int print_as_tree;      /* Print as tree */
 int brief_listing;      /* Produce short listing */
@@ -164,207 +141,62 @@ char *level_begin = "";
 
 char *start_name = "main"; /* Name of start symbol */
 
-static error_t
-parse_opt (int key, char *arg, struct argp_state *state)
-{
-     int num;
-     
-     switch (key) {
-     case 'a':
-	  strict_ansi = 1;
-	  break;
-     case OPT_DEBUG:
-	  debug = arg ? atoi(arg) : 1;
-	  break;
-     case 'L':
-	  printf("License for %s:\n\n", argp_program_version);
-	  printf("%s", cflow_license_text);
-	  exit(0);
-     case 'P':
-	  set_print_option(arg);
-	  break;
-     case 'S':
-	  ignore_indentation = 1;
-	  break;
-     case 'T':
-	  print_as_tree = 1;
-	  level_indent[0] = "  "; /* two spaces */
-	  level_indent[1] = "| ";
-	  level_end[0] = "+-";
-	  level_end[1] = "\\-";
-	  break;
-     case 'b':
-	  brief_listing = arg ? (arg[0] == 'y' || arg[0] == 'Y') : 1;
-	  break;
-     case 'd':
-	  max_depth = atoi(arg);
-	  if (max_depth < 0)
-	       max_depth = 0;
-	  break;
-     case OPT_DEFINES:
-	  record_defines = 1;
-	  break;
-     case 'f':
-	  if (select_output_driver(arg))
-	       argp_error(state, "%s: No such output driver", optarg);
-	  else if (strcmp(arg, "posix") == 0)
-	       brief_listing = 1;
-	  break;
-     case OPT_LEVEL_INDENT:
-	  set_level_indent(arg);
-	  break;
-     case 'i':
-	  if (arg[0] == '^') {
-	       excluded_symbols = xrealloc(excluded_symbols,
-					   strlen(excluded_symbols) +
-					   strlen(arg+1) + 1);
-	       strcat(excluded_symbols, arg+1);
-	  } else {
-	       included_symbols = xrealloc(included_symbols,
-					   strlen(included_symbols) +
-					   strlen(arg) + 1);
-	       strcat(included_symbols, arg);
-	  }
-	  break;
-     case 'l':
-	  print_levels = 1;
-	  break;	
-     case 'm':
-	  start_name = strdup(arg);
-	  break;
-     case 'o':
-	  outname = strdup(arg);
-	  break;
-     case 'p':
-	  num = atoi(arg);
-	  if (num > 0)
-	       token_stack_length = num;
-	  break;
-     case 'r':
-	  reverse_tree = 1;
-	  break;
-     case 's':
-	  symbol_override(arg);
-	  break;
-     case 'v':
-	  verbose = 1;
-	  break;
-     case 'x':
-	  print_option = PRINT_XREF;
-	  break;
-     default:
-	  return ARGP_ERR_UNKNOWN;
-     }
-     return 0;
-}
-
-static struct argp argp = {
-     options,
-     parse_opt,
-     "[FILE]...",
-     doc,
-     NULL,
-     NULL,
-     NULL
-};
-
-int
-included_char(int c)
-{
-     return strchr (included_symbols, c)
-	      && !strchr (excluded_symbols, c);
-}
-
-int
-globals_only()
-{
-     return !included_char('s');
-}
-
-int
-include_symbol(Symbol *sym)
-{
-     int type = 0;
-     
-     if (sym->name[0] == '_' && !included_char('_'))
-	  return 0;
-
-     if (sym->type == SymIdentifier) {
-	  if (sym->arity == -1)
-	       type = 'x';
-	  else if (sym->storage == StaticStorage)
-	       type = 's';
-     } else if (sym->type == SymToken
-		&& sym->token_type == TYPE
-		&& sym->source)
-	  type = 't';
-     
-     if (type == 0)
-	  return 1;
-     return included_char(type);
-}
-
-void
-xalloc_die(void)
-{
-     error(1, ENOMEM, "");
-}
-
-void
-init()
-{
-     if (level_indent[0] == NULL) {
-	  level_indent[0] = level_indent[1] = "    "; /* 4 spaces */
-	  level_end[0] = level_end[1] = "";
-     }
-     
-     init_lex(debug > 1);
-     init_parse();
-}
-
+#define boolean_value(arg) ((arg) ? ((arg)[0] == 'y' || (arg)[0] == 'Y') : 1)
 
 /* Given the option_type array and (possibly abbreviated) option argument
  * find the type corresponding to that argument.
  * Return 0 if the argument does not match any one of OPTYPE entries
  */
 static int
-find_option_type(struct option_type *optype, char *str)
+find_option_type(struct option_type *optype, const char *str, int len)
 {
-     int len = strlen(str);
-    
+     if (len == 0)
+	  len = strlen(str);
      for ( ; optype->str; optype++) {
 	  if (len >= optype->min_match &&
-	      strncmp(str, optype->str, len) == 0) {
+	      memcmp(str, optype->str, len) == 0) {
 	       return optype->type;
 	  }
      }
      return 0;
 }
 
+/* Args for --symbol option */
+static struct option_type symbol_optype[] = {
+     { "keyword", 2, WORD },
+     { "kw", 2, WORD },
+     { "modifier", 1, MODIFIER },
+     { "identifier", 1, IDENTIFIER },
+     { "type", 1, TYPE },
+     { "wrapper", 1, PARM_WRAPPER },
+     { 0 },
+};
+
 /* Parse the string STR and store the symbol in the temporary symbol table.
  * STR is the string of form: NAME:TYPE
  * NAME means symbol name, TYPE means symbol type (possibly abbreviated)
  */
-void
-symbol_override(char *str)
+static void
+symbol_override(const char *str)
 {
      int type;
-     char *ptr;
+     const char *ptr;
+     char *name;
      Symbol *sp;
      
      ptr = str;
      while (*ptr && *ptr != ':') 
 	  ptr++;
      if (*ptr == ':') {
-	  *ptr++ = 0;
-	  type = find_option_type(symbol_optype, ptr);
+	  type = find_option_type(symbol_optype, ptr+1, 0);
 	  if (type == 0) {
-	       error(0, 0, "unknown symbol type: %s", ptr);
+	       error(0, 0, "unknown symbol type: %s", ptr+1);
 	       return;
 	  }
      } else
 	  type = IDENTIFIER;
-     sp = install(str);
+     name = strndup(str, ptr - str);
+     sp = install(name);
      sp->type = SymToken;
      sp->token_type = type;
      sp->source = NULL;
@@ -372,12 +204,20 @@ symbol_override(char *str)
      sp->ref_line = NULL;
 }
 
-void
+/* Args for --print option */
+static struct option_type print_optype[] = {
+     { "xref", 1, PRINT_XREF },
+     { "cross-ref", 1, PRINT_XREF },
+     { "tree", 1, PRINT_TREE },
+     { 0 },
+};
+
+static void
 set_print_option(char *str)
 {
      int opt;
      
-     opt = find_option_type(print_optype, str);
+     opt = find_option_type(print_optype, str, 0);
      if (opt == 0) {
 	  error(0, 0, "unknown print option: %s", str);
 	  return;
@@ -391,11 +231,11 @@ set_print_option(char *str)
  * Return the number obtained.
  */
 static int
-number(char **str_ptr, int base, int count)
+number(const char **str_ptr, int base, int count)
 {
      int  c, n;
      unsigned i;
-     char *str = *str_ptr;
+     const char *str = *str_ptr;
      
      for (n = 0; *str && count; count--) {
 	  c = *str++;
@@ -414,6 +254,8 @@ number(char **str_ptr, int base, int count)
 
 /* Processing for --level option
  * The option syntax is
+ *    --level NUMBER
+ * or
  *    --level KEYWORD=STR
  * where
  *    KEYWORD is one of "begin", "0", ", "1", "end0", "end1",
@@ -432,7 +274,7 @@ number(char **str_ptr, int base, int count)
 #define LEVEL_END0 4
 #define LEVEL_END1 5
 
-struct option_type level_indent_optype[] = {
+static struct option_type level_indent_optype[] = {
      { "begin", 1, LEVEL_BEGIN },
      { "0", 1, LEVEL_INDENT0 },
      { "1", 1, LEVEL_INDENT1 },
@@ -440,44 +282,8 @@ struct option_type level_indent_optype[] = {
      { "end1", 4, LEVEL_END1 },
 };
 
-void
-set_level_indent(char *str)
-{
-     char *p;
-
-     p = str;
-     while (*p != '=') {
-	  if (*p == 0) {
-	       error(0, 0, "level-indent syntax");
-	       return;
-	  }
-	  p++;
-     }
-     *p++ = 0;
-    
-     switch (find_option_type(level_indent_optype, str)) {
-     case LEVEL_BEGIN:
-	  parse_level_string(p, &level_begin);
-	  break;
-     case LEVEL_INDENT0:
-	  parse_level_string(p, &level_indent[0]);
-	  break;
-     case LEVEL_INDENT1:
-	  parse_level_string(p, &level_indent[1]);
-	  break;
-     case LEVEL_END0:
-	  parse_level_string(p, &level_end[0]);
-	  break;
-     case LEVEL_END1:
-	  parse_level_string(p, &level_end[1]);
-	  break;
-     default:
-	  error(0, 0, "unknown level indent option: %s", str);
-     }
-}
-
-void
-parse_level_string(char *str, char **return_ptr)
+static void
+parse_level_string(const char *str, char **return_ptr)
 {
      static char text[MAXLEVELINDENT];
      char *p;
@@ -535,7 +341,7 @@ parse_level_string(char *str, char **return_ptr)
 	       for (i = 1; i < num; i++) {
 		    *p++ = c;
 		    if (*p == 0) {
-			 error(0, 0, "level indent string too long");
+			 error(1, 0, "level indent string too long");
 			 return;
 		    }
 	       }
@@ -544,13 +350,228 @@ parse_level_string(char *str, char **return_ptr)
 	  copy:
 	       *p++ = *str++;
 	       if (*p == 0) {
-		    error(0, 0, "level indent string is too long");
+		    error(1, 0, "level indent string is too long");
 		    return;
 	       }
 	  }
      }
      *p = 0;
      *return_ptr = strdup(text);
+}
+
+static void
+set_level_indent(const char *str)
+{
+     long n;
+     const char *p;
+     char *q;
+     
+     n = strtol(str, &q, 0);
+     if (*q == 0 && n > 0) {
+	  char *s = xmalloc(n+1);
+	  memset(s, ' ', n-1);
+	  s[n-1] = 0;
+	  level_indent[0] = level_indent[1] = s;
+	  return;
+     }
+     
+     p = str;
+     while (*p != '=') {
+	  if (*p == 0) {
+	       error(1, 0, "level-indent syntax");
+	       return;
+	  }
+	  p++;
+     }
+     ++p;
+    
+     switch (find_option_type(level_indent_optype, str, p - str - 1)) {
+     case LEVEL_BEGIN:
+	  parse_level_string(p, &level_begin);
+	  break;
+     case LEVEL_INDENT0:
+	  parse_level_string(p, &level_indent[0]);
+	  break;
+     case LEVEL_INDENT1:
+	  parse_level_string(p, &level_indent[1]);
+	  break;
+     case LEVEL_END0:
+	  parse_level_string(p, &level_end[0]);
+	  break;
+     case LEVEL_END1:
+	  parse_level_string(p, &level_end[1]);
+	  break;
+     default:
+	  error(1, 0, "unknown level indent option: %s", str);
+     }
+}
+
+static error_t
+parse_opt (int key, char *arg, struct argp_state *state)
+{
+     int num;
+     
+     switch (key) {
+     case 'a':
+	  strict_ansi = 1;
+	  break;
+     case OPT_DEBUG:
+	  debug = arg ? atoi(arg) : 1;
+	  break;
+     case 'L':
+	  printf("License for %s:\n\n", argp_program_version);
+	  printf("%s", cflow_license_text);
+	  exit(0);
+     case 'P':
+	  set_print_option(arg);
+	  break;
+     case 'S':
+	  ignore_indentation = 1;
+	  break;
+     case 'T':
+	  print_as_tree = 1;
+	  set_level_indent("0=  "); /* two spaces */
+	  set_level_indent("1=| ");
+	  set_level_indent("end0=+-");
+	  set_level_indent("end1=\\\\-");
+	  break;
+     case 'b':
+	  brief_listing = boolean_value(arg);
+	  break;
+     case 'd':
+	  max_depth = atoi(arg);
+	  if (max_depth < 0)
+	       max_depth = 0;
+	  break;
+     case OPT_DEFINES:
+	  record_defines = 1;
+	  break;
+     case 'f':
+	  if (select_output_driver(arg))
+	       argp_error(state, "%s: No such output driver", optarg);
+	  else if (strcmp(arg, "posix") == 0) 
+	       brief_listing = print_line_numbers = 1;
+	  break;
+     case OPT_LEVEL_INDENT:
+	  set_level_indent(arg);
+	  break;
+     case 'i':
+	  if (arg[0] == '^') {
+	       excluded_symbols = xrealloc(excluded_symbols,
+					   strlen(excluded_symbols) +
+					   strlen(arg+1) + 1);
+	       strcat(excluded_symbols, arg+1);
+	  } else {
+	       included_symbols = xrealloc(included_symbols,
+					   strlen(included_symbols) +
+					   strlen(arg) + 1);
+	       strcat(included_symbols, arg);
+	  }
+	  break;
+     case 'l':
+	  print_levels = 1;
+	  break;	
+     case 'm':
+	  start_name = strdup(arg);
+	  break;
+     case 'n':
+	  print_line_numbers = boolean_value(arg);
+	  break;
+     case 'o':
+	  outname = strdup(arg);
+	  break;
+     case 'p':
+	  num = atoi(arg);
+	  if (num > 0)
+	       token_stack_length = num;
+	  break;
+     case 'r':
+	  reverse_tree = 1;
+	  break;
+     case 's':
+	  symbol_override(arg);
+	  break;
+     case 'v':
+	  verbose = 1;
+	  break;
+     case 'x':
+	  print_option = PRINT_XREF;
+	  break;
+     default:
+	  return ARGP_ERR_UNKNOWN;
+     }
+     return 0;
+}
+
+static struct argp argp = {
+     options,
+     parse_opt,
+     "[FILE]...",
+     doc,
+     NULL,
+     NULL,
+     NULL
+};
+
+int
+included_char(int c)
+{
+     return strchr (included_symbols, c)
+	      && !strchr (excluded_symbols, c);
+}
+
+int
+globals_only()
+{
+     return !included_char('s');
+}
+
+int
+include_symbol(Symbol *sym)
+{
+     int type = 0;
+
+     if (!sym)
+	  return 0;
+     
+     if (sym->name[0] == '_' && !included_char('_'))
+	  return 0;
+
+     if (sym->type == SymIdentifier) {
+	  if (sym->arity == -1)
+	       type = 'x';
+	  else if (sym->storage == StaticStorage)
+	       type = 's';
+     } else if (sym->type == SymToken
+		&& sym->token_type == TYPE
+		&& sym->source)
+	  type = 't';
+     
+     if (type == 0)
+	  return 1;
+     return included_char(type);
+}
+
+void
+xalloc_die(void)
+{
+     error(1, ENOMEM, "Exiting");
+}
+
+void
+init()
+{
+     if (level_indent[0] == NULL) 
+	  level_indent[0] = "    "; /* 4 spaces */
+     if (level_indent[1] == NULL)
+	  level_indent[1] = level_indent[0];
+     if (level_end[0] == NULL)
+	  level_end[0] = "";
+     if (level_end[1] == NULL)
+	  level_end[1] = "";
+     
+     init_lex(debug > 1);
+     init_parse();
 }
 
 int
@@ -560,11 +581,11 @@ main(int argc, char **argv)
 
      register_output("gnu", gnu_output_handler, NULL);
      register_output("posix", posix_output_handler, NULL);
-     sourcerc(&argc, &argv);
 
      included_symbols = xstrdup("s");
      excluded_symbols = xstrdup("");
      
+     sourcerc(&argc, &argv);
      if (argp_parse (&argp, argc, argv, 0, &index, NULL))
 	  exit (1);
      
