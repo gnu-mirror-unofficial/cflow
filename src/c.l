@@ -28,10 +28,11 @@ struct obstack string_stk;
 
 int line_num;
 char *filename;
+char *canonical_filename; 
 YYSTYPE yylval;
 
 int ident();
-
+void update_loc();
 #define lex_error(msg) error_at_line(0, 0, filename, line_num, "%s", msg)
 
 %}
@@ -50,7 +51,9 @@ WS    [ \t\f\r]*
 <comment>"*"+[^*/\n]*	;
 <comment>"*"+[^*/\n]*\n	++line_num;
 <comment>"*"+"/"	BEGIN(INITIAL); 
-     /* ^{WS}#{WS}line */
+     /* Line directives */
+^{WS}#{WS}line{WS}{DIGITS}.*\n |
+^{WS}#{WS}{DIGITS}.*\n   { update_loc(); }
      /* skip any preproc */
 ^{WS}#.*\\\n             { BEGIN(longline); ++line_num; }
 {WS}#.*\n                ++line_num;
@@ -227,9 +230,87 @@ ident()
      return IDENTIFIER;
 }
 
+
+#define CFLOW_PREPROC "cc -E"
+
+char *pp_bin;
+char *pp_opts;
+static struct obstack *opt_stack;
+
+void
+set_preprocessor(const char *arg)
+{
+     pp_bin = xstrdup(arg);
+}
+
+void
+pp_option(const char *arg)
+{
+     if (!opt_stack) {
+	  if (!pp_bin)
+	       pp_bin = CFLOW_PREPROC;
+	  opt_stack = xmalloc(sizeof *opt_stack);
+	  obstack_init(opt_stack);
+     }
+     obstack_1grow(opt_stack, ' ');
+     obstack_grow(opt_stack, arg, strlen (arg));
+}
+
+void
+pp_finalize()
+{
+     char *s = obstack_finish(opt_stack);
+     if (!pp_opts)
+	  pp_opts = xstrdup(s);
+     else {
+	  pp_opts = xrealloc(pp_opts, strlen(pp_opts) + strlen(s) + 1);
+	  strcat(pp_opts, s);
+     }
+     obstack_free(opt_stack, s);
+     free(opt_stack);
+     opt_stack = NULL;
+}
+
+FILE *
+pp_open(const char *name)
+{
+     FILE *fp;
+     char *s;
+     size_t size;
+     
+     if (opt_stack)
+	  pp_finalize();
+     size = strlen(pp_bin) + 1 + strlen(name) + 1;
+     if (pp_opts)
+	  size += strlen(pp_opts);
+     s = xmalloc(size);
+     strcpy(s, pp_bin);
+     if (pp_opts)
+	  strcat(s, pp_opts);
+     strcat(s, " ");
+     strcat(s, name);
+     if (debug)
+	  printf("Command line: %s\n", s);
+     fp = popen(s, "r");
+     if (!fp)
+	  error(0, errno, "cannot execute `%s'", s);
+     free(s);
+     return fp;
+}
+
+void
+pp_close(FILE *fp)
+{
+     pclose(fp);
+}
+
+
+
 int
 yywrap()
 {
+     if (pp_bin)
+	  pp_close(yyin);
      delete_statics();
      return 1;
 }
@@ -238,15 +319,23 @@ int
 source(char *name)
 {
      FILE *fp;
-     
+
      fp = fopen(name, "r");
      if (!fp) {
 	  error(0, errno, "cannot open `%s'", name);
 	  return 1;
      }
+     if (pp_bin) {
+	  fclose(fp);
+	  fp = pp_open(name);
+	  if (!fp)
+	       return 1;
+     }
      obstack_grow(&string_stk, name, strlen(name)+1);
      filename = obstack_finish(&string_stk);
+     canonical_filename = filename;
      line_num = 1;
+
      yyrestart(fp);
      return 0;
 }
@@ -289,5 +378,29 @@ backslash()
      return c;                                         
 }                                                     
 
+void
+update_loc()
+{
+     char *p;
+     
+     for (p = strchr(yytext, '#')+1; *p && isspace(*p); p++)
+	  ;
+     if (p[0] == 'l') /* line */
+	  p += 4;
 
-    
+     line_num = strtoul(p, &p, 10);
+     for ( ; *p && isspace(*p); p++)
+	  ;
+     if (p[0] == '"') {
+	  int n;
+	  
+	  for (p++, n = 0; p[n] && p[n] != '"'; n++)
+	       ;
+	  obstack_grow(&string_stk, p, n);
+	  obstack_1grow(&string_stk, 0);
+	  filename = obstack_finish(&string_stk);
+     }
+     if (debug > 1)
+	  printf("New location: %s:%d\n", filename, line_num);
+}
+          
