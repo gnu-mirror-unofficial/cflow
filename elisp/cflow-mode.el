@@ -35,6 +35,19 @@
 ;;  (setq auto-mode-alist (append auto-mode-alist
 ;;                                '(("\\.cflow$" . cflow-mode))))
 
+(eval-when-compile
+  ;; We use functions from these modules
+  (mapcar 'require '(font-lock)))
+
+(defvar cflow-mode-syntax-table nil
+  "Syntax table used in cflow-mode buffers.")
+
+(unless cflow-mode-syntax-table
+  (setq cflow-mode-syntax-table (make-syntax-table))
+  (modify-syntax-entry ?\# "<" cflow-mode-syntax-table)
+  (modify-syntax-entry ?\n ">" cflow-mode-syntax-table))
+
+  
 (defvar cflow-mode-map (make-sparse-keymap)
   "Keymap used in Cflow mode.")
 
@@ -167,6 +180,23 @@
 	(fundamental-mode)
 	(message "Type 'M-x cflow-mode RET' once done"))))
 
+
+;; Font-lock stuff
+(defconst cflow-font-lock-keywords
+  (eval-when-compile
+    (list
+     (cons "^\\s *[0-9]+" font-lock-constant-face)
+     (list "\\(\\S +\\)()\\s +\\(<[^>]*>\\)"
+	   '(1 font-lock-function-name-face)
+	   '(2 font-lock-type-face))
+     (list "\\(\\S +\\)\\s +\\(<[^>]*>\\)"
+	   '(1 font-lock-variable-name-face)
+	   '(2 font-lock-type-face))
+     (cons "\\S +()$" font-lock-builtin-face)
+     (cons "(R):?$" font-lock-comment-face)
+     (cons "(recursive: see [0-9]+)" font-lock-comment-face)
+     (cons "^[ \\t+-|\\]+" font-lock-keyword-face))))
+
 ;;;###autoload
 (defun cflow-mode ()
   "Major mode for viewing cflow output files
@@ -184,7 +214,15 @@ Key bindings are:
   (set (make-local-variable 'cflow-read-only) buffer-read-only)
   (setq buffer-read-only t)
 
-  (set-default 'cflow-recursion-root-line nil))
+  (set-default 'cflow-recursion-root-line nil)
+
+  (set-syntax-table cflow-mode-syntax-table)
+
+  (make-local-variable 'font-lock-defaults)
+  (setq font-lock-defaults
+	'((cflow-font-lock-keywords) nil t
+	  (("+-*/.<>=!?$%_&~^:" . "w"))
+	  beginning-of-line)))
 
 (provide 'cflow-mode)
 ;;; cflow-mode ends
