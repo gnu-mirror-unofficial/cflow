@@ -1,4 +1,4 @@
-GNU cflow TODO list.  2005-03-20
+GNU cflow TODO list.  2005-03-22
 Copyright (C) 2005, Sergey Poznyakoff
 
 * Introduction
@@ -20,10 +20,6 @@ order of decreasing priority, the most urgent ones being the first.
 ** Write proper documentation
 
 * Medium Priority Issues
-
-** Handle #line statements in input files.
-
-** Optionally preprocess input files with cpp.
 
 ** Implement front-end support.
 

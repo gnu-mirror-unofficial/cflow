@@ -1,3 +1,21 @@
+2005-03-22  Sergey Poznyakoff  <gray@Noldor.runasimi.org>
+
+	* TODO: Updated
+	* src/c.l (canonical_filename): New global
+	(update_loc): New function
+	(source): Invoke preprocessor if necessary
+	(yywrap): Stop preprocessor if necessary
+	* src/cflow.h (struct symbol.temp): New field
+	* src/gnu.c (gnu_output_handler): Do not print extra newlines
+	as separators
+	* src/main.c: New options -I, -U, -D and --preprocess
+	(main): Use ARGP_IN_ORDER when parsing arguments
+	* src/parser.c (dcl): Minor fix to allow for nameless
+	function-pointer arguments [int foo(int (*)())]
+	* src/parser.h (canonical_filename): New global
+	* src/symbol.c (install): Initialize sym->temp
+ 	(delete_statics): Unconditionally remove temporary symbols
+
 2005-03-21  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* elisp/cflow-mode.el: Font locking support
