@@ -56,10 +56,8 @@ print_symbol_type(FILE *outfile, Symbol *sym)
 static int
 print_symbol(FILE *outfile, int line, struct output_symbol *s)
 {
-     fprintf(outfile, "%d %*s%s: ", \
-	     line,
-	     3*s->level, "",
-	     s->sym->name);
+     print_level(s->level, s->last);
+     fprintf(outfile, "%s: ", s->sym->name);
      
      if (brief_listing) {
 	  if (s->sym->expand_line) {
@@ -86,7 +84,7 @@ posix_output_handler(cflow_output_command cmd,
 	  fprintf(outfile, "\n");
 	  break;
      case cflow_output_text:
-	  fprintf(outfile, "%s\n", (char*) data);
+	  fprintf(outfile, "%s", (char*) data);
 	  break;
      case cflow_output_symbol:
 	  return print_symbol(outfile, line, data);
