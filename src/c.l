@@ -132,8 +132,9 @@ enum                 {yylval.str = "enum"; return STRUCT;}
       */
 \"    BEGIN(string);
 <string>[^\\"\n]*       ;
-<string>\n              { BEGIN(INITIAL); lex_error("bad input"); }
+<string>\n              lex_error("unterminated string?"); 
 <string>\\.             ;
+<string>\\\n            ;
 <string>\"              BEGIN(stringwait);
 <stringwait>{WS}        ;
 <stringwait>\n          ++line_num; 

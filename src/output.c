@@ -30,43 +30,13 @@ void scan_tree(int, Symbol *);
 void direct_tree(int, Symbol *);
 void inverted_tree(int, Symbol *);
 void tree_output();
-
-void (*print_level_fun[])(int) = {
-    text_print_level,
-    html_print_level
-};
-void (*print_function_name_fun[])(Symbol*,int) = {
-    text_print_function_name,
-    html_print_function_name
-};
-void (*set_active_fun[])(Symbol*) = {
-    text_set_active,
-    html_set_active
-};
-void (*header_fun[])(enum tree_type) = {
-    text_header,
-    html_header,
-};
-void (*begin_fun[])() = {
-    text_begin,
-    html_begin
-};
-void (*end_fun[])() = {
-    text_end,
-    html_end
-};
-void (*separator_fun[])() = {
-    text_separator,
-    html_separator
-};
-
-#define print_level print_level_fun[output_mode]
-#define print_function_name print_function_name_fun[output_mode]
-#define set_active set_active_fun[output_mode]
-#define header header_fun[output_mode]
-#define begin begin_fun[output_mode]
-#define end end_fun[output_mode]
-#define separator separator_fun[output_mode]
+void print_level(int);
+void print_function_name(Symbol*,int);
+void set_active(Symbol*);
+void header(enum tree_type);
+void begin();
+void end();
+void separator();
 
 int level_mark_size=1000;
 char *level_mark;
@@ -257,3 +227,144 @@ clear_active(sym)
 {
     sym->active = 0;
 }
+
+
+static void
+newline()
+{
+    fprintf(outfile, "\n");
+    out_line++;
+}
+
+void
+begin()
+{
+}
+
+void
+end()
+{
+}
+
+void
+separator()
+{
+    newline();
+}
+
+void
+print_level(lev)
+    int lev;
+{
+    int i;
+    
+    if (print_levels)
+	fprintf(outfile, "%4d ", lev);
+    if (print_as_tree) {
+	for (i = 0; i < lev; i++) {
+	    if (level_mark[i])
+		fprintf(outfile, "| ");
+	    else
+		fprintf(outfile, "  ");
+	}
+	fprintf(outfile, "+-");
+    } else {
+	for (i = 0; i < lev; i++)
+	    fprintf(outfile, "%s", level_indent);
+    }
+}
+
+void
+print_function_name(sym, has_subtree)
+    Symbol *sym;
+    int has_subtree;
+{
+    fprintf(outfile, "%s()", sym->name);
+    if (sym->v.func.type)
+	fprintf(outfile, " <%s at %s:%d>",
+	       sym->v.func.type,
+	       sym->v.func.source,
+	       sym->v.func.def_line);
+    if (sym->active) {
+	fprintf(outfile, "(recursive: see %d)", sym->active-1);
+	newline();
+	return;
+    }
+    if (sym->v.func.recursive)
+	fprintf(outfile, " (R)");
+    if (!print_as_tree && has_subtree)
+	fprintf(outfile, ":");
+    newline();
+}
+
+void
+set_active(sym)
+    Symbol *sym;
+{
+    sym->active = out_line;
+}
+
+
+void
+header(tree)
+    enum tree_type tree;
+{
+    newline();
+    switch (tree) {
+    case DirectTree:
+	fprintf(outfile, "Direct Tree:");
+	break;
+    case ReverseTree:
+	fprintf(outfile, "Reverse Tree:");
+	break;
+    }
+    newline();
+}
+
+void
+print_refs(name, cons)
+    char *name;
+    Consptr cons;
+{
+    Ref *refptr;
+    
+    for ( ; cons; cons = CDR(cons)) {
+	refptr = (Ref*)CAR(cons);
+	fprintf(outfile, "%s   %s:%d",
+	       name,
+	       refptr->source,
+	       refptr->line);
+	newline();
+    }
+}
+
+
+void
+print_function(symp)
+    Symbol *symp;
+{
+    if (symp->v.func.source) {
+	fprintf(outfile, "%s * %s:%d %s",
+	       symp->name,
+	       symp->v.func.source,
+	       symp->v.func.def_line,
+	       symp->v.func.type);
+	newline();
+    }
+    print_refs(symp->name, symp->v.func.ref_line);
+}
+
+
+void
+print_type(symp)
+    Symbol *symp;
+{
+    fprintf(outfile, "%s t %s:%d",
+	   symp->name,
+	   symp->v.type.source,
+	   symp->v.type.def_line,
+	   symp->v.func.type);
+    newline();
+}
+
+

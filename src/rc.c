@@ -18,90 +18,37 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <string.h>
 #include "cflow.h"
 #include "parser.h"
-#include "obstack1.h"
 #include "output.h"
 
 #ifndef LOCAL_RC
 #define LOCAL_RC ".cflowrc"
 #endif
 
-struct obstack rc_stk;
-char *format_str[NUMFORMATS];
-FILE *rcfile;
-char *rcname;
-int line;
-char linebuf[512];
-
-static int get_format();
-static int nextline();
+static int xargc;
+static char **xargv;
 static void parse_rc(char*);
-static void section();
-static void find_end();
-
-struct keyword {
-    char *name;
-    int code;
-};
-
-struct keyword kw[] = {
-    "call", CALL,
-    "direct_tree", DIRECT_TREE,
-    "footer", FOOTER,
-    "header", HEADER,
-    "level_indent", LEVEL_INDENT,
-    "recursive_call", RECURSIVE_CALL,
-    "recursive_ref", RECURSIVE_REF,
-    "reverse_tree", REVERSE_TREE,
-    "recursive_bottom", RECURSIVE_BOTTOM,
-    "description", DESCRIPTION,
-    "branch", BRANCH,
-    "nobranch", NOBRANCH,
-    "leaf", LEAF,
-    0,
-};
-
-
-static int
-find_keyword(kwp, str, len)
-    struct keyword *kwp;
-    char *str;
-    int *len;
-{
-    int i;
-
-    for ( ; kwp->name; kwp++) {
-	if (strncmp(str, kwp->name, strlen(kwp->name)) == 0) {
-	    if (len)
-		*len = strlen(kwp->name);
-	    return kwp->code;
-	}
-    }
-    return 0;
-}
-
-int
-get_format()
-{
-    return find_keyword(kw, linebuf+1, NULL);
-}
-
-int
-nextline()
-{
-    if (fgets(linebuf, sizeof(linebuf), rcfile)) {
-	line++;
-	return 1;
-    }
-    return 0;
-}
+static void expand_args(char*);
 
 void
-sourcerc()
+sourcerc(argc_ptr, argv_ptr)
+    int *argc_ptr;
+    char ***argv_ptr;
 {
     char *home;
+    
+    xargc = 1;
+    xargv = malloc(2*sizeof(xargv[0]));
 
+    home = getenv("CFLOW_OPTIONS");
+    if (home) {
+	expand_args(strdup(home));
+    }
+    
     home = getenv("HOME");
     if (home) {
 	int len = strlen(home);
@@ -116,142 +63,80 @@ sourcerc()
 	parse_rc(buf);
 	free(buf);
     }
+    
+    if (xargc > 1) {
+	int i;
+	char **xp = realloc(xargv, (xargc + *argc_ptr + 1)*(sizeof(xargv[0])));
+	if (!xp) {
+	    error(0, "not enough core to process rc");
+	    free(xargv);
+	    return;
+	}
+	xargv = xp;
+	xargv[0] = (*argv_ptr)[0];
+	xargc--;
+	for (i = 1; i <= *argc_ptr; i++) {
+	    xargv[xargc+i] = (*argv_ptr)[i];
+	}
+	*argc_ptr += xargc;
+	*argv_ptr = xargv;
+    }
 }
 
 void
 parse_rc(name)
     char *name;
 {
+    struct stat st;
+    FILE *rcfile;
+    int size;
+    char **pptr;
+    char *buf;
+    
+    if (stat(name, &st))
+	return;
+    buf = malloc(st.st_size);
+    if (!buf) {
+	error(0, "not enough memory to process rc file");
+	return;
+    }
     rcfile = fopen(name, "r");
     if (!rcfile) {
+	error(SYSTEM_ERROR, "cannot open %s", name);
 	return;
     }
-
-    line = 1;
-    rcname = name;
-    
-    obstack_init(&rc_stk);
-    while (nextline()) {
-	int len = strlen(linebuf);
-	if (len == 1)
-	    continue;
-	linebuf[len-1] = 0;
-	if (linebuf[0] == '$') 
-	    section();
-	else
-	    error(0, "%s:%d expected section start", rcname, line);
-    }
+    size = fread(buf, 1, st.st_size, rcfile);
     fclose(rcfile);
+    expand_args(buf);
 }
 
-enum fmt_type {
-    TextFmt=1,
-    CurLineFmt,
-    NameFmt,
-    FileFmt,
-    LineFmt,
-    RefFmt
-};
-
-struct keyword format_var[] = {
-    ".", CurLineFmt,
-    "name", NameFmt,
-    "file", FileFmt,
-    "line", LineFmt,
-    "ref", RefFmt,
-    0
-};
-
-int
-get_var(ptr, endptr)
-    char *ptr;
-    char **endptr;
-{
-    int len;
-    int n = find_keyword(format_var, ptr, &len);
-    *endptr = ptr;
-    if (n) 
-	*endptr += len;
-    return n;
-}
 
 void
-section()
+expand_args(buf)
+    char *buf;
 {
-    int num, var;
-    char *ptr, *start;
+    char *p, *start;
+    char **xp;
     
-    if ((num = get_format()) == 0) {
-	error(0, "%s:%d unknown section name: %s", rcname, line, linebuf+1);
-	find_end();
-	return;
-    }
-
-    while (nextline() && strncmp(linebuf, "$end", 4)) {
-	for (ptr = start = linebuf; *ptr; ) {
-	    if (*ptr == '$') {
-		if (ptr[1] == '$') {
-		    obstack_1grow(&rc_stk, '$');
-		    ptr += 2;
-		} else {
-		    if (ptr > start) {
-			obstack_1grow(&rc_stk, TextFmt);
-			obstack_grow(&rc_stk, start, ptr-start);
-		    }
-		    obstack_1grow(&rc_stk, 0);
-		    var = get_var(ptr+1, &start);
-		    obstack_1grow(&rc_stk, var);
-		    ptr = start;
-		}
-	    } else
-		ptr++;
+    p = buf;
+    while (*p) {
+	while (*p && isspace(*p))
+	    p++;
+	if (!*p)
+	    break;
+	start = p;
+	while (*p && !isspace(*p))
+	    p++;
+	if (*p)
+	    *p++ = 0;
+	xargv[xargc] = start;
+	xp = realloc(xargv, (xargc+2)*sizeof(xargv[0]));
+	if (!xp) {
+	    error(0, "not enough core to process rc");
+	    return;
 	}
-	obstack_1grow(&rc_stk, TextFmt);
-	obstack_grow(&rc_stk, start, ptr-start);
-	obstack_1grow(&rc_stk, 0);
+	xargv = xp;
+	xargc++;
     }
-    obstack_1grow(&rc_stk, 0);
-    format_str[num] = obstack_finish(&rc_stk);
 }
 	
-void
-find_end()
-{
-    while (nextline() && strncmp(linebuf, "$end", 4))
-	;
-}
-   
-void
-format(num, sp)
-    int num;
-    Symbol *sp;
-{
-    char *p;
-
-    p = format_str[num];
-    while (*p) {
-	switch (*p++) {
-	case TextFmt:
-	    fprintf(outfile, "%s", p);
-	    while (*p++) ;
-	    break;
-	case CurLineFmt:
-	    fprintf(outfile, "%d", out_line);
-	    break;
-	case NameFmt:
-	    fprintf(outfile, "%s", sp->name);
-	    break;
-	case FileFmt:
-	    fprintf(outfile, "%s", sp->v.func.source);
-	    break;
-	case LineFmt:
-	    fprintf(outfile, "%d", sp->v.func.def_line);
-	    break;
-	case RefFmt:
-	    fprintf(outfile, "%d", sp->active-1);
-	    break;
-	default:
-	    abort();
-	}
-    }
-}

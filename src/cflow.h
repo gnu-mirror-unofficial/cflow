@@ -84,10 +84,6 @@ struct symbol {
     } v;
 };
 
-/* two output modes */
-#define OUT_TEXT 0
-#define OUT_HTML 1
-
 /* Output flags */
 #define PRINT_XREF 0x01
 #define PRINT_TREE 0x02
@@ -101,9 +97,7 @@ extern int record_defines;
 extern int record_typedefs;
 extern int strict_ansi;
 extern int globals_only;
-extern int print_level;
 extern char level_indent[];
-extern int output_mode;
 extern int print_levels;
 extern int print_as_tree;
 extern int out_line;
@@ -124,5 +118,11 @@ Symbol *install(char*);
 Consptr alloc_cons();
 int collect_symbols(Symbol ***, int (*sel)());
 Consptr append_to_list(Consptr *, void *);
+void sourcerc(int *, char ***);
+
+
+
+
+
 
 

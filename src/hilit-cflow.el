@@ -27,8 +27,7 @@
  'cflow-mode
  '(("\\(Direct Tree\\)\\|\\(Reverse Tree\\)" nil label)
    ("<[^>]*>" nil comment)
-   ("(recursive: see [0-9]+)" nil define)
-   ("^!.*[^ ].*!" nil define)
+   ("[_a-zA-Z][_a-zA-Z0-9]*().*(recursive: see [0-9]+)" nil define)
    ("+-" nil keyword)
    ("|" nil keyword)
    (".*(R)$" nil include)))

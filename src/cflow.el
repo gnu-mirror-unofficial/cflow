@@ -76,8 +76,7 @@ Key bindings are:
   (let ((lst (cflow-find-default-function)))
     (cond
      (lst
-      (find-file-noselect (car lst))
-      (switch-to-buffer (car lst))
+      (switch-to-buffer (find-file-noselect (car lst)))
       (goto-line (car (cdr lst))))
      (t
       nil))))

@@ -46,7 +46,8 @@ The options are:\n\
     -a, --ansi                  Assume input to be written in ANSI C\n\
     -g, --globals-only          Record only global symbols\n\
     -l, --print-level           Print nesting level along with the call tree\n\
-    -m, --html                  Produce HTML output.\n\
+    -m NAME,
+    --main NAME                 Assume main function to be called NAME.\n\
     -T, --tree                  Draw tree\n\
     -i STRING,\n\
     --level-indent STRING       Use STRING when indenting to each new level\n\

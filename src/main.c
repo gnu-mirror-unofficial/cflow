@@ -36,7 +36,7 @@ void set_level_indent(char*);
 #ifdef DEBUG
 #define DEBUG_OPT "D"
 #endif
-#define OPTSTR "hVLvSCdxtH:p:s:glMTi:P:o:m:" DEBUG_OPT
+#define OPTSTR "hVLvSCdxtH:p:s:glTi:P:o:m:" DEBUG_OPT
 
 
 #ifdef GNU_STYLE_OPTIONS
@@ -57,7 +57,6 @@ LONGOPT longopts[] = {
     "ansi", no_argument, 0, 'a',
     "globals-only", no_argument, 0, 'g',
     "print-level", no_argument, 0, 'l',
-    "html", no_argument, 0, 'M',
     "tree", no_argument, 0, 'T',
     "level-indent", required_argument, 0, 'i',
     "print", required_argument, 0, 'P',
@@ -90,7 +89,6 @@ char *progname;
 int debug;
 #endif
 char *outname = "a.cflow";
-int output_mode = OUT_TEXT;
 int print_option = 0;
 int verbose;            /* be verbose on output */
 int ignore_indentation; /* Don't rely on indentation,
@@ -127,7 +125,7 @@ main(argc, argv)
 
     progname = argv[0];
     obstack_init(&temp_symbol_stack);
-    sourcerc();
+    sourcerc(&argc, &argv);
     
     while ((c = getopt_long(argc, argv, OPTSTR, longopts, &i)) != EOF) {
 	switch (c) {
@@ -180,9 +178,6 @@ main(argc, argv)
 	    break;
 	case 'l':
 	    print_levels = 1;
-	    break;
-	case 'M':
-	    output_mode = OUT_HTML;
 	    break;
 	case 'T':
 	    print_as_tree = 1;

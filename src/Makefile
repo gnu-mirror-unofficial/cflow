@@ -1,6 +1,6 @@
 # $Id$
 CFLAGS=-ggdb
-SRCS=main.c rc.c parser.c lex.yy.c collect.c output.c symbol.c text.c html.c
+SRCS=main.c rc.c parser.c lex.yy.c collect.c output.c symbol.c 
 OBJS=$(SRCS:.c=.o)
 
 cflow: $(OBJS)
