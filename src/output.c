@@ -33,9 +33,9 @@ FILE *outfile;    /* Output file */
 
 struct output_driver {
      char *name;
-     void (*handler) (cflow_output_command cmd,
-		      FILE *outfile, int line,
-		      void *data, void *handler_data);
+     int (*handler) (cflow_output_command cmd,
+		     FILE *outfile, int line,
+		     void *data, void *handler_data);
      void *handler_data;
 };
 
@@ -45,9 +45,9 @@ struct output_driver output_driver[MAX_OUTPUT_DRIVERS];
 
 int
 register_output(const char *name,
-		void (*handler) (cflow_output_command cmd,
-				 FILE *outfile, int line,
-				 void *data, void *handler_data),
+		int (*handler) (cflow_output_command cmd,
+				FILE *outfile, int line,
+				void *data, void *handler_data),
 		void *handler_data)
 {
      if (driver_max == MAX_OUTPUT_DRIVERS-1)
@@ -107,18 +107,19 @@ separator()
 					 output_driver[driver_index].handler_data);
 }
 
-static void
+static int
 print_symbol (int direct, int level, int last, Symbol *sym)
 {
      struct output_symbol output_symbol;
+
      output_symbol.direct = direct;
      output_symbol.level = level;
      output_symbol.last = last;
      output_symbol.sym = sym;
-     output_driver[driver_index].handler(cflow_output_symbol,
-					 outfile, out_line,
-					 &output_symbol,
-					 output_driver[driver_index].handler_data);
+     return output_driver[driver_index].handler(cflow_output_symbol,
+						outfile, out_line,
+						&output_symbol,
+						output_driver[driver_index].handler_data);
      
 }
 
@@ -144,14 +145,14 @@ compare(const void *ap, const void *bp)
 static int
 is_var(Symbol *symp)
 {
-     if (record_typedefs &&
-	 symp->type == SymToken &&
-	 symp->v.type.token_type == TYPE &&
-	 symp->v.type.source)
-	  return 1;
-     return symp->type == SymFunction &&
-	  (symp->v.func.storage == ExternStorage ||
-	   symp->v.func.storage == StaticStorage);
+     if (include_symbol(symp)) {
+	  if (symp->type == SymFunction) 
+	       return symp->v.func.storage == ExternStorage ||
+	 	      symp->v.func.storage == StaticStorage;
+	  else
+	       return 1;
+     }
+     return 0;
 }
 
 static int
@@ -198,11 +199,11 @@ print_function(Symbol *symp)
 static void
 print_type(Symbol *symp)
 {
-     fprintf(outfile, "%s t %s:%d\n",
-	     symp->name,
-	     symp->v.type.source,
-	     symp->v.type.def_line,
-	     symp->v.func.type);
+     if (symp->v.type.source)
+	  fprintf(outfile, "%s t %s:%d\n",
+		  symp->name,
+		  symp->v.type.source,
+		  symp->v.type.def_line);
 }
    
 void
@@ -223,6 +224,8 @@ xref_output()
 	       break;
 	  case SymToken:
 	       print_type(symp);
+	       break;
+	  case SymUndefined:
 	       break;
 	  }
      }
@@ -265,12 +268,16 @@ static void
 direct_tree(int lev, int last, Symbol *sym)
 {
      Consptr cons;
+     int rc;
      
-     if (sym->type == SymUndefined)
+     if (sym->type == SymUndefined
+	 || (max_depth && lev >= max_depth)
+	 || !include_symbol(sym))
 	  return;
-     print_symbol(1, lev, last, sym);
+
+     rc = print_symbol(1, lev, last, sym);
      newline();
-     if (sym->active)
+     if (rc || sym->active)
 	  return;
      set_active(sym);
      for (cons = sym->v.func.callee; cons; cons = CDR(cons)) {
@@ -286,10 +293,15 @@ static void
 inverted_tree(int lev, int last, Symbol *sym)
 {
      Consptr cons;
-
-     print_symbol(0, lev, last, sym);
+     int rc;
+     
+     if (sym->type == SymUndefined
+	 || (max_depth && lev >= max_depth)
+	 || !include_symbol(sym))
+	  return;
+     rc = print_symbol(0, lev, last, sym);
      newline();
-     if (sym->active)
+     if (rc || sym->active)
 	  return;
      set_active(sym);
      for (cons = sym->v.func.caller; cons; cons = CDR(cons)) {
@@ -302,7 +314,7 @@ inverted_tree(int lev, int last, Symbol *sym)
 static void
 tree_output()
 {
-     Symbol **symbols, *main;
+     Symbol **symbols, *main_sym;
      int i, num;
      
      /* Collect and sort symbols */
@@ -317,29 +329,28 @@ tree_output()
      /* Produce output */
     begin();
     
-    header("Direct Tree");
-    main = lookup(start_name);
-    if (main) {
-	 direct_tree(0, 0, main);
-	 separator();
-    } else {
+    if (reverse_tree) {
+	 header("Reverse Tree");
 	 for (i = 0; i < num; i++) {
-	      if (symbols[i]->v.func.callee == NULL)
-		   continue;
-	      direct_tree(0, 0, symbols[i]);
+	      inverted_tree(0, 0, symbols[i]);
 	      separator();
 	 }
+    } else {
+	 header("Direct Tree");
+	 main_sym = lookup(start_name);
+	 if (main_sym) {
+	      direct_tree(0, 0, main_sym);
+	      separator();
+	 } else {
+	      for (i = 0; i < num; i++) {
+		   if (symbols[i]->v.func.callee == NULL)
+			continue;
+		   direct_tree(0, 0, symbols[i]);
+		   separator();
+	      }
+	 }
     }
-
-    if (!reverse_tree)
-	 return;
     
-    header("Reverse Tree");
-    for (i = 0; i < num; i++) {
-	 inverted_tree(0, 0, symbols[i]);
-	 separator();
-    }
-
     end();
     
     free(symbols);
