@@ -1,5 +1,24 @@
 2005-03-20  Sergey Poznyakoff  <gray@Noldor.runasimi.org>
 
+	* src/cflow.h (GNU_STYLE_OPTIONS,SYSTEM_ERROR)
+	(FATAL_ERROR): Removed
+	(SymFunction): Renamed to SymIdentifier. All callers updated
+	(struct symbol): Removed union, rearranged fields. All callers
+	updated
+	Implemented -ix
+	
+	* src/c.l: Likewise
+	* src/gnu.c: Likewise
+	* src/main.c: Likewise
+	* src/output.c: Likewise
+	* src/parser.c: Likewise
+	* src/posix.c: Likewise
+	* src/symbol.c: Likewise
+	
+	* TODO: Updated
+
+2005-03-20  Sergey Poznyakoff  <gray@Noldor.runasimi.org>
+
 	* doc/Makefile.am: Updated
 	* doc/cflow.texi: Documentation framework
 	* doc/fdl.texi: GNU FDL

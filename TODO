@@ -1,4 +1,4 @@
-GNU cflow TODO list.  2005-03-19
+GNU cflow TODO list.  2005-03-20
 Copyright (C) 2005, Sergey Poznyakoff
 
 * Introduction
@@ -12,7 +12,7 @@ order of decreasing priority, the most urgent ones being the first.
 
 * High Priority Issues
 
-** Implement `-i x' option
+** Record function arguments as automatic variables
 
 ** Divide and conquer: separate main cflow code (/src) and C lexical analizer
 (/back-ends/C)
