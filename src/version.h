@@ -46,7 +46,7 @@ The options are:\n\
     -a, --ansi                  Assume input to be written in ANSI C\n\
     -g, --globals-only          Record only global symbols\n\
     -l, --print-level           Print nesting level along with the call tree\n\
-    -m NAME,
+    -m NAME,\n\
     --main NAME                 Assume main function to be called NAME.\n\
     -T, --tree                  Draw tree\n\
     -i STRING,\n\

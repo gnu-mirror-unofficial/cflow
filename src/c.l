@@ -30,7 +30,6 @@
 #include "obstack1.h"
      
 struct obstack string_stk;
-int string_inited = 0;
 
 int line_num;
 char *filename;
@@ -76,7 +75,6 @@ enum                 {yylval.str = "enum"; return STRUCT;}
       */
 "->"   |
 "."                  return MEMBER_OF;
-"..."  |                 
 "*="   |                 
 "/="   |                 
 "%="   |                 
@@ -106,6 +104,7 @@ enum                 {yylval.str = "enum"; return STRUCT;}
      /* Identifiers and constants
       *
       */
+"..." |
 {IDENT}			return ident();
 {ONUMBER}               { obstack_grow(&string_stk, yytext, yyleng+1);
 			  yylval.str = obstack_finish(&string_stk);
@@ -146,6 +145,7 @@ enum                 {yylval.str = "enum"; return STRUCT;}
 }
 \n                      ++line_num;
 {WS}                    ;
+       /*\f                      ;*/
 ^\{                     return LBRACE0;
 ^\}                     return RBRACE0;
 .                       return yytext[0];
@@ -203,13 +203,18 @@ init_lex()
 	sp->v.type.source = NULL;
 	sp->v.type.def_line = -1;
 	sp->v.type.ref_line = NULL;
-    }
+    }	
+    sp = install("...");
+    sp->type = SymToken;
+    sp->v.type.token_type = IDENTIFIER;
+    sp->v.type.source = NULL;
+    sp->v.type.def_line = -1;
+    sp->v.type.ref_line = NULL;
 }
 
 int
 ident()
 {
-    int rc;
     Symbol *sp;
 
     sp = lookup(yytext);

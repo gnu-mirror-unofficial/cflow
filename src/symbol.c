@@ -112,8 +112,9 @@ install(s)
 /* Delete from the symbol table all static symbols defined in the current
  * source.
  * NOTE: This takes advantage of the fact that install() uses LIFO strategy,
- * so we have not to check the source name where the symbol was defined. If it
- * is static, we simply remove it.
+ * so we doesn't have to check the name of the source where the symbol was
+ * defined.
+ * If it is static, we simply remove it.
  */
 void
 delete_statics()
@@ -268,6 +269,21 @@ append_to_list(root_ptr, car)
     return cons;
 }
 
+int
+symbol_in_list(sym, list)
+    Symbol *sym;
+    Consptr list;
+{
+    Consptr cons;
+    
+    if (!list)
+	return 0;
+    for (cons = CAR(list); cons; cons = CDR(cons))
+	if ((Symbol*)CAR(cons) == sym)
+	    return 1;
+    return 0;
+}
+	
 int
 collect_symbols(return_sym, sel)
     Symbol ***return_sym;

@@ -50,6 +50,7 @@ int parmdcl(Ident*);
 int dirdcl(Ident*);
 void skip_struct();
 Symbol *get_symbol(char *name);
+void maybe_parm_list(int *parm_cnt_return);
     
 void call(char*, int);
 void reference(char*, int);
@@ -116,7 +117,7 @@ tokpush(type, line, token)
 }
 
 void
-clearstack()
+cleanup_stack()
 {
     int delta = tos - curs;
 
@@ -125,6 +126,12 @@ clearstack()
 
     tos = delta;
     curs = 0;
+}
+
+void
+clearstack()
+{
+    tos = curs = 0;
 }
 
 void
@@ -179,6 +186,8 @@ void
 save_token(tokptr)
     TOKSTK *tokptr;
 {
+    int len;
+    
     switch (tokptr->type) {
     case IDENTIFIER:
     case TYPE:
@@ -187,7 +196,8 @@ save_token(tokptr)
     case WORD:
 	if (need_space) 
 	    obstack_1grow(&text_stk, ' ');
-	obstack_grow(&text_stk, tokptr->token, strlen(tokptr->token));
+	len = strlen(tokptr->token);
+	obstack_grow(&text_stk, tokptr->token, len);
 	need_space = 1;
 	break;
     case MODIFIER:
@@ -197,15 +207,16 @@ save_token(tokptr)
 	    need_space = 0;
 	else
 	    need_space = 1;
-	obstack_grow(&text_stk, tokptr->token, strlen(tokptr->token));
+	len = strlen(tokptr->token);
+	obstack_grow(&text_stk, tokptr->token, len);
 	break;
     case EXTERN: /* storage class specifiers are already taken care of */
     case STATIC:
-	break;  
+	break;
     case '(':
 	if (need_space) 
 	    obstack_1grow(&text_stk, ' ');
-	/*fall through */
+	/*FALLTHRU*/
     default:
 	obstack_1grow(&text_stk, tokptr->type);
 	need_space = 0;
@@ -244,6 +255,7 @@ yyparse()
     Ident identifier;
 
     level = 0;
+    caller = NULL;
     clearstack();
     while (nexttoken()) {
 	identifier.storage = ExternStorage;
@@ -259,12 +271,12 @@ yyparse()
 	    break;
 	case STATIC:
 	    identifier.storage = StaticStorage;
-	    /* fall through */
+	    /* FALLTHRU */
 	default:
 	    parse_declaration(&identifier);
 	    break;
 	}
-	clearstack();
+	cleanup_stack();
     }
     /*NOTREACHED*/
 }
@@ -377,7 +389,7 @@ parse_function_declaration(ident)
 	if (verbose) 
 	    file_error("expected ';'", 1);
 	/* should putback() here */
-	/* fall through */
+	/* FALLTHRU */
     case ';':
 	break;
     case LBRACE0:
@@ -420,7 +432,7 @@ fake_struct(ident)
 	    tokpush(hold.type, hold.line, hold.token);
 	} else {
 	    if (tok.type != ';')
-		file_error("missing ; after struct declaration");
+		file_error("missing ; after struct declaration", 0);
 	}
 	return 1;
     }
@@ -469,7 +481,7 @@ parse_variable_declaration(ident)
 	if (verbose) 
 	    file_error("expected ';'", 1);
 	/* should putback() here */
-	/* fall through */
+	/* FALLTHRU */
     case ';':
 	break;
     case ',':
@@ -512,7 +524,7 @@ initializer_list()
 	    }
 	    break;
 	case 0:
-	    file_error("unexpected eof in initializer list");
+	    file_error("unexpected eof in initializer list", 0);
 	    return;
 	case ',':
 	    break;
@@ -538,7 +550,7 @@ parse_knr_dcl(ident)
     case STRUCT:
 	if (ident->parmcnt >= 0) {
 	    /* maybe K&R function definition */
-	    int i, parmcnt, stop;
+	    int parmcnt, stop;
 	    Stackpos sp, new_sp;
 	    Ident id;
 	    
@@ -571,7 +583,8 @@ parse_knr_dcl(ident)
 			    putback();
 			break;
 		    }
-		    /* else fall through */
+		    /* else */
+		    /* FALLTHRU */
 		default:
 		    restore(sp);
 		    return;
@@ -591,11 +604,11 @@ skip_struct()
     } else if (tok.type == ';')
 	return;
 
-    if (tok.type == '{') {
+    if (tok.type == LBRACE || tok.type == LBRACE0) {
 	do {
 	    switch (tok.type) {
 	    case 0:
-		file_error("unexpected eof in struct");
+		file_error("unexpected eof in struct", 0);
 		return;
 	    case LBRACE:
 	    case LBRACE0:
@@ -679,7 +692,6 @@ int
 dirdcl(idptr)
     Ident *idptr;
 {
-    int rc;
     int wrapper = 0;
     int *parm_ptr = NULL;
     
@@ -744,7 +756,7 @@ parmdcl(idptr)
 }
 
 
-int
+void
 maybe_parm_list(parm_cnt_return)
     int *parm_cnt_return;
 {
@@ -770,12 +782,11 @@ maybe_parm_list(parm_cnt_return)
 void
 func_body()
 {
-    char *name;
     Ident ident;
     
     level++;
     while (level) {
-	clearstack();
+	cleanup_stack();
 	nexttoken();
 	switch (tok.type) {
 	default:
@@ -803,7 +814,8 @@ func_body()
 		}
 		break;
 	    }
-	    /* else: fall thru */
+	    /* else: */
+	    /* FALLTHRU */
 	case '}':
 	    delete_autos(level);
 	    level--;
@@ -924,10 +936,9 @@ add_reference(name, line)
 {
     Symbol *sp = get_symbol(name);
     Ref *refptr;
-    Cons *cons;
 
     if (sp->v.func.storage == AutoStorage)
-	return;
+	return NULL;
     refptr = emalloc(sizeof(*refptr));
     refptr->source = filename;
     refptr->line = line;
@@ -942,13 +953,16 @@ call(name, line)
     int line;
 {
     Symbol *sp = add_reference(name, line);
-    Cons *cons;
 
+    if (!sp)
+	return;
     if (sp->v.func.argc < 0)
 	sp->v.func.argc = 0;
     if (caller) {
-	append_to_list(&sp->v.func.caller, caller);
-	append_to_list(&caller->v.func.callee, sp);
+	if (!symbol_in_list(caller, sp->v.func.caller))
+	    append_to_list(&sp->v.func.caller, caller);
+	if (!symbol_in_list(sp, caller->v.func.callee))
+	    append_to_list(&caller->v.func.callee, sp);
     }
 }
 

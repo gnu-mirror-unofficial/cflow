@@ -100,12 +100,11 @@ parse_rc(name)
     struct stat st;
     FILE *rcfile;
     int size;
-    char **pptr;
     char *buf;
     
     if (stat(name, &st))
 	return;
-    buf = malloc(st.st_size);
+    buf = malloc(st.st_size+1);
     if (!buf) {
 	error(0, "not enough memory to process rc file");
 	return;
@@ -116,6 +115,7 @@ parse_rc(name)
 	return;
     }
     size = fread(buf, 1, st.st_size, rcfile);
+    buf[size] = 0;
     fclose(rcfile);
     expand_args(buf);
 }

@@ -106,8 +106,6 @@ xref_output()
 {
     Symbol **symbols, *symp;
     int i, num;
-    Ref *refptr;
-    Cons *cons;
     
     num = collect_symbols(&symbols, is_var);
     qsort(symbols, num, sizeof(*symbols), compare);
@@ -132,8 +130,6 @@ tree_output()
 {
     Symbol **symbols, *main;
     int i, num;
-    Ref *refptr;
-    Cons *cons;
 
     /* Collect and sort symbols */
     num = collect_symbols(&symbols, is_fun);

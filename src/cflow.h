@@ -38,7 +38,7 @@ struct cons {
 enum symtype {
     SymUndefined,
     SymToken,
-    SymFunction,
+    SymFunction
 };
 
 enum storage {
@@ -46,7 +46,7 @@ enum storage {
     ExplicitExternStorage,
     StaticStorage,
     AutoStorage,
-    AnyStorage,
+    AnyStorage
 };
 
 typedef struct {
@@ -124,6 +124,7 @@ Symbol *install(char*);
 Consptr alloc_cons();
 int collect_symbols(Symbol ***, int (*sel)());
 Consptr append_to_list(Consptr *, void *);
+int symbol_in_list(Symbol *sym, Consptr list);
 void sourcerc(int *, char ***);
 
 

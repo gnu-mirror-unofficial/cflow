@@ -286,7 +286,6 @@ find_option_type(optype, str)
     struct option_type *optype;
     char *str;
 {
-    int i;
     int len = strlen(str);
     
     for ( ; optype->str; optype++) {
@@ -577,7 +576,9 @@ efree(ptr)
  *    SYSTEM_ERROR bits mean do perror() after printing the message
  *    FATAL_ERROR bits mean exit().
  */
+/*PRINTFLIKE2*/
 error(stat, fmt, va_alist)
+    int stat;
     char *fmt;
     va_dcl
 {
