@@ -17,7 +17,7 @@ Emacs module cflow.el is known to work with Emacs 20.1
 * Planned Status
 
 The planned utility shall fully conform to POSIX specification of a
-cflow utility. See CFLOW for the exact description.
+cflow utility. See doc/cflow.txt for the exact description.
 
 The package shall have modular architecture: the `cflow' utility itself
 shall invoke an external program (a back-end) to perform a lexical analisys
