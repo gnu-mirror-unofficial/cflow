@@ -17,6 +17,7 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 #include <stdlib.h>
+#include <stdio.h>
 #include "cflow.h"
 #include "parser.h"
 #include "output.h"
@@ -67,21 +68,30 @@ void (*separator_fun[])() = {
 #define end end_fun[output_mode]
 #define separator separator_fun[output_mode]
 
-int mark_size=1000;
-char *mark;
+int level_mark_size=1000;
+char *level_mark;
 int out_line = 1;
-
+FILE *outfile;
 
 void
 output()
 {
-    mark = emalloc(mark_size);
+    if (strcmp(outname, "-") == 0) {
+	outfile = stdout;
+    } else {
+	outfile = fopen(outname, "w");
+	if (!outfile)
+	    error(SYSTEM_ERROR|FATAL(2), "cannot open file `%s'", outname);
+    } 
+	
+    level_mark = emalloc(level_mark_size);
     if (print_option & PRINT_XREF) {
 	xref_output();
     }
     if (print_option & PRINT_TREE) {
 	tree_output();
     }
+    fclose(outfile);
 }
 
 
@@ -143,7 +153,7 @@ xref_output()
 void
 tree_output()
 {
-    Symbol **symbols, *symp;
+    Symbol **symbols, *main;
     int i, num;
     Ref *refptr;
     Cons *cons;
@@ -161,13 +171,19 @@ tree_output()
     begin();
     
     header(DirectTree);
-    for (i = 0; i < num; i++) {
-	if (symbols[i]->v.func.callee == NULL)
-	    continue;
-	direct_tree(0, symbols[i]);
+    main = lookup(start_name);
+    if (main) {
+	direct_tree(0, main);
 	separator();
+    } else {
+	for (i = 0; i < num; i++) {
+	    if (symbols[i]->v.func.callee == NULL)
+		continue;
+	    direct_tree(0, symbols[i]);
+	    separator();
+	}
     }
-
+    
     header(ReverseTree);
     for (i = 0; i < num; i++) {
 	inverted_tree(0, symbols[i]);
@@ -210,7 +226,7 @@ direct_tree(lev, sym)
 	return;
     set_active(sym);
     for (cons = sym->v.func.callee; cons; cons = CDR(cons)) {
-	mark[lev+1] = CDR(cons) != NULL;
+	level_mark[lev+1] = CDR(cons) != NULL;
 	direct_tree(lev+1, (Symbol*)CAR(cons));
     }
     clear_active(sym);
@@ -229,7 +245,7 @@ inverted_tree(lev, sym)
 	return;
     set_active(sym);
     for (cons = sym->v.func.caller; cons; cons = CDR(cons)) {
-	mark[lev+1] = CDR(cons) != NULL;
+	level_mark[lev+1] = CDR(cons) != NULL;
 	inverted_tree(lev+1, (Symbol*)CAR(cons));
     }
     clear_active(sym);
