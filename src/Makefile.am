@@ -34,3 +34,19 @@ cflow_SOURCES = \
 
 cflow_LDADD=../lib/libcflow.a
 AM_LFLAGS=-dvp
+EXTRA_DIST=cflow.rc
+
+FLOWCHART_FILES=\
+ main.c\
+ rc.c\
+ parser.c\
+ c.c\
+ output.c\
+ symbol.c\
+ gnu.c\
+ posix.c
+
+chart.cflow: cflow $(FLOWCHART_FILES) cflow.rc Makefile
+	CFLOWRC=$(top_srcdir)/src/cflow.rc \
+	 cflow -o$@ -i^s $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+	            $(CPPFLAGS) $(FLOWCHART_FILES)
