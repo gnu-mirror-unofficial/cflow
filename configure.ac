@@ -18,15 +18,17 @@
 # Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 AC_PREREQ(2.59)
-AC_INIT([GNU cflow], [0.2], [gray@gnu.org])
+AC_INIT([GNU cflow], [0.2.1], [gray@gnu.org])
 AC_CONFIG_SRCDIR([src/cflow.h])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE
 AC_CONFIG_HEADER([config.h])
+gl_USE_SYSTEM_EXTENSIONS
 
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_LEX
+AC_PROG_RANLIB
 
 # Checks for libraries.
 # FIXME: Replace `main' with a function in `-ll':
@@ -36,16 +38,12 @@ AC_PROG_LEX
 AC_HEADER_STDC
 AC_CHECK_HEADERS([stdlib.h string.h unistd.h])
 
-# Checks for typedefs, structures, and compiler characteristics.
-AC_FUNC_OBSTACK
-
 # Checks for library functions.
 AC_FUNC_ERROR_AT_LINE
-AC_FUNC_MALLOC
-AC_FUNC_REALLOC
-AC_FUNC_STAT
-AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([memmove memset strdup strerror strtol])
+
+cflow_GNULIB
+MU_DEBUG_MODE
 
 ### Check for Emacs site-lisp directory
 AM_PATH_LISPDIR
@@ -55,11 +53,9 @@ if test "$EMACS" != "no"; then
 fi
 AC_SUBST(lisp_LISP)
 
-AC_SUBST(LEXDIR)
-LEXDIR="$datadir/$PACKAGE_VERSION"
-
 AC_CONFIG_FILES([Makefile
  doc/Makefile
  elisp/Makefile
+ lib/Makefile
  src/Makefile])
 AC_OUTPUT
