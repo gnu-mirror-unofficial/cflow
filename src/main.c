@@ -22,12 +22,19 @@
 #include <varargs.h>
 #include <errno.h>
 #include "cflow.h"
+#include "parser.h"
 #include "version.h"
+#include "obstack1.h"
 
 void say_and_die(char *);
+void symbol_override();
 void init();
 
-#define OPTSTR "hVLvSCdxtH:p:"
+#ifdef DEBUG
+#define DEBUG_OPT "D"
+#endif
+#define OPTSTR "hVLvSCdxtH:p:s:" DEBUG_OPT
+
 
 #ifdef GNU_STYLE_OPTIONS
 typedef struct option LONGOPT;
@@ -43,6 +50,8 @@ LONGOPT longopts[] = {
     "typedefs", no_argument, 0, 't',
     "hashsize", required_argument, 0, 'H',
     "pushdown", required_argument, 0, 'p',
+    "symbol", required_argument, 0, 's',
+    "ansi", no_argument, 0, 'a',
     0,
 };
 #else
@@ -51,6 +60,9 @@ LONGOPT longopts[] = {
 #endif
 
 char *progname;
+#ifdef DEBUG
+int debug;
+#endif
 int verbose;            /* be verbose on output */
 int ignore_indentation; /* Don't rely on indentation,
 			 * i.e. don't suppose the function body
@@ -61,6 +73,14 @@ int assume_cplusplus;   /* Assume C++ input always */
 int record_defines;     /* Record C preproc definitions */
 int record_typedefs;    /* Record typedefs */
 int cross_ref;          /* Generate cross-reference */
+int strict_ansi;        /* Assume sources to be written in ANSI C */
+
+struct symbol_holder {
+    char *name;
+    int type;
+};
+static struct obstack temp_symbol_stack;
+int temp_symbol_count;
 
 int
 main(argc, argv)
@@ -70,6 +90,7 @@ main(argc, argv)
     int c, i, num;
 
     progname = argv[0];
+    obstack_init(&temp_symbol_stack);
     while ((c = getopt_long(argc, argv, OPTSTR, longopts, &i)) != EOF) {
 	switch (c) {
 	case 'h':
@@ -99,12 +120,25 @@ main(argc, argv)
 	case 'x':
 	    cross_ref = 1;
 	    break;
+	case 'a':
+	    strict_ansi = 1;
+	    break;
 	case 'H':
 	    set_hash_size(atoi(optarg));
+	    break;
 	case 'p':
 	    num = atoi(optarg);
 	    if (num > 0)
 		token_stack_length = num;
+	    break;
+	case 's':
+	    symbol_override(optarg);
+	    break;
+#ifdef DEBUG
+	case 'D':
+	    debug = 1;
+	    break;
+#endif
 	}
     }
     if (argv[optind] == NULL)
@@ -118,11 +152,76 @@ main(argc, argv)
 void
 init()
 {
+    struct symbol_holder *hold;
+    int i;
+    Symbol *sp;
+    
+    init_hash();
     init_lex();
     init_parse();
-    init_hash();
+
+    if (temp_symbol_count) {
+	hold = obstack_finish(&temp_symbol_stack);
+	for (i = 0; i < temp_symbol_count; i++, hold++) {
+	    sp = install(hold->name);
+	    sp->type = SymToken;
+	    sp->v.token_type = hold->type;
+	}
+    }
+    obstack_free(&temp_symbol_stack, NULL);
 }
- 
+
+struct option_type {
+    char *str;
+    int min_match;
+    int type;
+} optype[] = {
+    "keyword", 2, WORD,
+    "kw", 2, WORD,
+    "modifier", 1, MODIFIER,
+    "identifier", 1, IDENTIFIER,
+};
+
+static int
+find_option_type(str)
+    char *str;
+{
+    int i;
+    int len = strlen(str);
+    
+    for (i = 0; i < NUMITEMS(optype); i++) {
+	if (len >= optype[i].min_match &&
+	    strncmp(str, optype[i].str, len) == 0) {
+	    return optype[i].type;
+	}
+    }
+    return 0;
+}
+
+void
+symbol_override(str)
+    char *str;
+{
+    struct symbol_holder sym;
+    char *ptr;
+    
+    ptr = str;
+    while (*ptr && *ptr != ':') 
+	ptr++;
+    if (*ptr == ':') {
+	*ptr++ = 0;
+	sym.type = find_option_type(ptr);
+	if (sym.type == 0) {
+	    error(0, "unknown symbol type: %s", ptr);
+	    return;
+	}
+    } else
+	sym.type = IDENTIFIER;
+    sym.name = str;
+    obstack_grow(&temp_symbol_stack, &sym, sizeof(sym));
+    temp_symbol_count++;
+}
+
 /* Print text on console and exit. Before printing scan text for
  * RCS keywords ("\$[a-zA-Z]+:\(.*\)\$") and replace them with the keyword's 
  * walue ("\1").

@@ -24,15 +24,19 @@
 
 typedef struct {
     char *name;
+    int type_end;
     int parmcnt;
+    int line;
 } Ident;
 
 void func_def();
 void func_body();
 void declaration();
-void dcl(Ident*);
-void dirdcl(Ident*);
+int dcl(Ident*);
+int dirdcl(Ident*);
 void process_dcl();
+void process_knr_dcl();
+void process_comma_dcl();
 void process_typedef();
 void process_struct();
 
@@ -49,6 +53,7 @@ struct obstack text_stk;
 typedef struct {
     int type;
     char *token;
+    int line;
 } TOKSTK;
 
 TOKSTK tok;
@@ -59,13 +64,18 @@ int token_stack_length = 64;
 int token_stack_increase = 32;
 static int need_space;
 
+#define mark() tos
+#define restore(sp) tos=sp
+
 void
-tokpush(type, token)
+tokpush(type, line, token)
     int type;
+    int line;
     char *token;
 {
     token_stack[tos].type = type;
     token_stack[tos].token = token;
+    token_stack[tos].line = line;
     if (++tos == token_stack_length) {
 	token_stack_length += token_stack_increase;
 	token_stack = realloc(token_stack,
@@ -89,10 +99,9 @@ nexttoken()
     
     if (curs == tos) {
 	type = yylex();
-	tokpush(type, yylval.str);
+	tokpush(type, line_num, yylval.str);
     }
-    tok.type = token_stack[curs].type;
-    tok.token = token_stack[curs].token;
+    tok = token_stack[curs];
     curs++;
     return tok.type;
 }
@@ -131,7 +140,15 @@ save_token(tokptr)
 	obstack_grow(&text_stk, tokptr->token, strlen(tokptr->token));
 	need_space = 1;
 	break;
-    case '*':
+    case MODIFIER:
+	if (need_space) 
+	    obstack_1grow(&text_stk, ' ');
+	if (tokptr->token[0] == '*') 
+	    need_space = 0;
+	else
+	    need_space = 1;
+	obstack_grow(&text_stk, tokptr->token, strlen(tokptr->token));
+	break;
     case '(':
 	if (need_space) 
 	    obstack_1grow(&text_stk, ' ');
@@ -169,12 +186,10 @@ skip_to(c)
 	
 yyparse()
 {
-    int decl;
     
     level = 0;
     clearstack();
     while (nexttoken()) {
-	decl = 0;
 	switch (tok.type) {
 	case 0:
 	    return 0;
@@ -185,47 +200,80 @@ yyparse()
 	    process_struct();
 	    break;
 	default:
-	    decl = 1;
-	    process_dcl();
-	}
-	finish_save();
-	clearstack();
-	
-	switch (tok.type) {
-	default:
-	    if (decl && identifier.parmcnt >= 0) {
-		/* maybe K&R function definition */
-#if 0
-		int i;
-		
-		mark();
-		for (i = 0; i < ident.parmcnt; i++) {
-		    parm_dcl();
-		}
-#endif		
+	    identifier.type_end = -1;
+	    process_knr_dcl();
+
+	    switch (tok.type) {
+	    default:
+		if (verbose) 
+		    file_error("expected ';'", 1);
+		/* should putback() here */
+		/* fall through */
+	    case ';':
+		declaration();
+		break;
+	    case ',':
+		declaration();
+		process_comma_dcl();
+		break;
+	    case '=':
+		declaration();
+		skip_to(';'); /* should handle ',' */
+		break;
+	    case LBRACE0:
+	    case LBRACE:
+		func_def();
+		func_body();
+		break;
+	    case 0:
+		if (verbose)
+		    file_error("unexpected eof in declaration", 0);
+		return 1;
 	    }
-	    if (verbose)
-		file_error("expected ';'", 1);
-	case ';':
-	    declaration();
 	    break;
-	case '=':
-	    declaration();
-	    skip_to(';');
-	    break;
-	case LBRACE0:
-	case LBRACE:
-	    func_def();
-	    func_body();
-	    break;
-	case 0:
-	    if (verbose)
-		file_error("unexpected eof in declaration", 0);
-	    return 1;
 	}
 	clearstack();
     }
     /*NOTREACHED*/
+}
+
+void
+process_knr_dcl()
+{
+    identifier.type_end = -1;
+    process_dcl();
+    if (strict_ansi)
+	return;
+    switch (tok.type) {
+    case IDENTIFIER:
+    case WORD:
+	if (identifier.parmcnt >= 0) {
+	    /* maybe K&R function definition */
+	    int i, parmcnt, sp, stop;
+		    
+	    sp = mark();
+	    parmcnt = 0;
+	    for (stop = 0; !stop && parmcnt < identifier.parmcnt;
+		 nexttoken()) {
+		switch (tok.type) {
+		case '{':
+		    putback();
+		    stop = 1;
+		    break;
+		case WORD:
+		case IDENTIFIER:
+		    if (dcl(NULL) == 0) {
+			parmcnt++;
+			break;
+		    }
+		    /* else fall through */
+		default:
+		    restore(sp);
+		    return;
+		}
+	    }
+	}
+    }
 }
 
 void
@@ -240,6 +288,18 @@ process_struct()
 }
 
 void
+process_comma_dcl()
+{
+    do {
+	tos = identifier.type_end;
+	curs = 1;
+	process_dcl();
+	declaration();
+    } while (tok.type == ',');
+}
+	
+
+void
 process_dcl()
 {
     identifier.parmcnt = -1;
@@ -248,21 +308,28 @@ process_dcl()
     save_stack();
 }
 
-void
+int
 dcl(idptr)
     Ident *idptr;
 {
-    while (nexttoken() != 0 && tok.type != IDENTIFIER && tok.type != '(')
-	;
+    while (nexttoken() != 0 && tok.type != IDENTIFIER && tok.type != '(') {
+	if (tok.type == MODIFIER) {
+	    if (idptr && idptr->type_end == -1)
+		idptr->type_end = curs-1;
+	}
+    }
     if (tok.type == IDENTIFIER) {
 	while (tok.type == IDENTIFIER)
 	    nexttoken();
-	putback();
+/*	if (tok.type != '(')*/
+	    putback();
     }
-    dirdcl(idptr);
+    if (idptr && idptr->type_end == -1)
+	idptr->type_end = curs-1;
+    return dirdcl(idptr);
 }
 
-void
+int
 dirdcl(idptr)
     Ident *idptr;
 {
@@ -270,11 +337,14 @@ dirdcl(idptr)
     
     if (tok.type == '(') {
 	dcl(idptr);
-	if (tok.type != ')' && verbose)
+	if (tok.type != ')' && verbose) {
 	    file_error("expected ')'", 1);
+	    return 1;
+	}
     } else if (tok.type == IDENTIFIER) {
 	if (idptr) {
 	    idptr->name = tok.token;
+	    idptr->line = tok.line;
 	    parm_ptr = &idptr->parmcnt;
 	}
     }
@@ -283,10 +353,13 @@ dirdcl(idptr)
 	    skip_to(']');
 	else {
 	    maybe_parm_list(parm_ptr);
-	    if (tok.type != ')' && verbose)
+	    if (tok.type != ')' && verbose) {
 		file_error("expected ')'", 1);
+		return 1;
+	    }
 	}
     }
+    return 0;
 }
 
 int
@@ -362,11 +435,26 @@ func_body()
 void
 declaration()
 {
-    printf("%s:%d: %s/%d defined to %s\n",
-	   filename,
-	   line_num,
-	   identifier.name, identifier.parmcnt,
-	   declstr);
+    Symbol *sp;
+    
+    finish_save();
+    sp = install(identifier.name);
+    if (identifier.parmcnt >= 0) 
+	sp->type = SymFunction;
+    else
+	sp->type = SymVariable;
+    sp->v.func.argc = identifier.parmcnt;
+    sp->v.func.type = declstr;
+    sp->v.func.source = filename;
+    sp->v.func.def_line = identifier.line;
+#ifdef DEBUG
+    if (debug)
+	printf("%s:%d: %s/%d defined to %s\n",
+	       filename,
+	       line_num,
+	       identifier.name, identifier.parmcnt,
+	       declstr);
+#endif
 }
 
 void
@@ -379,4 +467,60 @@ void
 reference(name)
     char *name;
 {
+}
+
+void
+print_token(tokptr)
+    TOKSTK *tokptr;
+{
+    switch (tokptr->type) {
+    case IDENTIFIER:
+    case WORD:
+    case MODIFIER:
+	fprintf(stderr, "`%s'", tokptr->token);
+	break;
+    case LBRACE0:
+    case LBRACE:
+	fprintf(stderr, "`{'");
+	break;
+    case RBRACE0:
+    case RBRACE:
+	fprintf(stderr, "`}'");
+	break;
+    case EXTERN:
+	fprintf(stderr, "`extern'");
+	break;
+    case STATIC:
+	fprintf(stderr, "`static'");
+	break;
+    case TYPEDEF:
+	fprintf(stderr, "`typedef'");
+	break;
+    case STRUCT:
+	fprintf(stderr, "`struct'");
+	break;
+    case UNION:
+	fprintf(stderr, "`union'");
+	break;
+    case ENUM:
+	fprintf(stderr, "`enum'");
+	break;
+    case OP:
+	fprintf(stderr, "OP"); /* ouch!!! */
+	break;
+    default:
+	fprintf(stderr, "`%c'", tokptr->type);
+    }
+}
+
+file_error(msg, near)
+    char *msg;
+    int near;
+{
+    fprintf(stderr, "%s:%d: %s", filename, tok.line, msg);
+    if (near) {
+	fprintf(stderr, " near ");
+	print_token(&tok);
+    }
+    fprintf(stderr, "\n");
 }

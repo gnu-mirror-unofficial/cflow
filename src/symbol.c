@@ -90,9 +90,7 @@ install(s)
     sp = (Symbol *) emalloc(sizeof(Symbol));
     sp->name = emalloc(strlen(s) + 1);
     strcpy(sp->name, s);
-    sp->def_line = -1;
-    sp->ref_line = NULL;
-    sp->callee = NULL;
+    sp->type = SymUndefined;
     hc = hash(s);
     sp->next = symtab[hc];
     symtab[hc] = sp;
