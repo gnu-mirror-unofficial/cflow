@@ -17,4 +17,29 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-EXTRA_DIST = cflow.txt
+info_TEXINFOS=cflow.texi
+cflow_TEXINFOS=fdl.texi rendition.texi
+
+EXTRA_DIST = cflow.txt gendocs_template
+
+clean-local:
+	rm -rf manual
+
+# The rendering level is one of PUBLISH, DISTRIB or PROOF.
+# Just call `make RENDITION=PROOF [target]' if you want PROOF rendition.
+RENDITION = DISTRIB
+
+MAKEINFOFLAGS=-D$(RENDITION)
+
+GENDOCS=gendocs.sh
+
+TEXI2DVI=texi2dvi -t '@set $(RENDITION)' -E
+
+# Make sure you set TEXINPUTS.
+# TEXINPUTS=/usr/share/texmf/pdftex/plain/misc/ is ok for most distributions
+manual:
+	TEXINPUTS=$(srcdir):$(top_srcdir)/scripts:$(TEXINPUTS) \
+	 MAKEINFO="$(MAKEINFO) $(MAKEINFOFLAGS)" \
+	 TEXI2DVI="$(TEXI2DVI) -t @finalout" \
+	 $(GENDOCS) $(PACKAGE) '$(PACKAGE_NAME) manual'
+

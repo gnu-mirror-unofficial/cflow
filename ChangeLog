@@ -1,3 +1,11 @@
+2005-03-20  Sergey Poznyakoff  <gray@Noldor.runasimi.org>
+
+	* doc/Makefile.am: Updated
+	* doc/cflow.texi: Documentation framework
+	* doc/fdl.texi: GNU FDL
+	* doc/gendocs_template: Template for index.html
+	* doc/.cvsignore: Updated
+
 2005-03-19  Sergey Poznyakoff  <gray@Noldor.runasimi.org>
 
 	* .cvsignore: Updated
