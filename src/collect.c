@@ -26,4 +26,5 @@ collect(argc, argv)
 	if (source(*argv++) == 0)
 	    yyparse();
     }
+    cleanup();
 }

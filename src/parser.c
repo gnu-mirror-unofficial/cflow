@@ -518,6 +518,7 @@ parse_knr_dcl(ident)
     switch (tok.type) {
     case IDENTIFIER:
     case TYPE:
+    case STRUCT:
 	if (ident->parmcnt >= 0) {
 	    /* maybe K&R function definition */
 	    int i, parmcnt, stop;
@@ -538,6 +539,7 @@ parse_knr_dcl(ident)
 		    break;
 		case TYPE:
 		case IDENTIFIER:
+		case STRUCT:
 		    putback();
 		    mark(new_sp);
 		    if (dcl(&id) == 0) {
@@ -703,7 +705,7 @@ parmdcl(idptr)
     Ident *idptr;
 {
     int type;
-    
+
     while (nexttoken() != 0 && tok.type != '(') {
 	if (tok.type == MODIFIER) {
 	    if (idptr && idptr->type_end == -1)
@@ -891,12 +893,9 @@ add_reference(name, line)
     if (sp->v.func.storage == AutoStorage)
 	return;
     refptr = emalloc(sizeof(*refptr));
-    cons = alloc_cons();
     refptr->source = filename;
     refptr->line = line;
-    (Ref*)CAR(cons) = refptr;
-    CDR(cons) = sp->v.func.ref_line;
-    sp->v.func.ref_line = cons;
+    append_to_list(&sp->v.func.ref_line, refptr);
     return sp;
 }
 
@@ -911,15 +910,8 @@ call(name, line)
 
     if (sp->v.func.argc < 0)
 	sp->v.func.argc = 0;
-    cons = alloc_cons();
-    (Symbol*)CAR(cons) = caller;
-    CDR(cons) = sp->v.func.caller;
-    sp->v.func.caller = cons;
-
-    cons = alloc_cons();
-    (Symbol*)CAR(cons) = sp;
-    CDR(cons) = caller->v.func.callee;
-    caller->v.func.callee = cons;
+    append_to_list(&sp->v.func.caller, caller);
+    append_to_list(&caller->v.func.callee, sp);
 }
 
 void

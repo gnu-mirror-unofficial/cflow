@@ -19,14 +19,29 @@
 #include <stdlib.h>
 #include "cflow.h"
 #include "parser.h"
+#include "output.h"
 
-static int line=1;
-
-void
+static void
 newline()
 {
     printf("\n");
-    line++;
+    out_line++;
+}
+
+void
+text_begin()
+{
+}
+
+void
+text_end()
+{
+}
+
+void
+text_separator()
+{
+    newline();
 }
 
 void
@@ -38,10 +53,11 @@ text_print_level(lev)
     if (print_levels)
 	printf("%4d ", lev);
     if (print_as_tree) {
-	if (lev) {
-	    printf("  ");
-	    for (i = 1; i < lev; i++)
+	for (i = 0; i < lev; i++) {
+	    if (mark[i])
 		printf("| ");
+	    else
+		printf("  ");
 	}
 	printf("+-");
     } else {
@@ -51,8 +67,9 @@ text_print_level(lev)
 }
 
 void
-text_print_function_name(sym)
+text_print_function_name(sym, has_subtree)
     Symbol *sym;
+    int has_subtree;
 {
     printf("%s()", sym->name);
     if (sym->v.func.type)
@@ -64,7 +81,10 @@ text_print_function_name(sym)
 	printf("(recursive: see %d)", sym->active-1);
 	newline();
 	return;
-    } else
+    }
+    if (sym->v.func.recursive)
+	printf(" (R)");
+    if (!print_as_tree && has_subtree)
 	printf(":");
     newline();
 }
@@ -73,16 +93,23 @@ void
 text_set_active(sym)
     Symbol *sym;
 {
-    sym->active = line;
+    sym->active = out_line;
 }
 
 
 void
-text_header(text)
-    char *text;
+text_header(tree)
+    enum tree_type tree;
 {
     newline();
-    printf("%s:", text);
+    switch (tree) {
+    case DirectTree:
+	printf("Direct Tree:");
+	break;
+    case ReverseTree:
+	printf("Reverse Tree:");
+	break;
+    }
     newline();
 }
 
@@ -131,4 +158,5 @@ print_type(symp)
 	   symp->v.func.type);
     newline();
 }
+
 

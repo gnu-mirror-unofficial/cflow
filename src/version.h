@@ -18,7 +18,49 @@
  */
 
 char usage[]= "\
-usage: cflow \n\
+usage: cflow [options] file [files]\n\
+\n\
+The options are:\n\
+    -v, --verbose               be verbose on output\n\
+    -S, -ignore-indentation     don't rely on indentation\n\
+    -d, --defines               record defines\n\
+    -x, --xref                  produce cross-reference listing only\n\
+    -t, --typedefs              record typedefs\n\
+    -H VALUE,\n\
+    --hashsize VALUE            set the symbol hash table size to VALUE\n\
+                                (default is 509)\n\
+    -p VALUE,\n\
+    --pushdown VALUE            set initial token stack size to VALUE\n\
+    -s SYM:TYPE,\n\
+    --symbol SYM:TYPE           make cflow believe the symbol SYM is\n\
+                                of type TYPE. Valid types are:\n\
+                                    keyword (or kw),\n\
+                                    modifier,\n\
+                                    identifier,\n\
+                                    type,\n\
+                                    wrapper\n\
+                                Any unambiguous abbreviation of the above is\n\
+                                also accepted\n\
+    -a, --ansi                  Assume input to be written in ANSI C\n\
+    -g, --globals-only          Record only global symbols\n\
+    -l, --print-level           Print nesting level along with the call tree\n\
+    -m, --html                  Produce HTML output.\n\
+    -T, --tree                  Draw tree\n\
+    -i STRING,\n\
+    --level-indent STRING       Use STRING when indenting to each new level\n\
+    -P OPT,\n\
+    --print OPT                 Set printing option to OPT. Valid OPT\n\
+                                values are:\n\
+                                    xref (or cross-ref),\n\
+                                    tree\n\
+                                Any unambiguous abbreviation of the above is\n\
+                                also accepted\n\
+\n\
+   When given any one of the following options cflow prints corresponding\n\
+information and exits successfully ignoring any other command line arguments:\n\
+    -h                          Print this usage summary\n\
+    -V                          Print version information\n\
+    -L                          Print licence information\n\
 ";
 
 char version[] =

@@ -76,6 +76,7 @@ struct symbol {
 	    enum storage storage;
 	    int argc;
 	    char *args;
+	    int recursive;      /* for functions only */
 	    int level;          /* for local vars only */
 	    Consptr caller;
 	    Consptr callee;
@@ -87,13 +88,17 @@ struct symbol {
 #define OUT_TEXT 0
 #define OUT_HTML 1
 
+/* Output flags */
+#define PRINT_XREF 0x01
+#define PRINT_TREE 0x02
+
 extern char *progname;
 extern int verbose;
+extern int print_option;
 extern int ignore_indentation;
 extern int assume_cplusplus;
 extern int record_defines;
 extern int record_typedefs;
-extern int cross_ref;
 extern int strict_ansi;
 extern int globals_only;
 extern int print_level;
@@ -101,6 +106,7 @@ extern char level_indent[];
 extern int output_mode;
 extern int print_levels;
 extern int print_as_tree;
+extern int out_line;
 
 #ifdef DEBUG
 extern int debug;
@@ -116,5 +122,6 @@ Symbol *lookup(char*);
 Symbol *install(char*);
 Consptr alloc_cons();
 int collect_symbols(Symbol ***, int (*sel)());
+Consptr append_to_list(Consptr *, void *);
 
 

@@ -136,6 +136,35 @@ delete_autos(level)
     }
 }
 
+static void
+cleanup_symbol(sym)
+    Symbol *sym;
+{
+    if (sym->type == SymFunction) {
+	if (sym->v.func.ref_line)
+	    sym->v.func.ref_line = CAR(sym->v.func.ref_line);
+	if (sym->v.func.caller)
+	    sym->v.func.caller = CAR(sym->v.func.caller);
+	if (sym->v.func.callee)
+	    sym->v.func.callee = CAR(sym->v.func.callee);
+    }
+}
+    
+
+void
+cleanup()
+{
+    int i;
+    Symbol *sptr;
+
+    for (i = 0; i < hash_size; i++) 
+	for (sptr = symtab[i]; sptr; sptr = sptr->next) 
+	    cleanup_symbol(sptr);
+
+    for (sptr = statsym; sptr; sptr = sptr->next)
+	cleanup_symbol(sptr);
+}
+    
 
 void
 alloc_new_bucket()
@@ -175,7 +204,40 @@ alloc_cons()
 	    error(FATAL(2), "not enough core");
 	}
     }
+    CAR(cp) = CDR(cp) = NULL;
     return cp;
+}
+
+/* Append a new cons to the tail of the list
+ * ROOT_PTR points to a `root cons'. 
+ * CAR is the car value of the cons to be created.
+ *
+ * Note: Car of the root cons points to the head of the list,
+ * cdr of root cons points to  the tail of the list.
+ */
+Consptr
+append_to_list(root_ptr, car)
+    Consptr *root_ptr;
+    void *car;
+{
+    Consptr root, cons;
+
+    if (!*root_ptr) {
+	*root_ptr = alloc_cons();
+	/* both car and cdr are guaranteed to be NULL */ 
+    }
+    root = *root_ptr;
+    
+    cons = alloc_cons();
+    if (!CAR(root))
+	CAR(root) = cons;
+
+    /* Maintain linked list */
+    if (CDR(root))
+	CDR(CDR(root)) = cons;
+    CDR(root) = cons;
+    CAR(cons) = car;
+    return cons;
 }
 
 int

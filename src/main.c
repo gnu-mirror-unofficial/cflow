@@ -29,11 +29,13 @@
 void say_and_die(char *);
 void symbol_override();
 void init();
+void set_print_option(char*);
+void set_level_indent(char*);
 
 #ifdef DEBUG
 #define DEBUG_OPT "D"
 #endif
-#define OPTSTR "hVLvSCdxtH:p:s:glmTi:" DEBUG_OPT
+#define OPTSTR "hVLvSCdxtH:p:s:glmTi:P:" DEBUG_OPT
 
 
 #ifdef GNU_STYLE_OPTIONS
@@ -46,7 +48,7 @@ LONGOPT longopts[] = {
     "ignore-indentation", no_argument, 0, 'S',
     "c++", no_argument, 0, 'C',
     "defines" , no_argument, 0, 'd',
-    "cxref", no_argument, 0, 'x',
+    "xref", no_argument, 0, 'x',
     "typedefs", no_argument, 0, 't',
     "hashsize", required_argument, 0, 'H',
     "pushdown", required_argument, 0, 'p',
@@ -57,6 +59,7 @@ LONGOPT longopts[] = {
     "html", no_argument, 0, 'm',
     "tree", no_argument, 0, 'T',
     "level-indent", required_argument, 0, 'i',
+    "print", required_argument, 0, 'P',
     0,
 };
 #else
@@ -64,11 +67,27 @@ LONGOPT longopts[] = {
  getopt(argc, argv, optstr)
 #endif
 
+struct option_type {
+    char *str;
+    int min_match;
+    int type;
+};
+
+static int find_option_type(struct option_type *, char *);
+
+struct option_type print_optype[] = {
+    "xref", 1, PRINT_XREF,
+    "cross-ref", 1, PRINT_XREF,
+    "tree", 1, PRINT_TREE,
+    0
+};
+
 char *progname;
 #ifdef DEBUG
 int debug;
 #endif
 int output_mode = OUT_TEXT;
+int print_option = 0;
 int verbose;            /* be verbose on output */
 int ignore_indentation; /* Don't rely on indentation,
 			 * i.e. don't suppose the function body
@@ -78,7 +97,6 @@ int ignore_indentation; /* Don't rely on indentation,
 int assume_cplusplus;   /* Assume C++ input always */
 int record_defines;     /* Record C preproc definitions */
 int record_typedefs;    /* Record typedefs */
-int cross_ref;          /* Generate cross-reference */
 int strict_ansi;        /* Assume sources to be written in ANSI C */
 int globals_only;       /* List only global symbols */
 int print_levels;       /* Print level number near every branch */
@@ -102,6 +120,8 @@ main(argc, argv)
 
     progname = argv[0];
     obstack_init(&temp_symbol_stack);
+    sourcerc();
+    
     while ((c = getopt_long(argc, argv, OPTSTR, longopts, &i)) != EOF) {
 	switch (c) {
 	case 'h':
@@ -129,7 +149,10 @@ main(argc, argv)
 	    record_typedefs = 1;
 	    break;
 	case 'x':
-	    cross_ref = 1;
+	    print_option = PRINT_XREF;
+	    break;
+	case 'P':
+	    set_print_option(optarg);
 	    break;
 	case 'a':
 	    strict_ansi = 1;
@@ -158,11 +181,7 @@ main(argc, argv)
 	    print_as_tree = 1;
 	    break;
 	case 'i':
-	    if (strlen(level_indent) >= sizeof(level_indent))
-		error(0, "level indent string is too long. (max %d symbols)",
-		      sizeof(level_indent)-1);
-	    else
-		strcpy(level_indent, optarg);
+	    set_level_indent(optarg);
 	    break;
 #ifdef DEBUG
 	case 'D':
@@ -173,6 +192,8 @@ main(argc, argv)
     }
     if (argv[optind] == NULL)
 	error(FATAL(1), "No input files");
+    if (print_option == 0)
+	print_option = PRINT_TREE;
     init();
     collect(argc-optind, argv+optind);
     output();
@@ -204,30 +225,28 @@ init()
     obstack_free(&temp_symbol_stack, NULL);
 }
 
-struct option_type {
-    char *str;
-    int min_match;
-    int type;
-} optype[] = {
+struct option_type symbol_optype[] = {
     "keyword", 2, WORD,
     "kw", 2, WORD,
     "modifier", 1, MODIFIER,
     "identifier", 1, IDENTIFIER,
     "type", 1, TYPE,
     "wrapper", 1, PARM_WRAPPER,
+    0
 };
 
 static int
-find_option_type(str)
+find_option_type(optype, str)
+    struct option_type *optype;
     char *str;
 {
     int i;
     int len = strlen(str);
     
-    for (i = 0; i < NUMITEMS(optype); i++) {
-	if (len >= optype[i].min_match &&
-	    strncmp(str, optype[i].str, len) == 0) {
-	    return optype[i].type;
+    for ( ; optype->str; optype++) {
+	if (len >= optype->min_match &&
+	    strncmp(str, optype->str, len) == 0) {
+	    return optype->type;
 	}
     }
     return 0;
@@ -245,7 +264,7 @@ symbol_override(str)
 	ptr++;
     if (*ptr == ':') {
 	*ptr++ = 0;
-	sym.type = find_option_type(ptr);
+	sym.type = find_option_type(symbol_optype, ptr);
 	if (sym.type == 0) {
 	    error(0, "unknown symbol type: %s", ptr);
 	    return;
@@ -255,6 +274,118 @@ symbol_override(str)
     sym.name = str;
     obstack_grow(&temp_symbol_stack, &sym, sizeof(sym));
     temp_symbol_count++;
+}
+
+void
+set_print_option(str)
+    char *str;
+{
+    int opt;
+    
+    opt = find_option_type(print_optype, str);
+    if (opt == 0) {
+	error(0, "unknown print option: %s", str);
+	return;
+    }
+    print_option |= opt;
+}
+
+static int
+number(str_ptr, base, count)
+    char **str_ptr;
+    int base;
+    int count;
+{
+    int  c, n;
+    unsigned i;
+    char *str = *str_ptr;
+
+    for (n = 0; *str && count; count--) {
+	c = *str++;
+	if (isdigit(c))
+	    i = c - '0';
+	else
+	    i = toupper(c) - 'A' + 10;
+	if (i > base) {
+	    break;
+	}
+	n = n * base + i;
+    }
+    *str_ptr = str - 1;
+    return n;
+}
+    
+void
+set_level_indent(str)
+    char *str;
+{
+    int i, num, c;
+    char text[sizeof(level_indent)];
+    char *p;
+
+    p = text;
+    while (*str) {
+	switch (*str) {
+	case '\\':
+	    switch (*++str) {
+	    case 'a':
+		*p++ = '\a';
+		break;
+	    case 'b':
+		*p++ = '\b';
+		break;
+	    case 'f':
+		*p++ = '\f';
+		break;
+	    case 'n':
+		*p++ = '\n';
+		break;
+	    case 'r':
+		*p++ = '\r';
+		break;
+	    case 't':
+		*p++ = '\t';
+		break;
+	    case 'x':
+	    case 'X':
+		++str;
+		*p++ = number(&str,16,2);
+		break;
+	    case '0':
+		++str;
+		*p++ = number(&str,8,3);
+		break;
+	    default:
+		*p++ = *str;
+	    }
+	    ++str;
+	    break;
+	case 'x':
+	    if (p == text) {
+		goto copy;
+	    }
+	    num = strtol(str+1, &str, 10);
+	    if (num >= sizeof(level_indent) - (p - text)) {
+		error(0, "level indent string is too long. (max %d symbols)",
+		      sizeof(level_indent)-1);
+		return;
+	    }
+	    c = p[-1];
+	    for (i = 1; i < num; i++)
+		*p++ = c;
+	    break;
+	default:
+	copy:
+	    *p++ = *str++;
+	    if (p >= text + sizeof(text) - 1) {
+		error(0, "level indent string is too long. (max %d symbols)",
+		      sizeof(level_indent)-1);
+		return;
+	    }
+	}
+    }
+    *p = 0;
+    strcpy(level_indent, text);
 }
 
 /* Print text on console and exit. Before printing scan text for

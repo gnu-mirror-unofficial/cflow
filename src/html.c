@@ -19,8 +19,26 @@
 #include <stdlib.h>
 #include "cflow.h"
 #include "parser.h"
+#include "output.h"
 
-static int line=1;
+static void
+newline()
+{
+    printf("\n<BR>");
+    out_line++;
+}
+
+void
+html_begin()
+{
+    format(HEADER, NULL);
+}
+
+void
+html_end()
+{
+    format(FOOTER, NULL);
+}
 
 void
 html_print_level(lev)
@@ -31,34 +49,40 @@ html_print_level(lev)
     if (print_levels)
 	printf("%4d ", lev);
     if (print_as_tree) {
-	if (lev) {
-	    printf("  ");
-	    for (i = 1; i < lev; i++)
-		printf("| ");
+	for (i = 0; i < lev; i++) {
+	    if (mark[i])
+		format(BRANCH, NULL);
+	    else
+		format(NOBRANCH, NULL);
 	}
-	printf("+-");
+	format(LEAF, NULL);
     } else {
 	for (i = 0; i < lev; i++)
-	    printf("%s", level_indent);
+	    format(LEVEL_INDENT, NULL);
     }
 }
 
 void
-html_print_function_name(sym)
+html_print_function_name(sym, has_subtree)
     Symbol *sym;
+    int has_subtree;
 {
-    printf("%s()", sym->name);
-    if (sym->v.func.type)
-	printf(" <%s at %s:%d>",
-	       sym->v.func.type,
-	       sym->v.func.source,
-	       sym->v.func.def_line);
     if (sym->active) {
-	printf("(recursive: see %d)", sym->active-1);
-	newline();
-	return;
-    } else
-	printf(":");
+	format(RECURSIVE_BOTTOM, sym);
+	printf(" ");
+	if (sym->v.func.source) 
+	    format(DESCRIPTION, sym);
+	format(RECURSIVE_REF, sym);
+    } else {
+	if (sym->v.func.recursive)
+	    format(RECURSIVE_CALL, sym);
+	else
+	    format(CALL, sym);
+	if (sym->v.func.source) 
+	    format(DESCRIPTION, sym);
+	if (!print_as_tree && has_subtree)
+	    printf(":");
+    }
     newline();
 }
 
@@ -66,14 +90,28 @@ void
 html_set_active(sym)
     Symbol *sym;
 {
-    sym->active = line;
+    sym->active = out_line;
 }
 
 void
-html_header(text)
-    char *text;
+html_header(tree)
+    enum tree_type tree;
 {
-    printf("%s:", text);
+    newline();
+    switch (tree) {
+    case DirectTree:
+	format(DIRECT_TREE, NULL);
+	break;
+    case ReverseTree:
+	format(REVERSE_TREE, NULL);
+	break;
+    }
+    newline();
+}
+
+void
+html_separator()
+{
     newline();
 }
 
