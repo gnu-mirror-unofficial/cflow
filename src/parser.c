@@ -876,8 +876,8 @@ declare(Ident *ident)
      sp = get_symbol(ident->name);
      if (sp->source) {
 	  error_at_line(0, 0, filename, ident->line, 
-			"%s() redefined",
-			ident->name);
+			"%s/%d redefined",
+			ident->name, sp->arity);
 	  error_at_line(0, 0, sp->source, sp->def_line,
 			"this is the place of previous definition");
      }
