@@ -231,7 +231,6 @@ ident()
 }
 
 
-#define CFLOW_PREPROC "cc -E"
 
 char *pp_bin;
 char *pp_opts;
@@ -240,7 +239,7 @@ static struct obstack *opt_stack;
 void
 set_preprocessor(const char *arg)
 {
-     pp_bin = xstrdup(arg);
+     pp_bin = arg ? xstrdup(arg) : NULL;
 }
 
 void
