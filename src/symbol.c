@@ -24,7 +24,7 @@ Hash_table *symbol_table;
 static unsigned
 hash_symbol_hasher(void const *data, unsigned n_buckets)
 {
-     Symbol *sym = data;
+     Symbol const *sym = data;
      return hash_string(sym->name, n_buckets);
 }
 
@@ -32,8 +32,8 @@ hash_symbol_hasher(void const *data, unsigned n_buckets)
 static bool
 hash_symbol_compare(void const *data1, void const *data2)
 {
-     Symbol *s1 = data1;
-     Symbol *s2 = data2;
+     Symbol const *s1 = data1;
+     Symbol const *s2 = data2;
      return strcmp(s1->name, s2->name) == 0;
 }
 
@@ -108,7 +108,7 @@ static_processor(void *data, void *proc_data)
 void
 delete_statics()
 {
-     if (globals_only) 
+     if (globals_only()) 
 	  hash_do_for_each (symbol_table, static_processor, NULL);
 }
 
