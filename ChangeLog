@@ -1,3 +1,28 @@
+2005-03-21  Sergey Poznyakoff  <gray@Noldor.runasimi.org>
+
+	* README: Updated
+	* elisp/cflow.el: Renamed to
+	* elisp/cflow-mode.el: ... this and improved
+	* src/c.l: Fixed line counting in <string> state
+	* src/cflow.h (print_line_numbers): New variable
+	* src/gnu.c (print_level): Moved to output.c
+	(print_function_name): Do not output newline in cflow_output_text
+	* src/main.c: Reordered functions
+	(find_option_type): Take third argument.
+	(symbol_override,number,parse_level_string)
+	(set_level_indent): Operate on read-only strings
+	(options): New option --number (-n)
+	* src/output.c (print_level): Moved from gnu.c
+	(print_text): New function
+	(header): Removed
+	(is_printable,is_last): New functions
+	(direct_tree,inverted_tree): Fixed printing tree branches in
+	-T mode.
+	(tree_output): Do not print headers.
+	* src/parser.c (declare): Changed error message.
+	* src/posix.c (print_symbol): Call print_level();
+	(posix_output_handler) Do not output newline in cflow_output_text
+
 2005-03-20  Sergey Poznyakoff  <gray@Noldor.runasimi.org>
 
 	* src/cflow.h (GNU_STYLE_OPTIONS,SYSTEM_ERROR)
