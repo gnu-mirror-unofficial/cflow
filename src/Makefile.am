@@ -17,6 +17,20 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+INCLUDES = -I$(top_srcdir)/lib -I../ -I../lib
+
 bin_PROGRAMS = cflow
-cflow_SOURCES = main.c rc.c parser.c c.l output.c symbol.c cflow.h version.h parser.h gnu.c posix.c
+cflow_SOURCES = \
+ main.c\
+ rc.c\
+ parser.c\
+ c.l\
+ output.c\
+ symbol.c\
+ cflow.h\
+ parser.h\
+ gnu.c\
+ posix.c
+
+cflow_LDADD=../lib/libcflow.a
 AM_LEXFLAGS=-dbvppl
