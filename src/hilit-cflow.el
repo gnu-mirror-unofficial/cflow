@@ -26,9 +26,12 @@
 (hilit-set-mode-patterns
  'cflow-mode
  '(("\\(Direct Tree\\)\\|\\(Reverse Tree\\)" nil label)
+   ("^[ \t]*[0-9]+" nil string)
    ("<[^>]*>" nil comment)
    ("[_a-zA-Z][_a-zA-Z0-9]*().*(recursive: see [0-9]+)" nil define)
-   ("+-" nil keyword)
+   ("\\(+-\\)\\|\\(\\\\-\\)" nil keyword)
    ("|" nil keyword)
-   (".*(R)$" nil include)))
+   ("\\[see [0-9]+\\]" nil crossref)
+   (".*(R):?$" nil include)))
+ 
 

@@ -31,12 +31,13 @@ void say_and_die(char *);
 void symbol_override();
 void init();
 void set_print_option(char*);
-void set_level_indent(char*);
+static void set_level_indent(char*);
+static void parse_level_string(char*, char**);
 
 #ifdef DEBUG
 #define DEBUG_OPT "D"
 #endif
-#define OPTSTR "hVLvSCdxtH:p:s:glTi:P:o:m:" DEBUG_OPT
+#define OPTSTR "hVLvSCdxtH:p:s:glTi:P:o:m:br" DEBUG_OPT
 
 
 #ifdef GNU_STYLE_OPTIONS
@@ -44,7 +45,7 @@ typedef struct option LONGOPT;
 LONGOPT longopts[] = {
     "help",    no_argument, 0, 'h',
     "version", no_argument, 0, 'V',
-    "licence", no_argument, 0, 'L',
+    "license", no_argument, 0, 'L',
     "verbose", no_argument, 0, 'v',
     "ignore-indentation", no_argument, 0, 'S',
     "c++", no_argument, 0, 'C',
@@ -61,7 +62,9 @@ LONGOPT longopts[] = {
     "level-indent", required_argument, 0, 'i',
     "print", required_argument, 0, 'P',
     "output", required_argument, 0, 'o',
-    "main", required_argument, 0, 'm', 
+    "main", required_argument, 0, 'm',
+    "brief", no_argument, 0, 'b',
+    "reverse", no_argument, 0, 'r',
     0,
 };
 #else
@@ -109,16 +112,18 @@ int ignore_indentation; /* Don't rely on indentation,
 			 * in the first column
                          */
 int assume_cplusplus;   /* Assume C++ input always */
-int record_defines;     /* Record C preproc definitions */
+int record_defines;     /* Record macro definitions */
 int record_typedefs;    /* Record typedefs */
 int strict_ansi;        /* Assume sources to be written in ANSI C */
 int globals_only;       /* List only global symbols */
 int print_levels;       /* Print level number near every branch */
 int print_as_tree;      /* Print as tree */
-
-char level_indent[80] = "    "; /* string used to indent each successive
-				 * nesting level.
-				 */
+int brief_listing;      /* Produce short listing */
+int reverse_tree;       /* Generate reverse tree */
+			   
+char *level_indent[] = { NULL, NULL };
+char *level_end[] = { "", "" };
+char *level_begin = "";
 
 char *start_name = "main"; /* Name of start symbol */
 
@@ -202,6 +207,10 @@ main(argc, argv)
 	    break;
 	case 'T':
 	    print_as_tree = 1;
+	    level_indent[0] = "  "; /* two spaces */
+	    level_indent[1] = "| ";
+	    level_end[0] = "+-";
+	    level_end[1] = "\\-";
 	    break;
 	case 'i':
 	    set_level_indent(optarg);
@@ -211,6 +220,12 @@ main(argc, argv)
 	    break;
 	case 'm':
 	    start_name = strdup(optarg);
+	    break;
+	case 'b':
+	    brief_listing = 1;
+	    break;
+	case 'r':
+	    reverse_tree = 1;
 	    break;
 #ifdef DEBUG
 	case 'D':
@@ -235,6 +250,11 @@ init()
     struct symbol_holder *hold;
     int i;
     Symbol *sp;
+
+    if (level_indent[0] == NULL) {
+	level_indent[0] = level_indent[1] = "    "; /* 4 spaces */
+	level_end[0] = level_end[1] = "";
+    }
     
     init_hash();
     init_lex();
@@ -350,21 +370,84 @@ number(str_ptr, base, count)
     return n;
 }
 
-/* Parse and set new value for level_indent.
- * STR can contain usual C escape sequences, plus \e meaning '\033'.
+/* Processing for --level option
+ * The option syntax is
+ *    --level KEYWORD=STR
+ * where
+ *    KEYWORD is one of "begin", "0", ", "1", "end0", "end1",
+ *    or an abbreviation thereof,
+ *    STR is the value to be assigned to the parameter.
+ *
+ * STR can contain usual C escape sequences plus \e meaning '\033'.
  * Apart from this any character followed by xN suffix (where N is
  * a decimal number) is expanded to the sequence of N such characters.
  * 'x' looses its special meaning at the start of the string.
  */
+#define MAXLEVELINDENT 216
+#define LEVEL_BEGIN 1
+#define LEVEL_INDENT0 2
+#define LEVEL_INDENT1 3
+#define LEVEL_END0 4
+#define LEVEL_END1 5
+
+struct option_type level_indent_optype[] = {
+    "begin", 1, LEVEL_BEGIN,
+    "0", 1, LEVEL_INDENT0,
+    "1", 1, LEVEL_INDENT1,
+    "end0", 4, LEVEL_END0,
+    "end1", 4, LEVEL_END1,
+};
+
 void
 set_level_indent(str)
     char *str;
 {
-    int i, num, c;
-    char text[sizeof(level_indent)];
     char *p;
 
+    p = str;
+    while (*p != '=') {
+	if (*p == 0) {
+	    error(0, "level-indent syntax");
+	    return;
+	}
+	p++;
+    }
+    *p++ = 0;
+    
+    switch (find_option_type(level_indent_optype, str)) {
+    case LEVEL_BEGIN:
+	parse_level_string(p, &level_begin);
+	break;
+    case LEVEL_INDENT0:
+	parse_level_string(p, &level_indent[0]);
+	break;
+    case LEVEL_INDENT1:
+	parse_level_string(p, &level_indent[1]);
+	break;
+    case LEVEL_END0:
+	parse_level_string(p, &level_end[0]);
+	break;
+    case LEVEL_END1:
+	parse_level_string(p, &level_end[1]);
+	break;
+    default:
+	error(0, "unknown level indent option: %s", str);
+    }
+}
+
+void
+parse_level_string(str, return_ptr)
+    char *str;
+    char **return_ptr;
+{
+    static char text[MAXLEVELINDENT];
+    char *p;
+    int i, c, num;
+    
     p = text;
+    memset(text, ' ', sizeof(text));
+    text[sizeof(text)-1] = 0;
+    
     while (*str) {
 	switch (*str) {
 	case '\\':
@@ -409,27 +492,26 @@ set_level_indent(str)
 		goto copy;
 	    }
 	    num = strtol(str+1, &str, 10);
-	    if (num >= sizeof(level_indent) - (p - text)) {
-		error(0, "level indent string is too long. (max %d symbols)",
-		      sizeof(level_indent)-1);
-		return;
-	    }
 	    c = p[-1];
-	    for (i = 1; i < num; i++)
+	    for (i = 1; i < num; i++) {
 		*p++ = c;
+		if (*p == 0) {
+		    error(0, "level indent string too long");
+		    return;
+		}
+	    }
 	    break;
 	default:
 	copy:
 	    *p++ = *str++;
-	    if (p >= text + sizeof(text) - 1) {
-		error(0, "level indent string is too long. (max %d symbols)",
-		      sizeof(level_indent)-1);
+	    if (*p == 0) {
+		error(0, "level indent string is too long");
 		return;
 	    }
 	}
     }
     *p = 0;
-    strcpy(level_indent, text);
+    *return_ptr = strdup(text);
 }
 
 /* Print text on console and exit. Before printing scan text for

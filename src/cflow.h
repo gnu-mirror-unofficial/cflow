@@ -43,6 +43,7 @@ enum symtype {
 
 enum storage {
     ExternStorage,
+    ExplicitExternStorage,
     StaticStorage,
     AutoStorage,
     AnyStorage,
@@ -60,6 +61,7 @@ struct symbol {
     enum symtype type;
     char *name;
     int active;
+    int expand_line;
     union {
 	struct {
 	    int token_type;
@@ -97,9 +99,13 @@ extern int record_defines;
 extern int record_typedefs;
 extern int strict_ansi;
 extern int globals_only;
-extern char level_indent[];
+extern char *level_indent[];
+extern char *level_end[];
+extern char *level_begin;
 extern int print_levels;
 extern int print_as_tree;
+extern int brief_listing;
+extern int reverse_tree;
 extern int out_line;
 extern char *start_name;
 

@@ -30,11 +30,12 @@
 (defvar cflow-mode-map (make-sparse-keymap)
   "Keymap used in Cflow mode.")
 
-(define-key cflow-mode-map "\C-c\C-f" 'cflow-find-function)
-(define-key cflow-mode-map "\C-c\C-r" 'cflow-recursion-root)
-(define-key cflow-mode-map "\C-c\C-n" 'cflow-recursion-next)
+(define-key cflow-mode-map "f" 'cflow-find-function)
+(define-key cflow-mode-map "r" 'cflow-recursion-root)
+(define-key cflow-mode-map "n" 'cflow-recursion-next)
 (define-key cflow-mode-map "\C-t\C-d" 'cflow-goto-direct-tree)
 (define-key cflow-mode-map "\C-t\C-r" 'cflow-goto-reverse-tree)
+(define-key cflow-mode-map "x" 'cflow-goto-expand)
 
 (define-key cflow-mode-map [menu-bar] (make-sparse-keymap))
 
@@ -45,6 +46,8 @@
   '("Recursion next" . cflow-recursion-next))
 (define-key cflow-mode-map [menu-bar cflow cflow-recursion-root]
   '("Recursion root" . cflow-recursion-root))
+(define-key cflow-mode-map [menu-bar cflow cflow-goto-expand]
+  '("Find expansion" . cflow-goto-expand))
 (define-key cflow-mode-map [menu-bar cflow cflow-find-function]
   '("Find function" . cflow-find-function))
 (define-key cflow-mode-map [menu-bar cflow cflow-goto-reverse-tree]
@@ -58,9 +61,9 @@
 Key bindings are:
      C-t C-d      Direct tree
      C-t C-r      Reverse tree
-     C-c C-f      Find function
-     C-c C-r      Go to recursion root
-     C-c C-n      Go to next recursive call
+     f            Find function
+     r            Go to recursion root
+     n            Go to next recursive call
 "
   (interactive)
   (kill-all-local-variables)
@@ -102,15 +105,17 @@ Key bindings are:
 (defun cflow-recursion-root ()
   (interactive)
   (let ((num (cond
-	      ((re-search-forward "(recursive: see \\([0-9]+\\))"
-				  (save-excursion (end-of-line) (point))
-				  t)
+	      ((save-excursion
+		 (re-search-forward "(recursive: see \\([0-9]+\\))"
+				    (save-excursion (end-of-line) (point))
+				    t))
 	       (string-to-number
 		(buffer-substring (match-beginning 1) (match-end 1))))
 	      (t
 	       0))))
     (cond
      ((> num 0)
+      (push-mark)
       (goto-line num))
      (t
       (error "Not a recursive call")))))
@@ -118,16 +123,17 @@ Key bindings are:
 ;; Go to next recursive call
 (defun cflow-recursion-next ()
   (interactive)
-  (cond
-   ((re-search-forward "(R)"
-		       (save-excursion (end-of-line) (point))
-		       t)
-    (setq cflow-recursion-root-line (count-lines 1 (point)))))
+  (save-excursion
+    (cond
+     ((re-search-forward "(R)"
+			(save-excursion (end-of-line) (point))
+			t)
+     (setq cflow-recursion-root-line (count-lines 1 (point))))))
   (cond
    ((null cflow-recursion-root-line)
-    (error "No recursive functions"))
+    (error "No recursive functions %d"))
    (t
-    (let ((pos (progn
+    (let ((pos (save-excursion
 		 (next-line 1)
 		 (re-search-forward
 		  (concat "(recursive: see "
@@ -140,8 +146,28 @@ Key bindings are:
 	(goto-line cflow-recursion-root-line)
 	(error "no more calls."))
        (t
+	(push-mark)
 	(goto-char pos)
 	(beginning-of-line)))))))
+
+(defun cflow-goto-expand ()
+  (interactive)
+  (let ((num (cond
+	      ((save-excursion
+		 (re-search-forward "\\[see \\([0-9]+\\)\\]"
+				    (save-excursion (end-of-line) (point))
+				    t))
+		 (string-to-number
+		  (buffer-substring (match-beginning 1) (match-end 1))))
+	       (t
+		0))))
+    (cond
+     ((> num 0)
+      (push-mark)
+      (goto-line num))
+     (t
+      (error "not expandable")))))
+
 
 (defun cflow-goto-direct-tree ()
   (interactive)
@@ -155,6 +181,7 @@ Key bindings are:
       (error "No direct tree in this file?"))
      (t
       (goto-char pos)
+      (recenter 0)
       (beginning-of-line)))))
 
 (defun cflow-goto-reverse-tree ()
@@ -166,9 +193,10 @@ Key bindings are:
 			       t))))
     (cond
      ((null pos)
-      (error "No direct tree in this file?"))
+      (error "No reverse tree in this file?"))
      (t
       (goto-char pos)
+      (recenter 0)
       (beginning-of-line)))))
 
 

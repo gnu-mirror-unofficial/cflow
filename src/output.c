@@ -27,16 +27,17 @@ void print_refs(char*,Consptr);
 void print_function(Symbol*);
 void print_type(Symbol *);
 void scan_tree(int, Symbol *);
-void direct_tree(int, Symbol *);
-void inverted_tree(int, Symbol *);
+void direct_tree(int, int, Symbol *);
+void inverted_tree(int, int, Symbol *);
 void tree_output();
-void print_level(int);
+void print_level(int,int);
 void print_function_name(Symbol*,int);
 void set_active(Symbol*);
 void header(enum tree_type);
 void begin();
 void end();
 void separator();
+static void newline();
 
 char *level_mark;
 /* Tree level information. level_mark[i] contains 1 if there are more
@@ -149,20 +150,23 @@ tree_output()
     header(DirectTree);
     main = lookup(start_name);
     if (main) {
-	direct_tree(0, main);
+	direct_tree(0, 0, main);
 	separator();
     } else {
 	for (i = 0; i < num; i++) {
 	    if (symbols[i]->v.func.callee == NULL)
 		continue;
-	    direct_tree(0, symbols[i]);
+	    direct_tree(0, 0, symbols[i]);
 	    separator();
 	}
     }
+
+    if (!reverse_tree)
+	return;
     
     header(ReverseTree);
     for (i = 0; i < num; i++) {
-	inverted_tree(0, symbols[i]);
+	inverted_tree(0, 0, symbols[i]);
 	separator();
     }
 
@@ -194,20 +198,33 @@ scan_tree(lev, sym)
 /* Produce direct call tree output
  */
 void
-direct_tree(lev, sym)
+direct_tree(lev, last, sym)
     int lev;
     Symbol *sym;
+    int last;
 {
     Consptr cons;
 
-    print_level(lev);
+    print_level(lev, last);
     print_function_name(sym, sym->v.func.callee != NULL);
+
+    if (brief_listing) {
+	if (sym->expand_line) {
+	    fprintf(outfile, " [see %d]", sym->expand_line);
+	    newline();
+	    return;
+	}
+	if (sym->v.func.callee)
+	    sym->expand_line = out_line;
+    }
+    newline();
+    
     if (sym->active)
 	return;
     set_active(sym);
     for (cons = sym->v.func.callee; cons; cons = CDR(cons)) {
 	level_mark[lev+1] = CDR(cons) != NULL;
-	direct_tree(lev+1, (Symbol*)CAR(cons));
+	direct_tree(lev+1, CDR(cons) == NULL, (Symbol*)CAR(cons));
     }
     clear_active(sym);
 }
@@ -215,20 +232,22 @@ direct_tree(lev, sym)
 /* Produce reverse call tree output
  */
 void
-inverted_tree(lev, sym)
+inverted_tree(lev, last, sym)
     int lev;
+    int last;
     Symbol *sym;
 {
     Consptr cons;
 
-    print_level(lev);
+    print_level(lev, last);
     print_function_name(sym, sym->v.func.caller != NULL);
+    newline();
     if (sym->active)
 	return;
     set_active(sym);
     for (cons = sym->v.func.caller; cons; cons = CDR(cons)) {
 	level_mark[lev+1] = CDR(cons) != NULL;
-	inverted_tree(lev+1, (Symbol*)CAR(cons));
+	inverted_tree(lev+1, CDR(cons) == NULL, (Symbol*)CAR(cons));
     }
     clear_active(sym);
 }
@@ -264,28 +283,23 @@ separator()
     newline();
 }
 
+
+
 /* Print current tree level
  */
 void
-print_level(lev)
+print_level(lev, last)
     int lev;
+    int last;
 {
     int i;
-    
+
     if (print_levels)
 	fprintf(outfile, "%4d ", lev);
-    if (print_as_tree) {
-	for (i = 0; i < lev; i++) {
-	    if (level_mark[i])
-		fprintf(outfile, "| ");
-	    else
-		fprintf(outfile, "  ");
-	}
-	fprintf(outfile, "+-");
-    } else {
-	for (i = 0; i < lev; i++)
-	    fprintf(outfile, "%s", level_indent);
-    }
+    fprintf(outfile, "%s", level_begin);
+    for (i = 0; i < lev; i++) 
+	fprintf(outfile, "%s", level_indent[ level_mark[i] ]);
+    fprintf(outfile, "%s", level_end[last]);
 }
 
 void
@@ -301,14 +315,12 @@ print_function_name(sym, has_subtree)
 	       sym->v.func.def_line);
     if (sym->active) {
 	fprintf(outfile, " (recursive: see %d)", sym->active-1);
-	newline();
 	return;
     }
     if (sym->v.func.recursive)
 	fprintf(outfile, " (R)");
     if (!print_as_tree && has_subtree)
 	fprintf(outfile, ":");
-    newline();
 }
 
 void

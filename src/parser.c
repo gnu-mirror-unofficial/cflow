@@ -30,7 +30,11 @@ typedef struct {
     enum storage storage;
 } Ident;
 
+#define is_finction(ip) ((ip)->parmcnt >= 0)
+#define is_extern_dcl(ip) ((ip)->storage == ExplicitExternStorage)
+
 void parse_declaration(Ident*);
+void parse_variable_declaration(Ident*);
 void parse_function_declaration(Ident*);
 void parse_dcl(Ident*);
 void parse_knr_dcl(Ident*);
@@ -249,20 +253,33 @@ yyparse()
 	case TYPEDEF:
 	    parse_typedef();
 	    break;
+	case EXTERN:
+	    identifier.storage = ExplicitExternStorage;
+	    parse_declaration(&identifier);
+	    break;
 	case STATIC:
 	    identifier.storage = StaticStorage;
 	    /* fall through */
 	default:
-	    if (is_function())
-		parse_function_declaration(&identifier);
-	    else
-		parse_declaration(&identifier);
+	    parse_declaration(&identifier);
 	    break;
 	}
 	clearstack();
     }
     /*NOTREACHED*/
 }
+
+
+void
+parse_declaration(ident)
+    Ident *ident;
+{
+    if (is_function())
+	parse_function_declaration(ident);
+    else
+	parse_variable_declaration(ident);
+}
+
 
 void
 expression()
@@ -411,7 +428,7 @@ fake_struct(ident)
 }
 
 void
-parse_declaration(ident)
+parse_variable_declaration(ident)
     Ident *ident;
 {
     Stackpos sp;
@@ -627,8 +644,9 @@ parse_dcl(ident)
     putback();
     dcl(ident);
     save_stack();
-    if (ident->name)
+    if (ident->name) {
 	declare(ident);
+    }
 }
 
 int
@@ -766,6 +784,10 @@ func_body()
 	case STATIC:
 	case TYPE:
 	    ident.storage = AutoStorage;
+	    parse_variable_declaration(&ident);
+	    break;
+	case EXTERN:
+	    ident.storage = ExplicitExternStorage;
 	    parse_declaration(&ident);
 	    break;
 	case LBRACE0:
@@ -811,7 +833,8 @@ declare(ident)
 	return;
     } 
 
-    if (ident->parmcnt >= 0 && tok.type == ';') {
+    if ((ident->parmcnt >= 0 && tok.type == ';') ||
+	(ident->parmcnt < 0 && ident->storage == ExplicitExternStorage)) {
 	/* add_external()?? */
 	return;
     }
@@ -826,7 +849,8 @@ declare(ident)
     
     sp->type = SymFunction;
     sp->v.func.argc = ident->parmcnt;
-    sp->v.func.storage = ident->storage;
+    sp->v.func.storage = (ident->storage == ExplicitExternStorage) ?
+	                  ExternStorage : ident->storage;
     sp->v.func.type = declstr;
     sp->v.func.source = filename;
     sp->v.func.def_line = ident->line;
