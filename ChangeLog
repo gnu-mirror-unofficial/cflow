@@ -1,3 +1,34 @@
+2005-03-19  Sergey Poznyakoff  <gray@Noldor.runasimi.org>
+
+	* AUTHORS: New file
+	* NEWS: New file
+	* THANKS: New file
+	* Makefile.am: New file
+	* configure.ac: New file
+	* elisp: New directory
+	* doc/Makefile.am: New file
+	* src/Makefile.am: New file
+	* src/Makefile: Removed
+	* src/posix.c: New file
+	* src/gnu.c: New file
+
+	* TODO: Updated
+	* src/cflow.h: Updated
+	* src/obstack1.h: Removed
+	* src/output.h: Removed
+	* src/hilit-cflow.el: Removed
+	* src/cflow.el: Moved to /elisp
+	* src/main.c: New option -f (--format)
+	* src/c.l: Updated
+	* src/output.c: Likewise
+	* src/parser.c: Likewise
+	* src/rc.c: Likewise
+	* src/symbol.c: Likewise
+	* src/version.h: Likewise
+
+	* elisp/cflow.el: Moved from /src
+	* elisp/Makefile.am: New file
+	
 2005-03-16  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	Initial import from my RCS archives. First revisions date

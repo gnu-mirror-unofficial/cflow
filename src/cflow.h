@@ -1,22 +1,34 @@
-/*  $Id$
- *  cflow
- *  Copyright (C) 1997 Gray
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- */
-#define DEBUG 1
+/* This file is part of GNU cflow
+   Copyright (C) 1997,2005 Sergey Poznyakoff
+ 
+   GNU cflow is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+ 
+   GNU cflow is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GNU cflow; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA  */
+
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <getopt.h>
+#include <errno.h>
+#define obstack_chunk_alloc emalloc
+#define obstack_chunk_free efree
+#include <obstack.h>
+
 #define GNU_STYLE_OPTIONS 1
 
 #define SYSTEM_ERROR 0x0100
@@ -90,6 +102,12 @@ struct symbol {
 #define PRINT_XREF 0x01
 #define PRINT_TREE 0x02
 
+#define MAX_OUTPUT_DRIVERS 8
+
+extern char *level_mark;
+extern FILE *outfile;
+extern char *outname;
+
 extern char *progname;
 extern int verbose;
 extern int print_option;
@@ -109,9 +127,8 @@ extern int reverse_tree;
 extern int out_line;
 extern char *start_name;
 
-#ifdef DEBUG
 extern int debug;
-#endif
+
 extern int token_stack_length;
 extern int token_stack_increase;
 
@@ -126,6 +143,37 @@ int collect_symbols(Symbol ***, int (*sel)());
 Consptr append_to_list(Consptr *, void *);
 int symbol_in_list(Symbol *sym, Consptr list);
 void sourcerc(int *, char ***);
+
+typedef enum {
+     cflow_output_begin,
+     cflow_output_end,
+     cflow_output_newline,
+     cflow_output_separator,
+     cflow_output_symbol,
+     cflow_output_text
+} cflow_output_command;
+
+struct output_symbol {
+     int direct;
+     int level;
+     int last;
+     Symbol *sym;
+};
+
+int register_output(const char *name,
+		    void (*handler) (cflow_output_command cmd,
+				     FILE *outfile, int line,
+				     void *data, void *handler_data),
+		    void *handler_data);
+int select_output_driver (const char *name);
+
+void gnu_output_handler(cflow_output_command cmd,
+			FILE *outfile, int line,
+			void *data, void *handler_data);
+void posix_output_handler(cflow_output_command cmd,
+			  FILE *outfile, int line,
+			  void *data, void *handler_data);
+void error(int stat, const char *fmt, ...);
 
 
 

@@ -1,4 +1,4 @@
-cflow TODO list.  2005-03-16
+GNU cflow TODO list.  2005-03-19
 Copyright (C) 2005, Sergey Poznyakoff
 
 * Introduction
@@ -12,16 +12,18 @@ order of decreasing priority, the most urgent ones being the first.
 
 * High Priority Issues
 
+** Implement all POSIX switches
+
 ** Divide and conquer: separate main cflow code (/src) and C lexical analizer
 (/back-ends/C)
 
-** Add autoconfiguration suite
-
-** Rewrite output part to produce POSIX compatible reports
-
-** Implement all POSIX switches
+** Write proper documentation
 
 * Medium Priority Issues
+
+** Handle #line statements in input files.
+
+** Optionally preprocess input files with cpp.
 
 ** Implement front-end support.
 
@@ -31,6 +33,8 @@ XML/HTML output.
 ** Update and debug Emacs interface (cflow.el)
 
 * Low Priority Issues
+
+** Internationalization
 
 ** Add new back-ends: C++, Scheme, Lisp...
 

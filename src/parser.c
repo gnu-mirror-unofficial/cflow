@@ -1,26 +1,22 @@
-/* $Id$ */
-/*  cflow:
- *  Copyright (C) 1997 Gray
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- */
-#include <stdio.h>
-#include <stdlib.h>
-#include "cflow.h"
-#include "parser.h"
-#include "obstack1.h"
+/* This file is part of GNU cflow
+   Copyright (C) 1997,2005 Sergey Poznyakoff
+ 
+   GNU cflow is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+ 
+   GNU cflow is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GNU cflow; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA  */
+
+#include <cflow.h>
+#include <parser.h>
 
 typedef struct {
     char *name;
@@ -867,14 +863,12 @@ declare(ident)
     sp->v.func.source = filename;
     sp->v.func.def_line = ident->line;
     sp->v.func.level = level;
-#ifdef DEBUG
     if (debug)
 	printf("%s:%d: %s/%d defined to %s\n",
 	       filename,
 	       line_num,
 	       ident->name, ident->parmcnt,
 	       declstr);
-#endif
 }
 
 void
@@ -895,13 +889,11 @@ declare_type(ident)
     sp->v.type.source = filename;
     sp->v.type.def_line = ident->line;
     sp->v.type.ref_line = NULL;
-#ifdef DEBUG
     if (debug)
 	printf("%s:%d: type %s\n",
 	       filename,
 	       line_num,
 	       ident->name);
-#endif
 }
 
 Symbol *

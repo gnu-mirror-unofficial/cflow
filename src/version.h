@@ -1,28 +1,28 @@
-/* $Id$ 
- *  cflow
- *  Copyright (C) 1997 Gray
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- */
+/* This file is part of GNU cflow
+   Copyright (C) 1997,2005 Sergey Poznyakoff
+ 
+   GNU cflow is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+ 
+   GNU cflow is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GNU cflow; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA  */
 
 char usage[]= "\
 usage: cflow [options] file [files]\n\
 \n\
 The options are:\n\
+    -f NAME, --format NAME      use given output format NAME. Valid names are\n\
+                                gnu (default) and posix
     -v, --verbose               be verbose on output\n\
-    -S, -ignore-indentation     don't rely on indentation\n\
+    -S, --ignore-indentation    don't rely on indentation\n\
     -d, --defines               record defines\n\
     -x, --xref                  produce cross-reference listing only\n\
     -t, --typedefs              record typedefs\n\
@@ -69,9 +69,6 @@ information and exits successfully ignoring any other command line arguments:\n\
 char version[] =
 "cflow $Revision$($Date$)\n"
 "Compilation options:\n"
-#ifdef DEBUG
-"    DEBUG\n"
-#endif
 #ifdef GNU_STYLE_OPTIONS
 "    GNU_STYLE_OPTIONS\n"
 #endif
@@ -79,19 +76,19 @@ char version[] =
 
 char licence[] = "\
 cflow $Revision$($Date$)\n\
-    Copyright (C) 1997 Gray\n\
+    Copyright (C) 1997,2005 Sergey Poznyakoff\n\
 \n\
-    This program is free software; you can redistribute it and/or modify\n\
+    GNU cflow is free software; you can redistribute it and/or modify\n\
     it under the terms of the GNU General Public License as published by\n\
     the Free Software Foundation; either version 2 of the License, or\n\
     (at your option) any later version.\n\
 \n\
-    This program is distributed in the hope that it will be useful,\n\
+    GNU cflow is distributed in the hope that it will be useful,\n\
     but WITHOUT ANY WARRANTY; without even the implied warranty of\n\
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n\
     GNU General Public License for more details.\n\
 \n\
     You should have received a copy of the GNU General Public License\n\
-    along with this program; if not, write to the Free Software\n\
-    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.\n\
+    along with GNU cflow; if not, write to the Free Software\n\
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.\n\
 "; 
