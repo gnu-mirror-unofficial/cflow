@@ -77,7 +77,43 @@ void restore(Stackpos);
 void tokpush(int,int,char*);
 void save_token(TOKSTK *);
 
-void
+static void
+print_token(TOKSTK *tokptr)
+{
+     switch (tokptr->type) {
+     case IDENTIFIER:
+     case TYPE:
+     case WORD:
+     case MODIFIER:
+     case STRUCT:
+	  fprintf(stderr, "`%s'", tokptr->token);
+	  break;
+     case LBRACE0:
+     case LBRACE:
+	  fprintf(stderr, "`{'");
+	  break;
+     case RBRACE0:
+     case RBRACE:
+	  fprintf(stderr, "`}'");
+	  break;
+     case EXTERN:
+	  fprintf(stderr, "`extern'");
+	  break;
+     case STATIC:
+	  fprintf(stderr, "`static'");
+	  break;
+     case TYPEDEF:
+	  fprintf(stderr, "`typedef'");
+	  break;
+     case OP:
+	  fprintf(stderr, "OP"); /* ouch!!! */
+	  break;
+     default:
+	  fprintf(stderr, "`%c'", tokptr->type);
+     }
+}
+
+static void
 file_error(char *msg, int near)
 {
     fprintf(stderr, "%s:%d: %s", filename, tok.line, msg);
@@ -246,6 +282,7 @@ skip_to(int c)
      }
 }
 
+int
 yyparse()
 {
      Ident identifier;
@@ -277,6 +314,28 @@ yyparse()
      /*NOTREACHED*/
 }
 
+static int
+is_function()
+{
+     Stackpos sp;
+     int res = 0;
+
+     mark(sp);
+/*    if (tok.type == STRUCT)
+	nexttoken();*/
+     while (tok.type == TYPE ||
+	    tok.type == IDENTIFIER ||
+	    tok.type == MODIFIER ||
+	    tok.type == STATIC ||
+	    tok.type == EXTERN)
+	  nexttoken();
+     
+     if (tok.type == '(') 
+	  res = nexttoken() != MODIFIER;
+     
+     restore(sp);
+     return res;
+}
 
 void
 parse_declaration(Ident *ident)
@@ -347,29 +406,6 @@ expression()
 	  }
 	  nexttoken();
      }
-}
-
-int
-is_function()
-{
-     Stackpos sp;
-     int res = 0;
-
-     mark(sp);
-/*    if (tok.type == STRUCT)
-	nexttoken();*/
-     while (tok.type == TYPE ||
-	    tok.type == IDENTIFIER ||
-	    tok.type == MODIFIER ||
-	    tok.type == STATIC ||
-	    tok.type == EXTERN)
-	  nexttoken();
-     
-     if (tok.type == '(') 
-	  res = nexttoken() != MODIFIER;
-     
-     restore(sp);
-     return res;
 }
 
 void
@@ -930,8 +966,9 @@ add_reference(char *name, int line)
 void
 call(char *name, int line)
 {
-     Symbol *sp = add_reference(name, line);
-     
+     Symbol *sp;
+
+     sp = add_reference(name, line);
      if (!sp)
 	  return;
      if (sp->v.func.argc < 0)
@@ -950,39 +987,4 @@ reference(char *name, int line)
      add_reference(name, line);
 }
 
-void
-print_token(TOKSTK *tokptr)
-{
-     switch (tokptr->type) {
-     case IDENTIFIER:
-     case TYPE:
-     case WORD:
-     case MODIFIER:
-     case STRUCT:
-	  fprintf(stderr, "`%s'", tokptr->token);
-	  break;
-     case LBRACE0:
-     case LBRACE:
-	  fprintf(stderr, "`{'");
-	  break;
-     case RBRACE0:
-     case RBRACE:
-	  fprintf(stderr, "`}'");
-	  break;
-     case EXTERN:
-	  fprintf(stderr, "`extern'");
-	  break;
-     case STATIC:
-	  fprintf(stderr, "`static'");
-	  break;
-     case TYPEDEF:
-	  fprintf(stderr, "`typedef'");
-	  break;
-     case OP:
-	  fprintf(stderr, "OP"); /* ouch!!! */
-	  break;
-     default:
-	  fprintf(stderr, "`%c'", tokptr->type);
-     }
-}
 
