@@ -19,8 +19,8 @@
 
 # Written by Paul Eggert and Sergey Poznyakoff.
 
-# URL of our text domain page in Translation Project
-TP_URL="http://www.iro.umontreal.ca/translation/maint/tar/"
+# FIXME: *Eventual* URL of our text domain page in Translation Project
+TP_URL="http://www.iro.umontreal.ca/translation/maint/cflow/"
 
 # Ensure file names are sorted consistently across platforms;
 # e.g., m4/ulonglong_gl.m4 should follow m4/ulonglong.m4.
@@ -201,7 +201,7 @@ done
 
 gnulib_files=`
   (for gnulib_module in $gnulib_modules; do
-     $GNULIB_SRCDIR/gnulib-tool --extract-filelist $gnulib_module
+     $GNULIB_SRCDIR/gnulib-tool --extract-filelist $gnulib_module 
    done) | sort -u
 `
 
@@ -217,8 +217,10 @@ for file in build-aux/*.m4; do
 done
 
 for gnulib_file in $gnulib_files; do
-  dest=$gnulib_file
-
+  case $gnulib_file in
+  config/*) dest=`echo $gnulib_file | sed 's,config/,build-aux/,'`;;
+  *)        dest=$gnulib_file;;
+  esac
   rm -f $dest &&
   echo "$0: Copying file $GNULIB_SRCDIR/$gnulib_file" &&
   cp -p $GNULIB_SRCDIR/$gnulib_file $dest || exit
