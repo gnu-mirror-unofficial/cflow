@@ -11,8 +11,14 @@ it and make a full-fledged package of it. See TODO for the details.
 
 * Current Status
 
-The contents of src/ directory compiles and runs on GNU/Linux systems.
-Emacs module cflow.el is known to work with Emacs 20.1
+The package compiles and runs on GNU/Linux systems. It supports all
+command line switches required by POSIX, plus a number of extended
+ones. It is able to produce output two formats: default output format
+(which I call GNU cflow format and which is the default) and in POSIX
+format.
+
+Emacs module cflow-mode.el works wit files in GNU cflow format (as
+opposed to POSIX format). It has been tested with Emacs 21.3.
 
 * Planned Status
 
