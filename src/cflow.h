@@ -42,8 +42,8 @@
 typedef struct cons *Consptr;
 typedef struct cons Cons;
 struct cons {
-    Consptr car;
-    Consptr cdr;
+     Consptr car;
+     Consptr cdr;
 };
 
 #define CAR(a) (a)->car
@@ -56,48 +56,48 @@ enum symtype {
 };
 
 enum storage {
-    ExternStorage,
-    ExplicitExternStorage,
-    StaticStorage,
-    AutoStorage,
-    AnyStorage
+     ExternStorage,
+     ExplicitExternStorage,
+     StaticStorage,
+     AutoStorage,
+     AnyStorage
 };
 
 typedef struct {
-    int line;
-    char *source;
+     int line;
+     char *source;
 } Ref;
 
 typedef struct symbol Symbol;
 
 struct symbol {
-    Symbol *next;
-    enum symtype type;
-    char *name;
-    int active;
-    int expand_line;
-    union {
-	struct {
-	    int token_type;
-	    char *source;
-	    int def_line;
-	    Consptr ref_line;
-	} type;
-	struct {
-	    int token_type;
-	    char *source;
-	    int def_line;
-	    Consptr ref_line;
-	    char *type;
-	    enum storage storage;
-	    int argc;
-	    char *args;
-	    int recursive;      /* for functions only */
-	    int level;          /* for local vars only */
-	    Consptr caller;
-	    Consptr callee;
-	} func;
-    } v;
+     Symbol *next;
+     enum symtype type;
+     char *name;
+     int active;
+     int expand_line;
+     union {
+	  struct {
+	       int token_type;
+	       char *source;
+	       int def_line;
+	       Consptr ref_line;
+	  } type;
+	  struct {
+	       int token_type;
+	       char *source;
+	       int def_line;
+	       Consptr ref_line;
+	       char *type;
+	       enum storage storage;
+	       int argc;
+	       char *args;
+	       int recursive;      /* for functions only */
+	       int level;          /* for local vars only */
+	       Consptr caller;
+	       Consptr callee;
+	  } func;
+     } v;
 };
 
 /* Output flags */
@@ -110,15 +110,12 @@ extern char *level_mark;
 extern FILE *outfile;
 extern char *outname;
 
-extern char *progname;
 extern int verbose;
 extern int print_option;
 extern int ignore_indentation;
 extern int assume_cplusplus;
 extern int record_defines;
-extern int record_typedefs;
 extern int strict_ansi;
-extern int globals_only;
 extern char *level_indent[];
 extern char *level_end[];
 extern char *level_begin;
@@ -128,7 +125,7 @@ extern int brief_listing;
 extern int reverse_tree;
 extern int out_line;
 extern char *start_name;
-
+extern int max_depth;
 extern int debug;
 
 extern int token_stack_length;
@@ -138,7 +135,17 @@ extern int symbol_count;
 
 Symbol *lookup(char*);
 Symbol *install(char*);
-Consptr alloc_cons();
+int source(char *name);
+int yyparse(void);
+void cleanup(void);
+void output(void);
+void init_lex(int debug_level);
+void init_parse(void);
+void delete_autos(int level);
+void delete_statics(void);
+int globals_only(void);
+int include_symbol(Symbol *sym);
+
 int collect_symbols(Symbol ***, int (*sel)());
 Consptr append_to_list(Consptr *, void *);
 int symbol_in_list(Symbol *sym, Consptr list);
@@ -161,16 +168,16 @@ struct output_symbol {
 };
 
 int register_output(const char *name,
-		    void (*handler) (cflow_output_command cmd,
-				     FILE *outfile, int line,
-				     void *data, void *handler_data),
+		    int (*handler) (cflow_output_command cmd,
+				    FILE *outfile, int line,
+				    void *data, void *handler_data),
 		    void *handler_data);
 int select_output_driver (const char *name);
 
-void gnu_output_handler(cflow_output_command cmd,
-			FILE *outfile, int line,
-			void *data, void *handler_data);
-void posix_output_handler(cflow_output_command cmd,
-			  FILE *outfile, int line,
-			  void *data, void *handler_data);
+int gnu_output_handler(cflow_output_command cmd,
+		       FILE *outfile, int line,
+		       void *data, void *handler_data);
+int posix_output_handler(cflow_output_command cmd,
+			 FILE *outfile, int line,
+			 void *data, void *handler_data);
 
