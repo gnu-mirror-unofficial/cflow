@@ -27,26 +27,26 @@ typedef struct {
     int type_end;
     int parmcnt;
     int line;
+    enum storage storage;
 } Ident;
 
-void func_def();
+void func_def(Ident*);
 void func_body();
-void declaration();
+void declaration(Ident*);
 int dcl(Ident*);
 int dirdcl(Ident*);
-void process_dcl();
-void process_knr_dcl();
-void process_comma_dcl();
-void process_typedef();
-void process_struct();
+void process_dcl(Ident*);
+void process_knr_dcl(Ident*);
+void process_comma_dcl(Ident*);
+void process_typedef(Ident*);
+void process_struct(Ident*);
 
-void call(char*);
-void reference(char*);
+void call();
+void reference();
 
 #define MAXTOKENLEN 256
 
 int level;
-Ident identifier;
 char *declstr;
 struct obstack text_stk;
 
@@ -134,7 +134,7 @@ save_token(tokptr)
 {
     switch (tokptr->type) {
     case IDENTIFIER:
-    case WORD:
+    case TYPE:
 	if (need_space) 
 	    obstack_1grow(&text_stk, ' ');
 	obstack_grow(&text_stk, tokptr->token, strlen(tokptr->token));
@@ -149,6 +149,9 @@ save_token(tokptr)
 	    need_space = 1;
 	obstack_grow(&text_stk, tokptr->token, strlen(tokptr->token));
 	break;
+    case EXTERN: /* starage class specifiers are already taken care of */
+    case STATIC:
+	break;  
     case '(':
 	if (need_space) 
 	    obstack_1grow(&text_stk, ' ');
@@ -171,6 +174,7 @@ save_stack()
 void
 finish_save()
 {
+    obstack_1grow(&text_stk, 0);
     declstr = obstack_finish(&text_stk);
 }
 
@@ -186,22 +190,27 @@ skip_to(c)
 	
 yyparse()
 {
-    
+    Ident identifier;
+
     level = 0;
     clearstack();
     while (nexttoken()) {
+	identifier.storage = ExternStorage;
 	switch (tok.type) {
 	case 0:
 	    return 0;
 	case TYPEDEF:
-	    process_typedef();
+	    process_typedef(&identifier);
 	    break;
 	case STRUCT:
-	    process_struct();
+	    process_struct(&identifier);
 	    break;
+	case STATIC:
+	    identifier.storage = StaticStorage;
+	    /* fall through */
 	default:
 	    identifier.type_end = -1;
-	    process_knr_dcl();
+	    process_knr_dcl(&identifier);
 
 	    switch (tok.type) {
 	    default:
@@ -210,19 +219,19 @@ yyparse()
 		/* should putback() here */
 		/* fall through */
 	    case ';':
-		declaration();
+		declaration(&identifier);
 		break;
 	    case ',':
-		declaration();
-		process_comma_dcl();
+		declaration(&identifier);
+		process_comma_dcl(&identifier);
 		break;
 	    case '=':
-		declaration();
+		declaration(&identifier);
 		skip_to(';'); /* should handle ',' */
 		break;
 	    case LBRACE0:
 	    case LBRACE:
-		func_def();
+		func_def(&identifier);
 		func_body();
 		break;
 	    case 0:
@@ -238,32 +247,44 @@ yyparse()
 }
 
 void
-process_knr_dcl()
+process_knr_dcl(ident)
+    Ident *ident;
 {
-    identifier.type_end = -1;
-    process_dcl();
+    ident->type_end = -1;
+    process_dcl(ident);
     if (strict_ansi)
 	return;
     switch (tok.type) {
     case IDENTIFIER:
-    case WORD:
-	if (identifier.parmcnt >= 0) {
+    case TYPE:
+	if (ident->parmcnt >= 0) {
 	    /* maybe K&R function definition */
-	    int i, parmcnt, sp, stop;
-		    
+	    int i, parmcnt, sp, stop, new_tos;
+	    Ident id;
+	    
 	    sp = mark();
 	    parmcnt = 0;
-	    for (stop = 0; !stop && parmcnt < identifier.parmcnt;
+	    
+	    for (stop = 0; !stop && parmcnt < ident->parmcnt;
 		 nexttoken()) {
+		id.type_end = -1;
 		switch (tok.type) {
 		case '{':
 		    putback();
 		    stop = 1;
 		    break;
-		case WORD:
+		case TYPE:
 		case IDENTIFIER:
-		    if (dcl(NULL) == 0) {
-			parmcnt++;
+		    new_tos = mark();
+		    if (dcl(&id) == 0) {
+ 			parmcnt++;
+			if (tok.type == ',') {
+			    do {
+				tos = id.type_end;
+				curs = new_tos;
+				dcl(&id);
+			    } while (tok.type == ',');
+			}
 			break;
 		    }
 		    /* else fall through */
@@ -277,34 +298,38 @@ process_knr_dcl()
 }
 
 void
-process_typedef()
+process_typedef(ident)
+    Ident *ident;
 {
     dcl(NULL);
 }
 
 void
-process_struct()
+process_struct(ident)
+    Ident *ident;
 {
 }
 
 void
-process_comma_dcl()
+process_comma_dcl(ident)
+    Ident *ident;
 {
     do {
-	tos = identifier.type_end;
+	tos = ident->type_end;
 	curs = 1;
-	process_dcl();
-	declaration();
+	process_dcl(ident);
+	declaration(ident);
     } while (tok.type == ',');
 }
 	
 
 void
-process_dcl()
+process_dcl(ident)
+    Ident *ident;
 {
-    identifier.parmcnt = -1;
+    ident->parmcnt = -1;
     putback();
-    dcl(&identifier);
+    dcl(ident);
     save_stack();
 }
 
@@ -312,17 +337,21 @@ int
 dcl(idptr)
     Ident *idptr;
 {
-    while (nexttoken() != 0 && tok.type != IDENTIFIER && tok.type != '(') {
+    int type;
+    
+    while (nexttoken() != 0 && tok.type != '(') {
 	if (tok.type == MODIFIER) {
 	    if (idptr && idptr->type_end == -1)
 		idptr->type_end = curs-1;
 	}
-    }
-    if (tok.type == IDENTIFIER) {
-	while (tok.type == IDENTIFIER)
-	    nexttoken();
-/*	if (tok.type != '(')*/
+	if (tok.type == IDENTIFIER) {
+	    while (tok.type == IDENTIFIER)
+		nexttoken();
+	    type = tok.type;
 	    putback();
+	    if (type != MODIFIER) 
+		break;
+	}
     }
     if (idptr && idptr->type_end == -1)
 	idptr->type_end = curs-1;
@@ -386,28 +415,43 @@ maybe_parm_list(parm_cnt_return)
 }
 
 void
-func_def()
+func_def(ident)
+    Ident *ident;
 {
-    declaration();
+    declaration(ident);
 }
 
 void
 func_body()
 {
-    int type;
     char *name;
+    Ident ident;
     
     level++;
     while (level) {
-	type = yylex();
-	switch (type) {
+	clearstack();
+	nexttoken();
+	switch (tok.type) {
+	case TYPE:
+	    ident.storage = AutoStorage;
+	    process_dcl(&ident);
+	    declaration(&ident);
+	    break;
 	case IDENTIFIER:
-	    name = yylval.str;
-	    type = yylex();
-	    if (type == '(')
-		call(name);
-	    else
-		reference(name);
+	    nexttoken();
+	    if (tok.type == '(')
+		call();
+	    else {
+		reference();
+		if (tok.type == MEMBER_OF) {
+		    while (tok.type == MEMBER_OF)
+			nexttoken();
+		}
+	    }
+	    break;
+	case '(':
+	    /* typecast */
+	    skip_to(')');
 	    break;
 	case LBRACE0:
 	case '{':
@@ -417,11 +461,14 @@ func_body()
 	    if (!ignore_indentation) {
 		if (verbose && level != 1)
 		    file_error("forced function body close", 0);
-		level = 0;
+		for ( ; level; level--) {
+		    delete_autos(level);
+		}
 		break;
 	    }
 	    /* else: fall thru */
 	case '}':
+	    delete_autos(level);
 	    level--;
 	    break;
 	case 0:
@@ -433,40 +480,81 @@ func_body()
 }
 
 void
-declaration()
+declaration(ident)
+    Ident *ident;
 {
     Symbol *sp;
     
     finish_save();
-    sp = install(identifier.name);
-    if (identifier.parmcnt >= 0) 
-	sp->type = SymFunction;
-    else
-	sp->type = SymVariable;
-    sp->v.func.argc = identifier.parmcnt;
+    sp = install(ident->name);
+    sp->type = SymFunction;
+    sp->v.func.argc = ident->parmcnt;
+    sp->v.func.storage = ident->storage;
     sp->v.func.type = declstr;
     sp->v.func.source = filename;
-    sp->v.func.def_line = identifier.line;
+    sp->v.func.def_line = ident->line;
+    sp->v.func.level = level;
 #ifdef DEBUG
     if (debug)
 	printf("%s:%d: %s/%d defined to %s\n",
 	       filename,
 	       line_num,
-	       identifier.name, identifier.parmcnt,
+	       ident->name, ident->parmcnt,
 	       declstr);
 #endif
 }
 
-void
-call(name)
+Symbol *
+get_symbol(name)
     char *name;
 {
+    Symbol *sp;
+
+    if (sp = lookup(name)) {
+	while (sp->type != SymFunction) 
+	    sp = sp->next;
+	if (sp)
+	    return sp;
+    }
+    sp = install(name);
+    sp->type = SymFunction;
+    return sp;
 }
 
 void
-reference(name)
-    char *name;
+call()
 {
+    Symbol *sp = get_symbol(tok.token);
+    Ref *refptr;
+    Cons *cons;
+
+    if (sp->v.func.storage == AutoStorage)
+	return;
+    refptr = emalloc(sizeof(*refptr));
+    cons = alloc_cons();
+    refptr->source = filename;
+    refptr->line = line_num;
+    (Ref*)CAR(cons) = refptr;
+    CDR(cons) = sp->v.func.ref_line;
+    sp->v.func.ref_line = cons;
+}
+
+void
+reference()
+{
+    Symbol *sp = get_symbol(tok.token);
+    Ref *refptr;
+    Cons *cons;
+
+    if (sp->v.func.storage == AutoStorage)
+	return;
+    refptr = emalloc(sizeof(*refptr));
+    cons = alloc_cons();
+    refptr->source = filename;
+    refptr->line = line_num;
+    (Ref*)CAR(cons) = refptr;
+    CDR(cons) = sp->v.func.ref_line;
+    sp->v.func.ref_line = cons;
 }
 
 void
@@ -475,6 +563,7 @@ print_token(tokptr)
 {
     switch (tokptr->type) {
     case IDENTIFIER:
+    case TYPE:
     case WORD:
     case MODIFIER:
 	fprintf(stderr, "`%s'", tokptr->token);
