@@ -18,6 +18,7 @@
 #include <cflow.h>
 #include <parser.h>
 #include <sys/stat.h>
+#include <ctype.h>
 
 #ifndef LOCAL_RC
 #define LOCAL_RC ".cflowrc"
@@ -110,8 +111,7 @@ void
 expand_args(char *buf)
 {
      char *p, *start;
-     char **xp;
-    
+
      p = buf;
      while (*p) {
 	  while (*p && isspace(*p))
