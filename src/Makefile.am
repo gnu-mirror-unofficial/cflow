@@ -33,4 +33,4 @@ cflow_SOURCES = \
  posix.c
 
 cflow_LDADD=../lib/libcflow.a
-AM_LEXFLAGS=-dbvppl
+AM_LFLAGS=-dvp
