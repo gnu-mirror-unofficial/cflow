@@ -12,7 +12,7 @@ order of decreasing priority, the most urgent ones being the first.
 
 * High Priority Issues
 
-** Implement all POSIX switches
+** Implement `-i x' option
 
 ** Divide and conquer: separate main cflow code (/src) and C lexical analizer
 (/back-ends/C)
