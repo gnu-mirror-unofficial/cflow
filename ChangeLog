@@ -17,6 +17,9 @@
 	* src/obstack1.h: Removed
 	* src/output.h: Removed
 	* src/hilit-cflow.el: Removed
+	* src/collect.c: Removed
+	* src/html.c: Removed
+	* src/text.c: Removed
 	* src/cflow.el: Moved to /elisp
 	* src/main.c: New option -f (--format)
 	* src/c.l: Updated
@@ -25,9 +28,14 @@
 	* src/rc.c: Likewise
 	* src/symbol.c: Likewise
 	* src/version.h: Likewise
-
+	
 	* elisp/cflow.el: Moved from /src
 	* elisp/Makefile.am: New file
+
+	* src/.cvsignore: New file
+	* doc/.cvsignore: New file
+	* elisp/.cvsignore: New file
+	* .cvsignore: New file
 	
 2005-03-16  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
