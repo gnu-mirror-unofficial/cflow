@@ -1,5 +1,47 @@
 2005-03-19  Sergey Poznyakoff  <gray@Noldor.runasimi.org>
 
+	* .cvsignore: Updated
+	* COPYING: Added to the repository
+	* TODO: Updated
+	* src/Makefile.am (AM_LEXFLAGS): Use AM_LFLAGS instead. Also,
+	removed -pl
+	* src/c.l: Requires POSIX-compliant lex (e.g. flex).
+	(WS): Ignore \f and \r
+	(init_lex): Set lexer debugging level
+	(DIGITS): Require at least one digit
+	* src/cflow.h (record_typedefs,globals_only): Removed
+	(max_depth): New variable
+	(source,yyparse,cleanup,output,init_lex,init_parse)
+	(delete_autos,delete_statics,globals_only,include_symbol): New
+	prototypes
+	(register_output): Changed type of the second argument
+	(gnu_output_handler,posix_output_handler): Return int
+	* src/gnu.c (print_symbol,gnu_output_handler): Return int
+	* src/main.c: Implemented POSIX options (except -i x)
+	(options): Reordered. Removed -C, -t (in favor of -i t), and
+	-g (in favor of -i ^s). --brief option takes an optional
+	argument (enable/disable)
+	(progname): Removed
+	(globals_only,include_symbol): New functions
+	* src/output.c (output_driver.handler,print_symbol): Return int
+	(register_output): Changed type of the second argument
+	(is_var): Rewritten using include_symbol()
+	(direct_tree,inverted_tree): Do not descend any further if
+	print_symbol returns non-0.
+	Do not process the symbol if the current nesting level exceeds
+	maximum (set up by -d option).
+	(tree_output): Print either direct or inverted graph, not both
+	* src/parser.c: Stylistic changes
+	* src/parser.h (yylex): Prototype
+	* src/posix.c: Produce inverted graph. Honor --brief option
+	* src/rc.c: Include ctype.h
+	(expand_args): Removed unused variable
+	* src/symbol.c (hash_symbol_hasher,hash_symbol_compare): Minor
+	fixes
+	(delete_statics): globals_only is now a function
+	
+2005-03-19  Sergey Poznyakoff  <gray@Noldor.runasimi.org>
+
 	* README-alpha: New file
 	* lib: New directory
 	* lib/Makefile.tmpl: New file
