@@ -1,0 +1,55 @@
+cflow TODO list.  2005-03-16
+Copyright (C) 2005, Sergey Poznyakoff
+
+* Introduction
+
+This document specifies the roadmap for converting cflow into a
+package conforming to GNU standards and providing full functionality
+of POSIX cflow utility plus useful extensions. It is subdivided into
+three main sections: High Priority Issues, Medium Priority Issues and
+Low Priority Issues. The entries within each section are placed in
+order of decreasing priority, the most urgent ones being the first.
+
+* High Priority Issues
+
+** Divide and conquer: separate main cflow code (/src) and C lexical analizer
+(/back-ends/C)
+
+** Add autoconfiguration suite
+
+** Rewrite output part to produce POSIX compatible reports
+
+** Implement all POSIX switches
+
+* Medium Priority Issues
+
+** Implement front-end support.
+
+** Provide front ends for: ASCII tree representation (~ current output look),
+XML/HTML output.
+
+** Update and debug Emacs interface (cflow.el)
+
+* Low Priority Issues
+
+** Add new back-ends: C++, Scheme, Lisp...
+
+* Copyright information:
+
+Copyright (C) 2005, Sergey Poznyakoff 
+
+   Permission is granted to anyone to make or distribute verbatim copies
+   of this document as received, in any medium, provided that the
+   copyright notice and this permission notice are preserved,
+   thus giving the recipient permission to redistribute in turn.
+
+   Permission is granted to distribute modified versions
+   of this document, or of portions of it,
+   under the above conditions, provided also that they
+   carry prominent notices stating who last changed them.
+
+
+Local variables:
+mode: outline
+paragraph-separate: "[ 	]*$"
+end:

@@ -1,0 +1,11 @@
+2005-03-16  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	Initial import from my RCS archives. First revisions date
+	back to 1997. The plan is to convert this to a POSIX-compatible
+	cflow utility.
+	
+
+Local Variables:
+mode: change-log
+version-control: never
+End:
