@@ -111,6 +111,7 @@ extern char *level_indent[];
 extern char *level_end[];
 extern char *level_begin;
 extern int print_levels;
+extern int print_line_numbers;
 extern int print_as_tree;
 extern int brief_listing;
 extern int reverse_tree;
