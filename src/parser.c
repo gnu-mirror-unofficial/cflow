@@ -831,7 +831,7 @@ func_body()
 	       level++;
 	       break;
 	  case RBRACE0:
-	       if (!ignore_indentation) {
+	       if (use_indentation) {
 		    if (verbose && level != 1)
 			 file_error("forced function body close", 0);
 		    for ( ; level; level--) {
