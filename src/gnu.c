@@ -17,21 +17,6 @@
 
 #include <cflow.h>
 
-/* Print current tree level
- */
-static void
-print_level(int lev, int last)
-{
-     int i;
-
-     if (print_levels)
-	  fprintf(outfile, "%4d ", lev);
-     fprintf(outfile, "%s", level_begin);
-     for (i = 0; i < lev; i++) 
-	  fprintf(outfile, "%s", level_indent[ level_mark[i] ]);
-     fprintf(outfile, "%s", level_end[last]);
-}
-
 void
 print_function_name(Symbol *sym, int has_subtree)
 {
@@ -88,7 +73,7 @@ gnu_output_handler(cflow_output_command cmd,
 	  fprintf(outfile, "\n");
 	  break;
      case cflow_output_text:
-	  fprintf(outfile, "%s\n", (char*) data);
+	  fprintf(outfile, "%s", (char*) data);
 	  break;
      case cflow_output_symbol:
 	  return print_symbol(outfile, line, data);
