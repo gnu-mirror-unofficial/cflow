@@ -1,0 +1,9 @@
+Makefile
+Makefile.in
+Makefile.in.in
+Makevars.template
+POTFILES
+Rules-quot
+cflow.pot
+remove-potcdate.sed
+stamp-po
