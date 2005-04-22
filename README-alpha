@@ -15,17 +15,27 @@ Please, note that the accompanying documentation may be inaccurate or
 incomplete (well, to say the truth it is absent. See TODO for more info).
 The ChangeLog file is the authoritative documentation of all recent changes.
 
-Report bugs to <gray@gnu.org>
+Report bugs to <bug-cflow@gnu.org>
 
 * Checking Out the Sources
 
-The CVS repository is available via HTTP from
+The following instructions apply if you wish to obtain sources from
+the CVS repository:
 
-    http://gray.farlep.net/cgi-bin/cvsweb.cgi/cflow/
+To checkout the source tree from CVS issue the following command:
 
-If you wish to checkout the sources, please write to <gray@mirddin.farlep.net>
-or <gray@gnu.org>
+CVS_RSH=ssh \
+ cvs -d :ext:anoncvs@savannah.gnu.org:/cvsroot/cflow checkout cflow
 
+Make sure SSHv2 is used.
+
+This will give you read-only access.  If you think you need write access,
+contact the mailing list.
+
+The CVS repository is also available via HTTP from
+
+    http://savannah.gnu.org/cgi-bin/viewcvs/cflow/cflow/
+    
 * Building
 
 In order to build this you will first need to have right versions of
