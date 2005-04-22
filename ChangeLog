@@ -1,3 +1,12 @@
+2005-04-22  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	cflow dubbed a GNU package and moved to savannah.
+	
+	* README-alpha (Checking Out the Sources): Updated the
+	instructions.
+	* README: Minor fix.
+	* configure.ac: Changed bug report address.
+
 2005-03-22  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* lib/argcv.c: Imported from mailutils
