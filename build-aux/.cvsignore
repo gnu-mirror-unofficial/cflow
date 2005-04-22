@@ -4,3 +4,6 @@ missing
 config.rpath
 mdate-sh
 texinfo.tex
+config.guess
+config.sub
+mkinstalldirs

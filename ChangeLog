@@ -1,5 +1,27 @@
 2005-04-22  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	* Makefile.am (SUBDIRS): Add po/
+	* configure.ac (AC_CONFIG_FILES): Add po/Makefile.in.
+	* build-aux/bootstrap: Take into account autopoint
+	* build-aux/gnulib.modules (gettext): New module
+	* src/Makefile.am (AM_CPPFLAGS): New variable
+
+	* src/c.l: Add gettext markers
+	* src/cflow.h: Likewise
+	* src/main.c: Likewise
+	* src/output.c: Likewise
+	* src/parser.c: Likewise
+	* src/rc.c: Likewise
+	* src/symbol.c: Likewise
+
+	* .cvsignore: New file
+	* po/.cvsignore: New file
+	* build-aux/.cvsignore: Updated
+	* po/Makevars: New file
+	* po/POTFILES.in: New file
+	
+2005-04-22  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
 	cflow dubbed a GNU package and moved to savannah.
 	
 	* README-alpha (Checking Out the Sources): Updated the
