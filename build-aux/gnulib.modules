@@ -7,3 +7,4 @@ lstat
 malloc
 error
 hash
+gettext
