@@ -219,7 +219,13 @@ done
 for gnulib_file in $gnulib_files; do
   case $gnulib_file in
   config/*) dest=`echo $gnulib_file | sed 's,config/,build-aux/,'`;;
-  *)        dest=$gnulib_file;;
+  # These will be overwritten by autopoint, which still uses
+  # old jm_.* macro names, so we have to keep both copies.
+  m4/gettext.m4 | m4/glibc21.m4 | m4/inttypes_h.m4 | m4/lib-ld.m4 | \
+  m4/lib-prefix.m4 | m4/po.m4 | m4/stdint_h.m4 | m4/uintmax_t.m4 | \
+  m4/ulonglong.m4)
+           dest=`expr $gnulib_file : '\(.*\).m4'`_gl.m4;;
+  *)       dest=$gnulib_file;;
   esac
   rm -f $dest &&
   echo "$0: Copying file $GNULIB_SRCDIR/$gnulib_file" &&
