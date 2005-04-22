@@ -32,7 +32,10 @@ cflow_SOURCES = \
  gnu.c\
  posix.c
 
+localedir = $(datadir)/locale
+
 cflow_LDADD=../lib/libcflow.a
+AM_CPPFLAGS=-DLOCALEDIR=\"$(localedir)\"
 AM_LFLAGS=-dvp
 EXTRA_DIST=cflow.rc
 
