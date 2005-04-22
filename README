@@ -1,6 +1,6 @@
 * Introduction
 
-This stuff was initially written in 1997, when I needed a utility
+The GNU cflow was initially written in 1997, when I needed a utility
 that could display the control flow in a C program. The latest updates
 date back to 1999. Then, as I no longer needed the package, it fell into
 oblivion.
