@@ -36,11 +36,11 @@ AC_PROG_RANLIB
 
 # Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS([stdlib.h string.h unistd.h])
+AC_CHECK_HEADERS([stdlib.h string.h unistd.h locale.h])
 
 # Checks for library functions.
 AC_FUNC_ERROR_AT_LINE
-AC_CHECK_FUNCS([memmove memset strdup strerror strtol])
+AC_CHECK_FUNCS([memmove memset strdup strerror strtol setlocale])
 
 cflow_GNULIB
 MU_DEBUG_MODE
@@ -53,7 +53,11 @@ if test "$EMACS" != "no"; then
 fi
 AC_SUBST(lisp_LISP)
 
-AC_CONFIG_FILES([Makefile
+# Gettext.
+AM_GNU_GETTEXT([external], [need-ngettext])
+AM_GNU_GETTEXT_VERSION(0.12.1)
+
+AC_CONFIG_FILES([Makefile po/Makefile.in 
  doc/Makefile
  elisp/Makefile
  lib/Makefile
