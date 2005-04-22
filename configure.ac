@@ -18,7 +18,7 @@
 # Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 AC_PREREQ(2.59)
-AC_INIT([GNU cflow], [0.2.1], [gray@gnu.org])
+AC_INIT([GNU cflow], [0.2.1], [bug-cflow@gnu.org])
 AC_CONFIG_SRCDIR([src/cflow.h])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE
