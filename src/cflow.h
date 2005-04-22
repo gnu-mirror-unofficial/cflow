@@ -30,6 +30,17 @@
 #include <obstack.h>
 #include <error.h>
 #include <xalloc.h>
+#include <gettext.h>
+
+#define _(c) gettext(c)
+#define N_(c) c
+
+#if HAVE_LOCALE_H
+# include <locale.h>
+#endif
+#if !HAVE_SETLOCALE
+# define setlocale(category, locale) /* empty */
+#endif
 
 #define NUMITEMS(a) sizeof(a)/sizeof((a)[0])
 

@@ -33,79 +33,79 @@ static char doc[] = "";
 static struct argp_option options[] = {
 #define GROUP_ID 0
      { NULL, 0, NULL, 0,
-       "General options:", GROUP_ID },
-     { "depth", 'd', "NUMBER", 0,
-       "set the depth at which the flowgraph is cut off.", GROUP_ID+1 },
-     { "include", 'i', "SPEC", 0,
-       "Increase the number of included symbols. SPEC is a string consisting of the following characters: x (include external and static data symbols), and _ (include names that begin with an underscore). If SPEC starts with ^, its meaning is reversed", GROUP_ID+1 },
-     { "format", 'f', "NAME", 0,
-       "use given output format NAME. Valid names are gnu (default) and posix",
+       N_("General options:"), GROUP_ID },
+     { "depth", 'd', N_("NUMBER"), 0,
+       N_("Set the depth at which the flowgraph is cut off."), GROUP_ID+1 },
+     { "include", 'i', N_("SPEC"), 0,
+       N_("Increase the number of included symbols. SPEC is a string consisting of the following characters: x (include external and static data symbols), and _ (include names that begin with an underscore). If SPEC starts with ^, its meaning is reversed"), GROUP_ID+1 },
+     { "format", 'f', N_("NAME"), 0,
+       N_("Use given output format NAME. Valid names are gnu (default) and posix"),
        GROUP_ID+1 },
      { "reverse", 'r', NULL, 0,
-       "Print reverse call tree", GROUP_ID+1 },
+       N_("Print reverse call tree"), GROUP_ID+1 },
      { "xref", 'x', NULL, 0,
-       "produce cross-reference listing only", GROUP_ID+1 },
+       N_("Produce cross-reference listing only"), GROUP_ID+1 },
      { "print", 'P', "OPT", 0,
-       "Set printing option to OPT. Valid OPT values are: xref (or cross-ref), tree. Any unambiguous abbreviation of the above is also accepted",
+       N_("Set printing option to OPT. Valid OPT values are: xref (or cross-ref), tree. Any unambiguous abbreviation of the above is also accepted"),
        GROUP_ID+1 },
      { "output", 'o', "FILE", 0,
-       "set output file name (default -, meaning stdout)",
+       N_("Set output file name (default -, meaning stdout)"),
        GROUP_ID+1 },
 #undef GROUP_ID
 #define GROUP_ID 10     
      { NULL, 0, NULL, 0,
-       "Parser control:", GROUP_ID },
-     { "use-indentation", 'S', "BOOL", OPTION_ARG_OPTIONAL,
-       "rely on indentation", GROUP_ID+1 },
+       N_("Parser control:"), GROUP_ID },
+     { "use-indentation", 'S', N_("BOOL"), OPTION_ARG_OPTIONAL,
+       N_("Rely on indentation"), GROUP_ID+1 },
      { "ansi", 'a', NULL, 0,
-       "Assume input to be written in ANSI C", GROUP_ID+1 },
+       N_("Assume input to be written in ANSI C"), GROUP_ID+1 },
      { "pushdown", 'p', "NUMBER", 0,
-       "set initial token stack size to NUMBER", GROUP_ID+1 },
+       N_("Set initial token stack size to NUMBER"), GROUP_ID+1 },
      { "symbol", 's', "SYM:TYPE", 0,
-       "make cflow believe the symbol SYM is of type TYPE. Valid types are: keyword (or kw), modifier, identifier, type, wrapper. Any unambiguous abbreviation of the above is also accepted", GROUP_ID+1 },
-     { "main", 'm', "NAME", 0,
-       "Assume main function to be called NAME", GROUP_ID+1 },
+       N_("Make cflow believe the symbol SYM is of type TYPE. Valid types are: keyword (or kw), modifier, identifier, type, wrapper. Any unambiguous abbreviation of the above is also accepted"), GROUP_ID+1 },
+     { "main", 'm', N_("NAME"), 0,
+       N_("Assume main function to be called NAME"), GROUP_ID+1 },
      { "define", 'D', "NAME[=DEFN]", 0,
-       "Predefine NAME as a macro.", GROUP_ID+1 },
+       N_("Predefine NAME as a macro"), GROUP_ID+1 },
      { "undefine", 'U', "NAME", 0,
-       "Cancel any previous definition of NAME", GROUP_ID+1 },
+       N_("Cancel any previous definition of NAME"), GROUP_ID+1 },
      { "include-dir", 'I', "DIR", 0,
-       "Add the directory dir to the list of directories to be searched for header files.", GROUP_ID+1 },
+       N_("Add the directory dir to the list of directories to be searched for header files."), GROUP_ID+1 },
      { "preprocess", OPT_PREPROCESS, "COMMAND", OPTION_ARG_OPTIONAL,
-       "Run the specified preprocessor command", GROUP_ID+1 },
+       N_("Run the specified preprocessor command"), GROUP_ID+1 },
      { "cpp", 0, NULL, OPTION_ALIAS, NULL, GROUP_ID+1 },
      { "no-preprocess", OPT_NO_PREPROCESS, NULL, 0,
-       "Do not preprocess the sources", GROUP_ID+1 },
+       N_("Do not preprocess the sources"), GROUP_ID+1 },
      { "no-cpp", 0, NULL, OPTION_ALIAS, NULL, GROUP_ID+1 },
 #undef GROUP_ID
 #define GROUP_ID 20          
      { NULL, 0, NULL, 0,
-       "Output control:", GROUP_ID },
-     { "number", 'n', "BOOL", OPTION_ARG_OPTIONAL,
-       "Print line numbers", GROUP_ID+1 },
+       N_("Output control:"), GROUP_ID },
+     { "number", 'n', N_("BOOL"), OPTION_ARG_OPTIONAL,
+       N_("Print line numbers"), GROUP_ID+1 },
      { "print-level", 'l', NULL, 0,
-       "Print nesting level along with the call tree", GROUP_ID+1 },
+       N_("Print nesting level along with the call tree"), GROUP_ID+1 },
      { "level-indent", OPT_LEVEL_INDENT, "STRING", 0,
-       "Use STRING when indenting to each new level", GROUP_ID+1 },
+       N_("Use STRING when indenting to each new level"), GROUP_ID+1 },
      { "tree", 'T', NULL, 0,
-       "Draw tree", GROUP_ID+1 },
+       N_("Draw tree"), GROUP_ID+1 },
      { "brief", 'b', "BOOL", OPTION_ARG_OPTIONAL,
-       "brief output", GROUP_ID+1 },
+       N_("Brief output"), GROUP_ID+1 },
 #undef GROUP_ID
 #define GROUP_ID 30                 
      { NULL, 0, NULL, 0,
-       "Informational options:", GROUP_ID },
+       N_("Informational options:"), GROUP_ID },
      { "verbose", 'v', NULL, 0,
-       "be verbose on output", GROUP_ID+1 },
+       N_("Be verbose on output"), GROUP_ID+1 },
      { "license", 'L', 0, 0,
-       "Print license and exit", GROUP_ID+1 },
+       N_("Print license and exit"), GROUP_ID+1 },
      { "debug", OPT_DEBUG, "NUMBER", OPTION_ARG_OPTIONAL,
-       "set debugging level", GROUP_ID+1 },
+       N_("Set debugging level"), GROUP_ID+1 },
 #undef GROUP_ID     
      { 0, }
 };
 
-char *cflow_license_text =
+char *cflow_license_text = N_(
 "   GNU cflow is free software; you can redistribute it and/or modify\n"
 "   it under the terms of the GNU General Public License as published by\n"
 "   the Free Software Foundation; either version 2 of the License, or\n"
@@ -118,7 +118,7 @@ char *cflow_license_text =
 "\n"
 "   You should have received a copy of the GNU General Public License\n"
 "   along with GNU cflow; if not, write to the Free Software\n"
-"   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA\n\n";
+"   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA\n\n");
 
 /* Structure representing various arguments of command line options */
 struct option_type {
@@ -211,7 +211,7 @@ symbol_override(const char *str)
      if (*ptr == ':') {
 	  type = find_option_type(symbol_optype, ptr+1, 0);
 	  if (type == 0) {
-	       error(0, 0, "unknown symbol type: %s", ptr+1);
+	       error(0, 0, _("unknown symbol type: %s"), ptr+1);
 	       return;
 	  }
      } else
@@ -240,7 +240,7 @@ set_print_option(char *str)
      
      opt = find_option_type(print_optype, str, 0);
      if (opt == 0) {
-	  error(0, 0, "unknown print option: %s", str);
+	  error(0, 0, _("unknown print option: %s"), str);
 	  return;
      }
      print_option |= opt;
@@ -362,7 +362,7 @@ parse_level_string(const char *str, char **return_ptr)
 	       for (i = 1; i < num; i++) {
 		    *p++ = c;
 		    if (*p == 0) {
-			 error(1, 0, "level indent string too long");
+			 error(1, 0, _("level indent string too long"));
 			 return;
 		    }
 	       }
@@ -371,7 +371,7 @@ parse_level_string(const char *str, char **return_ptr)
 	  copy:
 	       *p++ = *str++;
 	       if (*p == 0) {
-		    error(1, 0, "level indent string is too long");
+		    error(1, 0, _("level indent string is too long"));
 		    return;
 	       }
 	  }
@@ -399,7 +399,7 @@ set_level_indent(const char *str)
      p = str;
      while (*p != '=') {
 	  if (*p == 0) {
-	       error(1, 0, "level-indent syntax");
+	       error(1, 0, _("level-indent syntax"));
 	       return;
 	  }
 	  p++;
@@ -423,7 +423,7 @@ set_level_indent(const char *str)
 	  parse_level_string(p, &level_end[1]);
 	  break;
      default:
-	  error(1, 0, "unknown level indent option: %s", str);
+	  error(1, 0, _("unknown level indent option: %s"), str);
      }
 }
 
@@ -454,7 +454,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	  debug = arg ? atoi(arg) : 1;
 	  break;
      case 'L':
-	  printf("License for %s:\n\n", argp_program_version);
+	  printf(_("License for %s:\n\n"), argp_program_version);
 	  printf("%s", cflow_license_text);
 	  exit(0);
      case 'P':
@@ -483,7 +483,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	  break;
      case 'f':
 	  if (select_output_driver(arg))
-	       argp_error(state, "%s: No such output driver", optarg);
+	       argp_error(state, _("%s: No such output driver"), optarg);
 	  else if (strcmp(arg, "posix") == 0) 
 	       brief_listing = print_line_numbers = 1;
 	  break;
@@ -555,7 +555,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 static struct argp argp = {
      options,
      parse_opt,
-     "[FILE]...",
+     N_("[FILE]..."),
      doc,
      NULL,
      NULL,
@@ -604,7 +604,7 @@ include_symbol(Symbol *sym)
 void
 xalloc_die(void)
 {
-     error(1, ENOMEM, "Exiting");
+     error(1, ENOMEM, _("Exiting"));
 }
 
 void
@@ -628,6 +628,10 @@ main(int argc, char **argv)
 {
      int index;
 
+     setlocale(LC_ALL, "");
+     bindtextdomain(PACKAGE, LOCALEDIR);
+     textdomain(PACKAGE);
+     
      register_output("gnu", gnu_output_handler, NULL);
      register_output("posix", posix_output_handler, NULL);
 
@@ -639,7 +643,7 @@ main(int argc, char **argv)
 	  exit (1);
 
      if (!arglist)
-	  error(1, 0, "no input files");
+	  error(1, 0, _("no input files"));
      
      if (print_option == 0)
 	  print_option = PRINT_TREE;

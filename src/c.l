@@ -131,7 +131,7 @@ enum                 {yylval.str = "enum"; return STRUCT;}
       */
 \"    BEGIN(string);
 <string>[^\\"\n]*       ;
-<string>\n              { ++line_num; lex_error("unterminated string?"); } 
+<string>\n              { ++line_num; lex_error(_("unterminated string?")); } 
 <string>\\.             ;
 <string>\\\n            ++line_num;
 <string>\"              BEGIN(stringwait);
@@ -289,10 +289,10 @@ pp_open(const char *name)
      strcat(s, " ");
      strcat(s, name);
      if (debug)
-	  printf("Command line: %s\n", s);
+	  printf(_("Command line: %s\n"), s);
      fp = popen(s, "r");
      if (!fp)
-	  error(0, errno, "cannot execute `%s'", s);
+	  error(0, errno, _("cannot execute `%s'"), s);
      free(s);
      return fp;
 }
@@ -321,7 +321,7 @@ source(char *name)
 
      fp = fopen(name, "r");
      if (!fp) {
-	  error(0, errno, "cannot open `%s'", name);
+	  error(0, errno, _("cannot open `%s'"), name);
 	  return 1;
      }
      if (pp_bin) {
@@ -400,6 +400,6 @@ update_loc()
 	  filename = obstack_finish(&string_stk);
      }
      if (debug > 1)
-	  printf("New location: %s:%d\n", filename, line_num);
+	  printf(_("New location: %s:%d\n"), filename, line_num);
 }
           

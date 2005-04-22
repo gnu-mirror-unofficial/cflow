@@ -265,7 +265,7 @@ alloc_cons()
      if (!cp) {
 	  alloc_new_bucket();
 	  if ((cp = alloc_cons_from_bucket()) == NULL) {
-	       error(2, 0, "not enough core");
+	       error(2, 0, _("not enough core"));
 	  }
      }
      CAR(cp) = CDR(cp) = NULL;

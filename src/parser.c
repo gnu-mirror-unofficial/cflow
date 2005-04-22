@@ -118,7 +118,7 @@ file_error(char *msg, int near)
 {
     fprintf(stderr, "%s:%d: %s", filename, tok.line, msg);
     if (near) {
-	fprintf(stderr, " near ");
+	fprintf(stderr, _(" near "));
 	print_token(&tok);
     }
     fprintf(stderr, "\n");
@@ -198,7 +198,7 @@ int
 putback()
 {
      if (curs == 0)
-	  error(10, 0, "can't putback");
+	  error(10, 0, _("INTERNAL ERROR: cannot return token to stream"));
      curs--;
      if (curs > 0) {
 	  tok.type = token_stack[curs-1].type;
@@ -371,7 +371,7 @@ expression()
 	       break;
 	  case 0:
 	       if (verbose)
-		    file_error("unexpected eof in expression", 0);
+		    file_error(_("unexpected eof in expression"), 0);
 	       return;
 	    
 	  case IDENTIFIER:
@@ -417,7 +417,7 @@ parse_function_declaration(Ident *ident)
      switch (tok.type) {
      default:
 	  if (verbose) 
-	       file_error("expected ';'", 1);
+	       file_error(_("expected `;'"), 1);
 	  /* should putback() here */
 	  /* FALLTHRU */
      case ';':
@@ -429,7 +429,7 @@ parse_function_declaration(Ident *ident)
 	  break;
      case 0:
 	  if (verbose)
-	       file_error("unexpected eof in declaration", 0);
+	       file_error(_("unexpected eof in declaration"), 0);
      }
 }
 
@@ -461,7 +461,7 @@ fake_struct(Ident *ident)
 	       tokpush(hold.type, hold.line, hold.token);
 	  } else {
 	       if (tok.type != ';')
-		    file_error("missing ; after struct declaration", 0);
+		    file_error(_("missing `;' after struct declaration"), 0);
 	  }
 	  return 1;
      }
@@ -507,7 +507,7 @@ parse_variable_declaration(Ident *ident)
      switch (tok.type) {
      default:
 	  if (verbose) 
-	       file_error("expected ';'", 1);
+	       file_error(_("expected ';'"), 1);
 	  /* should putback() here */
 	  /* FALLTHRU */
      case ';':
@@ -530,7 +530,7 @@ parse_variable_declaration(Ident *ident)
 	  break;
      case 0:
 	  if (verbose)
-	       file_error("unexpected eof in declaration", 0);
+	       file_error(_("unexpected eof in declaration"), 0);
      }
 }
 
@@ -552,7 +552,7 @@ initializer_list()
 	       }
 	       break;
 	  case 0:
-	       file_error("unexpected eof in initializer list", 0);
+	       file_error(_("unexpected eof in initializer list"), 0);
 	       return;
 	  case ',':
 	       break;
@@ -635,7 +635,7 @@ skip_struct()
 	  do {
 	       switch (tok.type) {
 	       case 0:
-		    file_error("unexpected eof in struct", 0);
+		    file_error(_("unexpected eof in struct"), 0);
 		    return;
 	       case LBRACE:
 	       case LBRACE0:
@@ -725,7 +725,7 @@ dirdcl(Ident *idptr)
      if (tok.type == '(') {
 	  dcl(idptr);
 	  if (tok.type != ')' && verbose) {
-	       file_error("expected ')'", 1);
+	       file_error(_("expected `)'"), 1);
 	       return 1;
 	  }
      } else if (tok.type == IDENTIFIER) {
@@ -747,7 +747,7 @@ dirdcl(Ident *idptr)
 	  else {
 	       maybe_parm_list(parm_ptr);
 	       if (tok.type != ')' && verbose) {
-		    file_error("expected ')'", 1);
+		    file_error(_("expected ')'"), 1);
 		    return 1;
 	       }
 	  }
@@ -833,7 +833,7 @@ func_body()
 	  case RBRACE0:
 	       if (use_indentation) {
 		    if (verbose && level != 1)
-			 file_error("forced function body close", 0);
+			 file_error(_("forced function body close"), 0);
 		    for ( ; level; level--) {
 			 delete_autos(level);
 		    }
@@ -847,7 +847,7 @@ func_body()
 	       break;
 	  case 0:
 	       if (verbose)
-		    file_error("unexpected eof in function body", 0);
+		    file_error(_("unexpected eof in function body"), 0);
 	       return;
 	  }
      }
@@ -879,10 +879,10 @@ declare(Ident *ident)
      sp = get_symbol(ident->name);
      if (sp->source) {
 	  error_at_line(0, 0, filename, ident->line, 
-			"%s/%d redefined",
+			_("%s/%d redefined"),
 			ident->name, sp->arity);
 	  error_at_line(0, 0, sp->source, sp->def_line,
-			"this is the place of previous definition");
+			_("this is the place of previous definition"));
      }
 
      sp->type = SymIdentifier;
@@ -894,7 +894,7 @@ declare(Ident *ident)
      sp->def_line = ident->line;
      sp->level = level;
      if (debug)
-	  printf("%s:%d: %s/%d defined to %s\n",
+	  printf(_("%s:%d: %s/%d defined to %s\n"),
 		 filename,
 		 line_num,
 		 ident->name, ident->parmcnt,
@@ -919,7 +919,7 @@ declare_type(Ident *ident)
      sp->def_line = ident->line;
      sp->ref_line = NULL;
      if (debug)
-	  printf("%s:%d: type %s\n",
+	  printf(_("%s:%d: type %s\n"),
 		 filename,
 		 line_num,
 		 ident->name);

@@ -397,7 +397,7 @@ output()
      } else {
 	  outfile = fopen(outname, "w");
 	  if (!outfile)
-	       error(2, errno, "cannot open file `%s'", outname);
+	       error(2, errno, _("cannot open file `%s'"), outname);
      } 
      
      level_mark = xmalloc(level_mark_size);
