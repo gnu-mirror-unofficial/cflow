@@ -11,9 +11,10 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with GNU cflow; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA  */
+   You should have received a copy of the GNU General Public
+   License along with GNU cflow; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+   MA 02110-1301 USA */
 
 #include <cflow.h>
 #include <parser.h>
@@ -149,7 +150,7 @@ delete_autos(int level)
  * This means for each list replace its entry point with its CAR
  * and throw away the first cons. The first cons holds pointers
  * to the head and tail of the list and is used to speed up appends.
- *
+ *  
  * TODO: The memory is not reclaimed
  */
 static bool
@@ -275,7 +276,7 @@ alloc_cons()
 /* Append a new cons to the tail of the list
  * ROOT_PTR points to a `root cons'. 
  * CAR is the car value of the cons to be created.
- *
+ *  
  * Note: Car of the root cons points to the head of the list,
  * cdr of root cons points to  the tail of the list.
  */

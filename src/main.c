@@ -11,9 +11,10 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with GNU cflow; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA  */
+   You should have received a copy of the GNU General Public
+   License along with GNU cflow; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+   MA 02110-1301 USA */
 
 #include <cflow.h>
 #include <argp.h>
@@ -117,8 +118,11 @@ char *cflow_license_text = N_(
 "   GNU General Public License for more details.\n"
 "\n"
 "   You should have received a copy of the GNU General Public License\n"
-"   along with GNU cflow; if not, write to the Free Software\n"
-"   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA\n\n");
+"   along with GNU cflow; if not, write to the Free Software Foundation,\n"
+"   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA\n"
+"\n"
+"\n"
+);
 
 /* Structure representing various arguments of command line options */
 struct option_type {
@@ -282,7 +286,7 @@ number(const char **str_ptr, int base, int count)
  *    KEYWORD is one of "begin", "0", ", "1", "end0", "end1",
  *    or an abbreviation thereof,
  *    STR is the value to be assigned to the parameter.
- *
+ *  
  * STR can contain usual C escape sequences plus \e meaning '\033'.
  * Apart from this any character followed by xN suffix (where N is
  * a decimal number) is expanded to the sequence of N such characters.

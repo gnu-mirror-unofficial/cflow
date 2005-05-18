@@ -1,3 +1,13 @@
+2005-05-18  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* COPYING, Makefile.am, configure.ac, doc/Makefile.am,
+	doc/cflow.texi, doc/fdl.texi, doc/gendocs_template,
+	elisp/Makefile.am, elisp/cflow-mode.el, lib/Makefile.tmpl,
+	lib/argcv.c, lib/argcv.h, src/Makefile.am, src/c.l,
+	src/cflow.h, src/gnu.c, src/main.c, src/output.c,
+	src/parser.c, src/parser.h, src/posix.c, src/rc.c,
+	src/symbol.c: Changed FSF postal address
+
 2005-04-22  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* Makefile.am (SUBDIRS): Add po/
