@@ -1,5 +1,5 @@
 /* argcv.c - simple functions for parsing input based on whitespace
-   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2005 Free Software Foundation, Inc.
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -40,7 +40,6 @@ argcv_scan (int len, const char *command, const char *delim, const char* cmnt,
 	    int *start, int *end, int *save)
 {
   int i = 0;
-  int expect_delim;
   
   for (;;)
     {
@@ -54,44 +53,35 @@ argcv_scan (int len, const char *command, const char *delim, const char* cmnt,
 	i++;
       *start = i;
 
-      switch (command[i])
+      if (!isdelim (command[i], delim))
 	{
-	case '"':
-	case '\'':
-	  while (++i < len
-		 && (command[i] != command[*start]
-		     || command[i-1] == '\\'))
-	    ;
-	  if (i < len)		/* found matching quote */
-	    break;
-	 /*FALLTHRU*/ default:
-	  if (isdelim (command[i], delim))
-	    break;
-	  /* Skip until next whitespace character or end of line. Honor
-	     escaped whitespace. */
-	  expect_delim = 0;
-	  while (++i < len)
+	  while (i < len)
 	    {
-	      if (expect_delim)
+	      if (command[i] == '\\')
 		{
-		  if (command[i-1] != '\\' && command[i] == expect_delim)
-		    expect_delim = 0;
-		  else
-		    continue;
+		  if (++i == len)
+		    break;
+		  i++;
+		  continue;
 		}
 	      
-	      if (command[i-1] != '\\')
+	      if (command[i] == '\'' || command[i] == '"')
 		{
-		  if (command[i] == '\'' || command[i] == '"')
-		    expect_delim = command[i];
-		  else if (isws (command[i]) || isdelim (command[i], delim))
-		    break;
+		  int j;
+		  for (j = i+1; j < len && command[j] != command[i]; j++)
+		    if (command[j] == '\\')
+		      j++;
+		  if (j < len)
+		    i = j+1;
+		  else
+		    i++;
 		}
+	      else if (isws (command[i]) || isdelim (command[i], delim))
+		break;
 	      else
 		i++; /* skip the escaped character */
 	    }
 	  i--;
-	  break;
 	}
 
       *end = i;
@@ -145,19 +135,23 @@ argcv_quote_char (int c)
   return -1;
 }
   
+#define to_num(c) \
+  (isdigit(c) ? c - '0' : (isxdigit(c) ? toupper(c) - 'A' + 10 : 255 ))
 
 static int
-xtonum (const char *src, int base, size_t cnt)
+xtonum (int *pval, const char *src, int base, int cnt)
 {
-  int val;
-  char *p;
-  char tmp[4]; /* At most three characters + zero */
+  int i, val;
   
-  /* Notice: No use to check `cnt'. It should be either 2 or 3 */
-  memcpy (tmp, src, cnt);
-  tmp[cnt] = 0;
-  val = strtoul (tmp, &p, base);
-  return (*p == 0) ? val : -1;
+  for (i = 0, val = 0; i < cnt; i++, src++)
+    {
+      int n = *(unsigned char*)src;
+      if (n > 127 || (n = to_num(n)) >= base)
+	break;
+      val = val*base + n;
+    }
+  *pval = val;
+  return i;
 }
 
 size_t
@@ -165,6 +159,7 @@ argcv_quoted_length (const char *str, int *quote)
 {
   size_t len = 0;
 
+  *quote = 0;
   for (; *str; str++)
     {
       if (*str == ' ')
@@ -172,12 +167,12 @@ argcv_quoted_length (const char *str, int *quote)
 	  len++;
 	  *quote = 1;
 	}
-      else if (*str == '"')
+      else if (*str == '"' || *str == '\'')
 	{
 	  len += 2;
 	  *quote = 1;
 	}
-      else if (isprint (*str))
+      else if (*str != '\t' && *str != '\\' && isprint (*str))
 	len++;
       else if (argcv_quote_char (*str) != -1)
 	len += 2;
@@ -190,85 +185,86 @@ argcv_quoted_length (const char *str, int *quote)
 void
 argcv_unquote_copy (char *dst, const char *src, size_t n)
 {
+  int i = 0;
   int c;
-  int expect_delim = 0;
-  
-  while (n > 0)
+  int expect_delim = 0; 
+    
+  while (i < n)
     {
-      n--;
-
-      switch (*src)
+      switch (src[i])
 	{
 	case '\'':
 	case '"':
-	  ++src;
-	  if (expect_delim)
-	    expect_delim = 0;
+	  if (!expect_delim)
+	    {
+	      char *p;
+	      
+	      for (p = src+i+1; *p && *p != src[i]; p++)
+		if (*p == '\\')
+		  p++;
+	      if (*p)
+		expect_delim = src[i++];
+	      else
+		*dst++ = src[i++];
+	    }
+	  else if (expect_delim == src[i])
+	    ++i;
 	  else
-	    expect_delim = *src;
+	    *dst++ = src[i++];
 	  break;
 	  
 	case '\\':
-	  switch (*++src)
+	  ++i;
+	  if (src[i] == 'x' || src[i] == 'X')
 	    {
-	    case 'x':
-	    case 'X':
-	      ++src;
-	      --n;
-	      if (n == 0)
+	      if (n - i < 2)
 		{
 		  *dst++ = '\\';
-		  *dst++ = src[-1];
+		  *dst++ = src[i++];
 		}
-	      else
+	      else 
 		{
-		  c = xtonum(src, 16, 2);
-		  if (c == -1)
+		  int off = xtonum(&c, src + i + 1, 16, 2);
+		  if (off == 0)
 		    {
 		      *dst++ = '\\';
-		      *dst++ = src[-1];
+		      *dst++ = src[i++];
 		    }
 		  else
 		    {
 		      *dst++ = c;
-		      src += 2;
-		      n -= 2;
+		      i += off + 1;
 		    }
 		}
-	      break;
-	      
-	    case '0':
-	      ++src;
-	      --n;
-	      if (n == 0)
-		{
-		  *dst++ = '\\';
-		  *dst++ = src[-1];
-		}
-	      else
-		{
-		  c = xtonum(src, 8, 3);
-		  if (c == -1)
-		    {
-		      *dst++ = '\\';
-		      *dst++ = src[-1];
-		    }
-		  else
-		    {
-		      *dst++ = c;
-		      src += 3;
-		      n -= 3;
-		    }
-		}
-	      break;
-	      
-	    default:
-	      *dst++ = argcv_unquote_char (*src++);
-	      n--;
 	    }
-
+	  else if ((unsigned char)src[i] < 128 && isdigit(src[i]))
+	    {
+	      if (n - i < 1)
+		{
+		  *dst++ = '\\';
+		  *dst++ = src[i++];
+		}
+	      else
+		{
+		  int off = xtonum(&c, src+i, 8, 3);
+		  if (off == 0)
+		    {
+		      *dst++ = '\\';
+		      *dst++ = src[i++];
+		    }
+		  else
+		    {
+		      *dst++ = c;
+		      i += off;
+		    }
+		}
+	    }
+	  else
+	    *dst++ = argcv_unquote_char (src[i++]);
+	  break;
+	  
 	default:
-	  *dst++ = *src++;
+	  *dst++ = src[i++];
 	}
     }
   *dst = 0;
@@ -279,12 +275,12 @@ argcv_quote_copy (char *dst, const char *src)
 {
   for (; *src; src++)
     {
-      if (*src == '"')
+      if (*src == '"' || *src == '\'')
 	{
 	  *dst++ = '\\';
-	  *dst++ = '"';
+	  *dst++ = *src;
 	}
-      else if (*src != '\t' && isprint(*src))
+      else if (*src != '\t' && *src != '\\' && isprint(*src))
 	*dst++ = *src;      
       else
 	{
@@ -304,7 +300,7 @@ argcv_quote_copy (char *dst, const char *src)
 }
 
 int
-argcv_get (const char *command, const char *delim, const char* cmnt,
+argcv_get (const char *command, const char *delim, const char *cmnt,
 	   int *argc, char ***argv)
 {
   int len = strlen (command);
@@ -356,20 +352,9 @@ argcv_get (const char *command, const char *delim, const char* cmnt,
 int
 argcv_free (int argc, char **argv)
 {
-  if (!argv)
-    return 0;
-  if (argc > 0)
-    {
-      while (--argc >= 0)
-	if (argv[argc])
-	  free (argv[argc]);
-    }
-  else
-    {
-      int i;
-      for (i = 0; argv[i]; i++)
-	free (argv[i]);
-    }
+  while (--argc >= 0)
+    if (argv[argc])
+      free (argv[argc]);
   free (argv);
   return 0;
 }
@@ -384,16 +369,16 @@ argcv_string (int argc, char **argv, char **pstring)
 
   /* No need.  */
   if (pstring == NULL)
-    return 1;
+    return EINVAL;
 
   buffer = malloc (1);
   if (buffer == NULL)
-    return 1;
+    return ENOMEM;
   *buffer = '\0';
 
-  for (len = i = j = 0; (argc > 0) ? i < argc : argv[i]; i++)
+  for (len = i = j = 0; i < argc; i++)
     {
-      int quote = 0;
+      int quote;
       int toklen;
 
       toklen = argcv_quoted_length (argv[i], &quote);
@@ -404,7 +389,7 @@ argcv_string (int argc, char **argv, char **pstring)
       
       buffer = realloc (buffer, len);
       if (buffer == NULL)
-        return 1;
+        return ENOMEM;
 
       if (i != 0)
 	buffer[j++] = ' ';
@@ -424,21 +409,3 @@ argcv_string (int argc, char **argv, char **pstring)
   return 0;
 }
 
-#if 0
-char *command = "set prompt=\"& \a\\\"\" \\x25\\0145\\098\\ta";
-
-main(int xargc, char **xargv)
-{
-  int i, argc;
-  char **argv;
-  char *s;
-  
-  argcv_get (xargv[1] ? xargv[1]:command, "=", "#", &argc, &argv);
-  printf ("%d args:\n", argc);
-  for (i = 0; i < argc; i++)
-    printf ("%s\n", argv[i]);
-  printf ("===\n");
-  argcv_string (argc, argv, &s);
-  printf ("%s\n", s);
-}
-#endif
