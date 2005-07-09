@@ -646,9 +646,6 @@ main(int argc, char **argv)
      if (argp_parse (&argp, argc, argv, ARGP_IN_ORDER, &index, NULL))
 	  exit (1);
 
-     if (!arglist)
-	  error(1, 0, _("no input files"));
-     
      if (print_option == 0)
 	  print_option = PRINT_TREE;
 
@@ -665,10 +662,15 @@ main(int argc, char **argv)
 
      argc -= index;
      argv += index;
+
      while (argc--) {
 	  if (source(*argv++) == 0)
 	       yyparse();
      }
+
+     if (input_file_count == 0)
+	     error(1, 0, _("no input files"));
+
      cleanup();
 
      output();
