@@ -73,7 +73,7 @@ right after startup. For example, run:
 Then switch to another terminal, get the PID of the ivoked utility
 and attach to it using gdb:
 
-	gdb mimeview PID
+	gdb cflow PID
 
 Once in gdb, issue the following command
 
