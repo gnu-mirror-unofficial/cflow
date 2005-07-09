@@ -1,5 +1,14 @@
 2005-07-09  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* lib/argcv.c: Updated from mailutils
+	* lib/argcv.h: Likewise
+	* src/c.l (input_file_count): New variable
+	* src/cflow.h: Likewise
+	* src/cflow.rc: Updated
+	* src/main.c (main): Use input_file_count to decide whether to
+	print "no input files" diagnostics.
+	* src/rc.c (sourcerc): Bug fix
+
 	* README-alpha: Minor fix
 	* configure.ac: Make sure program_invocation_name and
 	program_invocation_short_name are always present. Define
