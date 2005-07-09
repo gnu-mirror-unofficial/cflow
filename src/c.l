@@ -31,7 +31,8 @@ int line_num;
 char *filename;
 char *canonical_filename; 
 YYSTYPE yylval;
-
+unsigned input_file_count; /* Number of input files, processed by source() */
+ 
 int ident();
 void update_loc();
 #define lex_error(msg) error_at_line(0, 0, filename, line_num, "%s", msg)
@@ -335,7 +336,8 @@ source(char *name)
      filename = obstack_finish(&string_stk);
      canonical_filename = filename;
      line_num = 1;
-
+     input_file_count++;
+     
      yyrestart(fp);
      return 0;
 }

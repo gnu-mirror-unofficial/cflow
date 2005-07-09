@@ -142,6 +142,7 @@ extern int token_stack_length;
 extern int token_stack_increase;
 
 extern int symbol_count;
+extern unsigned input_file_count;
 
 Symbol *lookup(char*);
 Symbol *install(char*);
