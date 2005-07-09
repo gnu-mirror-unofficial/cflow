@@ -119,7 +119,7 @@ sourcerc(int *argc_ptr, char ***argv_ptr)
 	       if (home[len-1] != '/')
 		    buf[len++] = '/';
 	       strcpy(buf+len, LOCAL_RC);
-	       parse_rc(argc_ptr, argv_ptr, buf);
+	       parse_rc(&xargc, &xargv, buf);
 	       free(buf);
 	  }
      }
