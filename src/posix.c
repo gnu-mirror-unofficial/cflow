@@ -77,6 +77,9 @@ posix_output_handler(cflow_output_command cmd,
 		     void *data, void *handler_data)
 {
      switch (cmd) {
+     case cflow_output_init:
+	  brief_listing = print_line_numbers = 1;
+	  break;
      case cflow_output_begin:
      case cflow_output_end:
      case cflow_output_separator:
