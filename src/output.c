@@ -97,7 +97,16 @@ select_output_driver(const char *name)
 	  }
      return -1;
 }
-	       
+
+void
+output_init()
+{
+     output_driver[driver_index].handler(cflow_output_init,
+					 NULL, 0,
+					 NULL,
+				         output_driver[driver_index].handler_data);
+}
+
 static void
 newline()
 {
