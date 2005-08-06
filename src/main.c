@@ -23,7 +23,7 @@
 
 const char *argp_program_version = "cflow (" PACKAGE_NAME ") " VERSION;
 const char *argp_program_bug_address = "<" PACKAGE_BUGREPORT ">";
-static char doc[] = "";
+static char doc[] = N_("generate a program flowgraph");
 
 #define OPT_DEFINES       256
 #define OPT_LEVEL_INDENT  257
@@ -36,9 +36,11 @@ static struct argp_option options[] = {
      { NULL, 0, NULL, 0,
        N_("General options:"), GROUP_ID },
      { "depth", 'd', N_("NUMBER"), 0,
-       N_("Set the depth at which the flowgraph is cut off."), GROUP_ID+1 },
+       N_("Set the depth at which the flowgraph is cut off"), GROUP_ID+1 },
      { "include", 'i', N_("SPEC"), 0,
-       N_("Increase the number of included symbols. SPEC is a string consisting of the following characters: x (include external and static data symbols), and _ (include names that begin with an underscore). If SPEC starts with ^, its meaning is reversed"), GROUP_ID+1 },
+       N_("Control the number of included symbols. SPEC is a string consisting of characters, specifying what class of symbols to include in the output (see below). If SPEC starts with ^, its meaning is reversed."), GROUP_ID+1 },
+
+
      { "format", 'f', N_("NAME"), 0,
        N_("Use given output format NAME. Valid names are gnu (default) and posix"),
        GROUP_ID+1 },
@@ -46,12 +48,24 @@ static struct argp_option options[] = {
        N_("Print reverse call tree"), GROUP_ID+1 },
      { "xref", 'x', NULL, 0,
        N_("Produce cross-reference listing only"), GROUP_ID+1 },
-     { "print", 'P', "OPT", 0,
+     { "print", 'P', N_("OPT"), 0,
        N_("Set printing option to OPT. Valid OPT values are: xref (or cross-ref), tree. Any unambiguous abbreviation of the above is also accepted"),
        GROUP_ID+1 },
-     { "output", 'o', "FILE", 0,
+     { "output", 'o', N_("FILE"), 0,
        N_("Set output file name (default -, meaning stdout)"),
        GROUP_ID+1 },
+
+     { NULL, 0, NULL, 0,
+       N_("Valid SPEC symbols for --include option:"), GROUP_ID+2 },
+     {"  x", 0, NULL, OPTION_DOC|OPTION_NO_TRANS,
+      N_("all data symbols, both external and static"), GROUP_ID+3 },
+     {"  _",  0, NULL, OPTION_DOC|OPTION_NO_TRANS,
+      N_("symbols whose names begin with an underscore"), GROUP_ID+3 },
+     {"  s",  0, NULL, OPTION_DOC|OPTION_NO_TRANS,
+      N_("static symbols"), GROUP_ID+3 },
+     {"  t",  0, NULL, OPTION_DOC|OPTION_NO_TRANS,
+      N_("typedefs (for cross-references only)"), GROUP_ID+3 },
+     
 #undef GROUP_ID
 #define GROUP_ID 10     
      { NULL, 0, NULL, 0,
@@ -60,19 +74,19 @@ static struct argp_option options[] = {
        N_("Rely on indentation"), GROUP_ID+1 },
      { "ansi", 'a', NULL, 0,
        N_("Assume input to be written in ANSI C"), GROUP_ID+1 },
-     { "pushdown", 'p', "NUMBER", 0,
+     { "pushdown", 'p', N_("NUMBER"), 0,
        N_("Set initial token stack size to NUMBER"), GROUP_ID+1 },
-     { "symbol", 's', "SYM:TYPE", 0,
+     { "symbol", 's', N_("SYM:TYPE"), 0,
        N_("Make cflow believe the symbol SYM is of type TYPE. Valid types are: keyword (or kw), modifier, identifier, type, wrapper. Any unambiguous abbreviation of the above is also accepted"), GROUP_ID+1 },
      { "main", 'm', N_("NAME"), 0,
        N_("Assume main function to be called NAME"), GROUP_ID+1 },
-     { "define", 'D', "NAME[=DEFN]", 0,
+     { "define", 'D', N_("NAME[=DEFN]"), 0,
        N_("Predefine NAME as a macro"), GROUP_ID+1 },
-     { "undefine", 'U', "NAME", 0,
+     { "undefine", 'U', N_("NAME"), 0,
        N_("Cancel any previous definition of NAME"), GROUP_ID+1 },
-     { "include-dir", 'I', "DIR", 0,
-       N_("Add the directory dir to the list of directories to be searched for header files."), GROUP_ID+1 },
-     { "preprocess", OPT_PREPROCESS, "COMMAND", OPTION_ARG_OPTIONAL,
+     { "include-dir", 'I', N_("DIR"), 0,
+       N_("Add the directory DIR to the list of directories to be searched for header files."), GROUP_ID+1 },
+     { "preprocess", OPT_PREPROCESS, N_("COMMAND"), OPTION_ARG_OPTIONAL,
        N_("Run the specified preprocessor command"), GROUP_ID+1 },
      { "cpp", 0, NULL, OPTION_ALIAS, NULL, GROUP_ID+1 },
      { "no-preprocess", OPT_NO_PREPROCESS, NULL, 0,
@@ -90,7 +104,7 @@ static struct argp_option options[] = {
        N_("Use STRING when indenting to each new level"), GROUP_ID+1 },
      { "tree", 'T', NULL, 0,
        N_("Draw tree"), GROUP_ID+1 },
-     { "brief", 'b', "BOOL", OPTION_ARG_OPTIONAL,
+     { "brief", 'b', N_("BOOL"), OPTION_ARG_OPTIONAL,
        N_("Brief output"), GROUP_ID+1 },
 #undef GROUP_ID
 #define GROUP_ID 30                 
@@ -366,7 +380,7 @@ parse_level_string(const char *str, char **return_ptr)
 	       for (i = 1; i < num; i++) {
 		    *p++ = c;
 		    if (*p == 0) {
-			 error(1, 0, _("level indent string too long"));
+			 error(1, 0, _("level indent string is too long"));
 			 return;
 		    }
 	       }
@@ -488,8 +502,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
      case 'f':
 	  if (select_output_driver(arg))
 	       argp_error(state, _("%s: No such output driver"), optarg);
-	  else if (strcmp(arg, "posix") == 0) 
-	       brief_listing = print_line_numbers = 1;
+	  output_init();
 	  break;
      case OPT_LEVEL_INDENT:
 	  set_level_indent(arg);
@@ -643,8 +656,8 @@ main(int argc, char **argv)
      excluded_symbols = xstrdup("");
      
      sourcerc(&argc, &argv);
-     if (argp_parse (&argp, argc, argv, ARGP_IN_ORDER, &index, NULL))
-	  exit (1);
+     if (argp_parse(&argp, argc, argv, ARGP_IN_ORDER, &index, NULL))
+	  exit(1);
 
      if (print_option == 0)
 	  print_option = PRINT_TREE;
