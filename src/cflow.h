@@ -169,6 +169,7 @@ int include_symbol(Symbol *sym);
 void sourcerc(int *, char ***);
 
 typedef enum {
+     cflow_output_init,
      cflow_output_begin,
      cflow_output_end,
      cflow_output_newline,
@@ -190,6 +191,7 @@ int register_output(const char *name,
 				    void *data, void *handler_data),
 		    void *handler_data);
 int select_output_driver (const char *name);
+void output_init(void);
 
 int gnu_output_handler(cflow_output_command cmd,
 		       FILE *outfile, int line,
