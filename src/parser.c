@@ -287,7 +287,7 @@ int
 yyparse()
 {
      Ident identifier;
-     
+
      level = 0;
      caller = NULL;
      clearstack();
@@ -508,7 +508,7 @@ parse_variable_declaration(Ident *ident)
      switch (tok.type) {
      default:
 	  if (verbose) 
-	       file_error(_("expected ';'"), 1);
+	       file_error(_("expected `;'"), 1);
 	  /* should putback() here */
 	  /* FALLTHRU */
      case ';':
@@ -748,7 +748,7 @@ dirdcl(Ident *idptr)
 	  else {
 	       maybe_parm_list(parm_ptr);
 	       if (tok.type != ')' && verbose) {
-		    file_error(_("expected ')'"), 1);
+		    file_error(_("expected `)'"), 1);
 		    return 1;
 	       }
 	  }
