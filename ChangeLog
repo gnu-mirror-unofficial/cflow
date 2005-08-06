@@ -1,3 +1,19 @@
+2005-08-06  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/cflow.h (cflow_output_init): New value
+	(output_init): New function
+	* src/gnu.c (gnu_output_handler): Handle cflow_output_init
+	* src/main.c: Number of i18n-related fixes.
+	(parse_opt): Call output_init
+	* src/output.c (output_init): New function
+	* src/parser.c: Number of i18n-related fixes.
+	* src/posix.c (posix_output_handler): Handle cflow_output_init
+
+	* po/POTFILES.in: Add lib/argp-help.c
+	* po/LINGUAS: Add pl and uk
+	* po/pl.po
+	* po/uk.po
+
 2005-07-09  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* lib/argcv.c: Updated from mailutils
