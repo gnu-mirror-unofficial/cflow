@@ -686,6 +686,9 @@ parse_dcl(Ident *ident)
      save_stack();
      if (ident->name) {
 	  declare(ident);
+     } else {
+	  finish_save();
+	  obstack_free(&text_stk, declstr);
      }
 }
 
@@ -742,6 +745,7 @@ dirdcl(Ident *idptr)
 	  nexttoken(); /* read '(' */
      } else
 	  putback();
+
      while (nexttoken() == '[' || tok.type == '(') {
 	  if (tok.type == '[') 
 	       skip_to(']');
