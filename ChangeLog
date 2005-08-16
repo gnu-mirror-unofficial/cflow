@@ -1,3 +1,12 @@
+2005-08-16  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/c.l (yywrap,source): Use preprocess_option to determine
+	whether preprocessing is needed.
+	* src/cflow.h (preprocess_option): New variable
+	* src/main.c: Likewise
+	* src/parser.c (parse_dcl): Finalize and free declaration buffer
+	even if declare is not called.
+	 
 2005-08-06  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/cflow.h (cflow_output_init): New value
