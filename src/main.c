@@ -176,6 +176,8 @@ char *level_indent[] = { NULL, NULL };
 char *level_end[] = { "", "" };
 char *level_begin = "";
 
+int preprocess_option = 0; /* Do they want to preprocess sources? */
+
 char *start_name = "main"; /* Name of start symbol */
 
 Consptr arglist;        /* List of command line arguments */
@@ -457,6 +459,7 @@ add_preproc_option(int key, const char *arg)
      char *opt = xmalloc(3 + strlen(arg));
      sprintf(opt, "-%c%s", key, arg);
      add_name(opt);
+     preprocess_option = 1;
 }
 
 static error_t
@@ -553,7 +556,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	  set_preprocessor(arg ? arg : CFLOW_PREPROC);
 	  break;
      case OPT_NO_PREPROCESS:
-          set_preprocessor(NULL);
+	  preprocess_option = 0;
 	  break;
      case ARGP_KEY_ARG:
 	  add_name(arg);

@@ -137,6 +137,7 @@ extern int out_line;
 extern char *start_name;
 extern int max_depth;
 extern int debug;
+extern int preprocess_option;
 
 extern int token_stack_length;
 extern int token_stack_increase;
