@@ -310,7 +310,7 @@ pp_close(FILE *fp)
 int
 yywrap()
 {
-     if (pp_bin)
+     if (preprocess_option)
 	  pp_close(yyin);
      delete_statics();
      return 1;
@@ -326,7 +326,7 @@ source(char *name)
 	  error(0, errno, _("cannot open `%s'"), name);
 	  return 1;
      }
-     if (pp_bin) {
+     if (preprocess_option) {
 	  fclose(fp);
 	  fp = pp_open(name);
 	  if (!fp)
