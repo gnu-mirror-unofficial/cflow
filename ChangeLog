@@ -1,5 +1,7 @@
 2005-09-14  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* NEWS: Updated
+
 	* src/main.c (include_symbol): Ignore keywords.
 
 	* Makefile.am: Set up for testsuite
