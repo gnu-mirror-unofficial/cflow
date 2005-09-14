@@ -410,13 +410,16 @@ output()
 	       error(2, errno, _("cannot open file `%s'"), outname);
      } 
      
-     level_mark = xmalloc(level_mark_size);
-     set_level_mark(0, 0);
      if (print_option & PRINT_XREF) {
 	  xref_output();
-     }
-     if (print_option & PRINT_TREE) {
-	  tree_output();
+     } 
+
+     if (level_mark_size) {
+	  level_mark = xmalloc(level_mark_size);
+	  set_level_mark(0, 0);
+	  if (print_option & PRINT_TREE) {
+	       tree_output();
+	  }
      }
      fclose(outfile);
 }
