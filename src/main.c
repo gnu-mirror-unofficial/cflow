@@ -553,6 +553,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	  print_option = PRINT_XREF;
 	  break;
      case OPT_PREPROCESS:
+	  preprocess_option = 1;
 	  set_preprocessor(arg ? arg : CFLOW_PREPROC);
 	  break;
      case OPT_NO_PREPROCESS:
