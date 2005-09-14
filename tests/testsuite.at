@@ -19,8 +19,39 @@
 # We need a recent Autotest.
 m4_version_prereq([2.52g])
 
+m4_define([TEST_CFLOW_OPTIONS],[])
+
+dnl CFLOW_CHECK_PROG(PROGNAME,OUTPUT,[STDERR],[RUN-IF-FAIL], [RUN-IF-PASS])
+m4_define([CFLOW_CHECK_PROG],[
+dnl Save sample output
+AT_DATA([expout],[$2
+])
+AT_CHECK([cflow ]TEST_CFLOW_OPTIONS[ $1],
+[0],
+[expout],
+[$3],[$4],[$5])])
+
+dnl CFLOW_CHECK(TEXT,OUTPUT,[STDERR],[RUN-IF-FAIL], [RUN-IF-PASS])
+m4_define([CFLOW_CHECK],[
+dnl Save the program
+AT_DATA([prog],[$1
+])
+CFLOW_CHECK_PROG([prog],m4_shift($@))])
+
+m4_define([CFLOW_ENV],[
+m4_pushdef([TEST_CFLOW_OPTIONS],[$1])
+$2
+m4_popdef([TEST_CFLOW_OPTIONS])])
+
 AT_INIT
+
+CFLOW_TEST_INIT
 
 AT_TESTED([cflow])
 
 m4_include([version.at])
+m4_include([direct.at])
+m4_include([reverse.at])
+m4_include([recurse.at])
+
+# End of testsuite.at
