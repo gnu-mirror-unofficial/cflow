@@ -600,7 +600,7 @@ include_symbol(Symbol *sym)
 {
      int type = 0;
 
-     if (!sym)
+     if (!sym || sym->type == SymToken)
 	  return 0;
      
      if (sym->name[0] == '_' && !included_char('_'))
