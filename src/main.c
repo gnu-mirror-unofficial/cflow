@@ -667,14 +667,15 @@ main(int argc, char **argv)
 
      init();
 
-     /* See comment to cleanup_processor */
-     for (arglist = CAR(arglist); arglist; arglist = CDR(arglist)) {
-	  char *s = (char*)CAR(arglist);
-	  if (s[0] == '-')
-	       pp_option(s);
-	  else if (source(s) == 0)
-	       yyparse();
-     }
+     if (arglist) 
+	  /* See comment to cleanup_processor */
+	  for (arglist = CAR(arglist); arglist; arglist = CDR(arglist)) {
+	       char *s = (char*)CAR(arglist);
+	       if (s[0] == '-')
+		    pp_option(s);
+	       else if (source(s) == 0)
+		    yyparse();
+	  }
 
      argc -= index;
      argv += index;
