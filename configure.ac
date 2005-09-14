@@ -19,7 +19,7 @@
 # 02110-1301 USA.
 
 AC_PREREQ(2.59)
-AC_INIT([GNU cflow], [0.2.1], [bug-cflow@gnu.org])
+AC_INIT([GNU cflow], [0.2.2], [bug-cflow@gnu.org])
 AC_CONFIG_SRCDIR([src/cflow.h])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE
@@ -30,10 +30,6 @@ gl_USE_SYSTEM_EXTENSIONS
 AC_PROG_CC
 AC_PROG_LEX
 AC_PROG_RANLIB
-
-# Checks for libraries.
-# FIXME: Replace `main' with a function in `-ll':
-#AC_CHECK_LIB([l], [main])
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -78,11 +74,18 @@ AC_SUBST(lisp_LISP)
 
 # Gettext.
 AM_GNU_GETTEXT([external], [need-ngettext])
-AM_GNU_GETTEXT_VERSION(0.12.1)
+AM_GNU_GETTEXT_VERSION(0.14.1)
 
-AC_CONFIG_FILES([Makefile po/Makefile.in 
- doc/Makefile
- elisp/Makefile
+### Initialize the test suite.
+AC_CONFIG_TESTDIR(tests)
+AC_CONFIG_FILES([tests/Makefile tests/atlocal])
+AM_MISSING_PROG([AUTOM4TE], [autom4te])
+
+AC_CONFIG_FILES([
+ Makefile
  lib/Makefile
- src/Makefile])
+ src/Makefile
+ elisp/Makefile
+ po/Makefile.in 
+ doc/Makefile])
 AC_OUTPUT

@@ -21,6 +21,6 @@
 AUTOMAKE_OPTIONS = gnits 1.8 dist-bzip2
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = lib src elisp po doc
+SUBDIRS = lib src elisp po doc tests
 
 
