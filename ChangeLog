@@ -1,7 +1,20 @@
 2005-09-14  Sergey Poznyakoff  <gray@gnu.org.ua>
 
-	* NEWS: Updated
+	* src/main.c (parse_opt): Bugfix: Set preprocess_option if --cpp
+	is given.
 
+	* tests/version.at: Add keywords
+	* tests/direct.at: New test
+	* tests/reverse.at: New test
+	* tests/recurse.at: New test
+	* tests/testsuite.at (CFLOW_CHECK_PROG,CFLOW_CHECK,CFLOW_ENV): New
+	macros.
+	(direct.at,reverse.at,recurse.at): New tests
+	* tests/Makefile.am: Added new tests
+	* tests/atlocal.in: Make sure CFLOW_OPTIONS and CFLOWRC are
+	initialized to predictable values
+
+	* NEWS: Updated
 	* src/main.c (include_symbol): Ignore keywords.
 
 	* Makefile.am: Set up for testsuite
