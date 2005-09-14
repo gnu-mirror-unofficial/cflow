@@ -1,12 +1,17 @@
-GNU cflow NEWS -- history of user-visible changes.  2005-03-19
+GNU cflow NEWS -- history of user-visible changes.  2005-09-14
 Copyright (C) 2005 Sergey Poznyakoff
 See the end of file for copying conditions.
 
-Please send cflow bug reports to <gray@gnu.org>.
+Please send cflow bug reports to <bug-cflow@gnu.org>.
 
-Version 0.2.1:
+Version 0.2.2:
 
-(none so far)
+* Added testsuite
+
+* New option --number=N (-nN) - print line numbers along with the flow tree
+(default in POSIX mode)
+
+* Added localization support. New localizations: Polish and Ukrainian.
 
 
 Version 0.2:

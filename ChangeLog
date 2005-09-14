@@ -12,6 +12,7 @@
 	* tests/atlocal.in: New file
 	* tests/testsuite.at: New file
 	* tests/version.at: New file
+	* tests/.cvsignore: New file
 	
 	* src/main.c (main): Fixed coredump when no arguments were
 	passed.
