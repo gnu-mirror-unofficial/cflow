@@ -80,9 +80,7 @@ Appendices
 @node Reporting Bugs, Copying This Manual, Intro, Top
 @chapter How to Report a Bug
 
-Email bug reports to @email{gray@@gnu.org}.
-Be sure to include the word ``cflow'' somewhere
-in the ``Subject:'' field.
+Email bug reports to @email{bug-cflow@@gnu.org}.
 
 As the purpose of bug reporting is to improve software, please be sure
 to include maximum information when reporting a bug. The information
