@@ -21,7 +21,7 @@
 info_TEXINFOS=cflow.texi
 cflow_TEXINFOS=fdl.texi rendition.texi
 
-EXTRA_DIST = cflow.txt gendocs_template
+EXTRA_DIST = cflow.txt gendocs_template wc.c
 
 clean-local:
 	rm -rf manual
