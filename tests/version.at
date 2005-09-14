@@ -17,6 +17,7 @@
 # 02110-1301 USA.
 
 AT_SETUP([cflow version])
+AT_KEYWORDS([version])
 
 AT_CHECK([cflow --version],
          [0],
