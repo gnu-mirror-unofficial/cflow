@@ -1,5 +1,7 @@
 2005-09-14  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* src/main.c (include_symbol): Ignore keywords.
+
 	* Makefile.am: Set up for testsuite
 	* configure.ac: Likewise
 
@@ -11,7 +13,6 @@
 	
 	* src/main.c (main): Fixed coredump when no arguments were
 	passed.
-	* src/output.c (output): Minor fix.
 
 2005-08-16  Sergey Poznyakoff  <gray@gnu.org.ua>
 
