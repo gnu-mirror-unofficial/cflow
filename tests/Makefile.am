@@ -42,7 +42,10 @@ $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 
 TESTSUITE_AT = \
  testsuite.at\
- version.at
+ version.at\
+ direct.at\
+ reverse.at\
+ recurse.at
 
 TESTSUITE = $(srcdir)/testsuite
 
