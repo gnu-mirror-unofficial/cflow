@@ -75,7 +75,39 @@ Appendices
 @node Intro, Reporting Bugs, Top, Top
 @chapter Introduction to cflow
 
-@FIXME{Write it!}
+@FIXME{Plan:
+
+Describe in short what the program does and where it could be useful.
+
+Sample program - sample output
+
+Direct and reverse trees. Start symbol (--main option)
+
+Same program - POSIX output. Discuss the differences and the reason
+for existence of each output format. Explain that more formats
+will appear in the future. 
+
+Recursive calls. How they are handled.
+
+How to run preprocessor. Differences between the two modes.
+
+Controlling which symbols to display. Options --include and --symbol.
+Special quirks using --symbol option. 
+
+Cross-reference output.
+
+Printing ASCII art tree. Controlling its appearance using
+--level-indent option.
+
+Configuration file. Env. variables CFLOWRC and CFLOW_OPTIONS.
+
+Using cflow in Makefiles.
+
+Complete listing of all cflow options.
+
+Emacs cflow-mode.
+
+}
 
 @node Reporting Bugs, Copying This Manual, Intro, Top
 @chapter How to Report a Bug
