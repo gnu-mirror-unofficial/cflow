@@ -18,7 +18,7 @@ count_t total_lcount = 0;
 
 /* Print error message and exit with error status. If PERR is not 0,
    display current errno status. */
-void
+static void
 error_print (int perr, char *fmt, va_list ap)
 {
   vfprintf (stderr, fmt, ap);
@@ -30,7 +30,7 @@ error_print (int perr, char *fmt, va_list ap)
 }
 
 /* Print error message and exit with error status. */
-void
+static void
 errf (char *fmt, ...)
 {
   va_list ap;
@@ -41,7 +41,7 @@ errf (char *fmt, ...)
 }
 
 /* Print error message followed by errno status and exit with error code. */
-void
+static void
 perrf (char *fmt, ...)
 {
   va_list ap;
@@ -59,7 +59,7 @@ report (char *file, count_t ccount, count_t wcount, count_t lcount)
 }
 
 /* Return true if C is a valid word constituent */
-int
+static int
 isword (unsigned char c)
 {
   return isalpha (c);
