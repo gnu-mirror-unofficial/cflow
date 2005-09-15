@@ -30,6 +30,12 @@
 	* src/main.c (main): Fixed coredump when no arguments were
 	passed.
 
+2005-09-14  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* doc/wc.c: New file. Test program for explanation purposes.
+	* doc/Makefile.am (EXTRA_DIST): Add wc.c
+	* doc/cflow.texi: Update bug reporting address.
+
 2005-08-16  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/c.l (yywrap,source): Use preprocess_option to determine
