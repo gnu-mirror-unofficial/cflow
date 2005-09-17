@@ -658,6 +658,12 @@ main(int argc, char **argv)
 
      included_symbols = xstrdup("s");
      excluded_symbols = xstrdup("");
+
+     if (getenv ("POSIXLY_CORRECT")) {
+	  if (select_output_driver("posix"))
+	       error(0, _("%s: No such output driver"), "posix");
+	  output_init();
+     }
      
      sourcerc(&argc, &argv);
      if (argp_parse(&argp, argc, argv, ARGP_IN_ORDER, &index, NULL))
