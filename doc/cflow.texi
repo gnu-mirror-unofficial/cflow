@@ -6,6 +6,12 @@
 @c %**end of header
 @setchapternewpage odd
 
+@syncodeindex fn cp
+@syncodeindex vr cp
+@syncodeindex ky cp
+@syncodeindex pg cp
+@syncodeindex tp cp
+
 @include version.texi
 @include rendition.texi
 
@@ -62,7 +68,20 @@ documents GNU cflow Version @value{VERSION}.
 @end ifinfo
 
 @menu
-* Intro::               Introduction to Cflow
+* Intro::               Introduction to @command{cflow}.
+* Quick Start::         Simple Ways to Analyze Programs with @command{cflow}.
+* Direct and Reverse::  Two Types of Flow Trees.
+* Output Formats::      Supported Output Formats.
+* Recursive Calls::     Handling Recursive Calls.
+* Preprocessing::       Source Files Can Be Preprocessed Before Analyzing.
+* Symbols::             Controlling Symbol Input and Output.
+* Cross-References::    Cross-Reference Output.
+* ASCII Tree::          Using ASCII Art to Produce Flow Trees.
+* Configuration::       Configuration Files and Variables.
+* Makefiles::           Using @command{cflow} in Makefiles.
+* Options::             Complete Listing of @command{cflow} Options.
+* Emacs::               Using @command{cflow} with GNU Emacs.
+
 * Reporting Bugs::      How to Report a Bug.
 
 Appendices
@@ -72,44 +91,223 @@ Appendices
 
 @end menu
 
-@node Intro, Reporting Bugs, Top, Top
+@node Intro, Quick Start, Top, Top
 @chapter Introduction to cflow
+@pindex cflow
+@cindex cflow, a description of
+     The @command{cflow} utility analyzes a collection of source files
+written in @code{C} programming language and outputs a graph charting
+dependencies between various functions.
 
-@FIXME{Plan:
+@cindex direct tree defined
+@cindex direct graph defined
+@cindex reverse graph defined
+@cindex reverse tree defined
+     The command is able to produce two kind of graphs: direct
+and reverse. @dfn{Direct graph} begins with the main function
+(@code{main}), and displays recursively all functions called by it.
+In contrast, @dfn{reverse graph} is a set of subgraphs, charting for
+each function its callers, in the reverse order. Due to their
+tree-like appearance, graphs are called @dfn{trees} throughout this
+document.  
 
-Describe in short what the program does and where it could be useful.
+     In addition to these two output modes, @command{cflow} is able to
+produce a @dfn{cross-reference} listing of all the symbols encountered
+in the input files.
 
-Sample program - sample output
+     The utility also provides a detailed control over symbols that will
+appear in its output, allowing to omit those that are of no interest
+to the user. The exact appearance of the output graphs is also
+configurable.
 
-Direct and reverse trees. Start symbol (--main option)
+@FIXME{Some notes about when the user might need the utility? For
+example, to get a quick acquaintance with the program, etc.}
 
-Same program - POSIX output. Discuss the differences and the reason
+@FIXME{The utility should also be able to process following input file
+formats: @command{yacc} and @command{lex} sources, and object
+files. It is a good idea to add a node @samp{POSIX} discussing this.}
+
+@node Quick Start, Direct and Reverse, Intro, Top
+@chapter Simple Ways to Analyze Programs with @command{cflow}.
+@UNREVISED{}
+     To begin your acquaintance with the GNU @command{cflow} utility,
+let's consider the following simple implementation of @command{whoami}
+command:
+
+@smallexample
+@verbatiminclude whoami.c
+@end smallexample
+
+     Running @command{cflow}:
+
+@smallexample
+cflow whoami.c
+@end smallexample
+
+@noindent
+will produce the following output:
+
+@cindex GNU Output Format, an example
+@smallexample
+main() <int main (int argc,char **argv) at whoami.c:26>:
+    fprintf()
+    who_am_i() <int who_am_i (void) at whoami.c:8>:
+        getpwuid()
+        geteuid()
+        getenv()
+        fprintf()
+        printf()
+@end smallexample
+
+@cindex GNU Output Format described
+     This is a direct tree showing @dfn{caller---callee} dependencies
+in the input file. Each line starts with a function name, followed by
+a pair of parentheses to indicate that it is a function. If this
+function is defined in one of the input files, the line continues by
+displaying, within a pair of angle brackets, a function
+@dfn{signature} and the location of its definition. For example, the
+line
+
+@smallexample
+main() <int main (int argc,char **argv) at whoami.c:25>:
+@end smallexample
+
+@noindent
+shows that the function @code{main} is defined in file @file{whoami.c}
+at line 25, as @code{int main (int argc, char **argv)}.
+
+     The lines following this one show which functions are called by
+@code{main}. Each such line is indented by fixed amount of whitespace
+(by default four spaces) for each nesting level.
+
+@cindex start symbol
+@cindex @option{--main}
+@cindex @option{-m}
+     By default, @command{cflow} starts outputting direct tree from
+the function called @code{main}. It is convenient when analyzing a set
+of input files comprising an entire @code{C} program. However, there
+may exist circumstances where a user would want to see only a part of
+the graph starting with some particular function. @command{Cflow}
+allows to select such function using @option{--main} (@option{-m})
+command line option. Thus, running
+
+@smallexample
+cflow --main who_am_i whoami.c
+@end smallexample
+
+@noindent
+on the above file will produce:
+
+@smallexample
+who_am_i() <int who_am_i (void) at whoami.c:8>:
+    getpwuid()
+    geteuid()
+    getenv()
+    fprintf()
+    printf()
+@end smallexample
+
+@node Direct and Reverse, Output Formats, Quick Start, Top
+@chapter Two Types of Flow Trees.
+@cindex @option{--reverse}
+@cindex @option{-r}
+     In the previous chapter we have discussed @dfn{direct trees},
+displaying @samp{caller---callee} dependencies. Another type of
+@command{cflow} output, called @dfn{reverse tree}, charts
+@dfn{callee---caller} dependencies. To produce a reverse tree, invoke
+@command{cflow} with @option{--reverse} (@option{-r}) command line
+option. For example, using a sample @file{whoami.c}:
+
+@smallexample
+cflow --reverse whoami.c
+@end smallexample
+
+     This command produces the following output:
+
+@cindex reverse graph, example
+@cindex reverse tree, example
+@smallexample
+fprintf():
+    who_am_i() <int who_am_i (void) at whoami.c:8>:
+        main() <int main (int argc,char **argv) at whoami.c:26>
+    main() <int main (int argc,char **argv) at whoami.c:26>
+getenv():
+    who_am_i() <int who_am_i (void) at whoami.c:8>:
+        main() <int main (int argc,char **argv) at whoami.c:26>
+geteuid():
+    who_am_i() <int who_am_i (void) at whoami.c:8>:
+        main() <int main (int argc,char **argv) at whoami.c:26>
+getpwuid():
+    who_am_i() <int who_am_i (void) at whoami.c:8>:
+        main() <int main (int argc,char **argv) at whoami.c:26>
+main() <int main (int argc,char **argv) at whoami.c:26>
+printf():
+    who_am_i() <int who_am_i (void) at whoami.c:8>:
+        main() <int main (int argc,char **argv) at whoami.c:26>
+who_am_i() <int who_am_i (void) at whoami.c:8>:
+    main() <int main (int argc,char **argv) at whoami.c:26>
+@end smallexample
+
+     This output consists of several subtrees, each describing callers
+for a particular function. Thus, the first subtree tells that the
+function @code{fprintf} is called from two functions: @code{who_am_i}
+and @code{main}. First of them is, in turn, also called directly by
+@code{main}.
+     
+@node Output Formats, Recursive Calls, Direct and Reverse, Top
+@chapter Various Output Formats.
+@UNREVISED{}
+@FIXME{Same program - POSIX output. Discuss the differences and the reason
 for existence of each output format. Explain that more formats
-will appear in the future. 
+will appear in the future.} 
 
-Recursive calls. How they are handled.
+@node Recursive Calls, Preprocessing, Output Formats, Top
+@chapter Handling Recursive Calls.
+@UNREVISED{}
+@FIXME{Recursive calls. How they are handled.}
 
-How to run preprocessor. Differences between the two modes.
+@node Preprocessing, Symbols, Recursive Calls, Top
+@chapter Running Preprocessor
+@UNREVISED{}
+@FIXME{How to run preprocessor. Differences between the two modes.}
 
-Controlling which symbols to display. Options --include and --symbol.
-Special quirks using --symbol option. 
+@node Symbols, Cross-References, Preprocessing, Top
+@chapter Controlling Symbol Input and Output.
+@UNREVISED{}
+@FIXME{Controlling which symbols to display. Options --include and --symbol.
+Special quirks using --symbol option. }
 
-Cross-reference output.
+@node Cross-References, ASCII Tree, Symbols, Top
+@chapter Cross-Reference Output.
+@UNREVISED{}
+@FIXME{Cross-reference output}
 
-Printing ASCII art tree. Controlling its appearance using
---level-indent option.
+@node ASCII Tree, Configuration, Cross-References, Top
+@chapter Using ASCII Art to Produce Flow Trees.
+@UNREVISED{}
+@FIXME{Printing ASCII art tree. Controlling its appearance using
+--level-indent option.}
 
-Configuration file. Env. variables CFLOWRC and CFLOW_OPTIONS.
+@node Configuration, Makefiles, ASCII Tree, Top
+@chapter Configuration Files and Variables.
+@UNREVISED{}
+@FIXME{Configuration file. Env. variables CFLOWRC and CFLOW_OPTIONS.}
 
-Using cflow in Makefiles.
+@node Makefiles, Options, Configuration, Top
+@chapter Using @command{cflow} in Makefiles.
+@UNREVISED{}
 
-Complete listing of all cflow options.
+@node Options, Emacs, Makefiles, Top
+@chapter Complete Listing of @command{cflow} Options.
+@UNREVISED{}
+@FIXME{Complete listing of all cflow options.}
 
-Emacs cflow-mode.
+@node Emacs, Reporting Bugs, Options, Top
+@chapter Using @command{cflow} with GNU Emacs.
+@UNREVISED{}
+@FIXME{Emacs cflow-mode.}
 
-}
-
-@node Reporting Bugs, Copying This Manual, Intro, Top
+@node Reporting Bugs, Copying This Manual, Emacs, Top
 @chapter How to Report a Bug
 
 Email bug reports to @email{bug-cflow@@gnu.org}.

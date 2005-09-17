@@ -1,3 +1,12 @@
+2005-09-17  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* doc/whoami.c: New sample program
+	* doc/Makefile.am (EXTRA_DIST): Add whoami.c
+	* doc/cflow.texi: Updated
+	* src/main.c (main): Assume POSIX output format if POSIXLY_CORRECT
+	is set.
+	* tests/atlocal.in: Unset POSIXLY_CORRECT
+	
 2005-09-14  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/main.c (parse_opt): Bugfix: Set preprocess_option if --cpp
