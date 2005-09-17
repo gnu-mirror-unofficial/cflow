@@ -21,7 +21,7 @@
 info_TEXINFOS=cflow.texi
 cflow_TEXINFOS=fdl.texi rendition.texi
 
-EXTRA_DIST = cflow.txt gendocs_template wc.c
+EXTRA_DIST = cflow.txt gendocs_template wc.c d.c whoami.c
 
 clean-local:
 	rm -rf manual
@@ -39,7 +39,7 @@ TEXI2DVI=texi2dvi -t '@set $(RENDITION)' -E
 # Make sure you set TEXINPUTS.
 # TEXINPUTS=/usr/share/texmf/pdftex/plain/misc/ is ok for most distributions
 manual:
-	TEXINPUTS=$(srcdir):$(top_srcdir)/scripts:$(TEXINPUTS) \
+	TEXINPUTS=$(srcdir):$(top_srcdir)/build-aux:$(TEXINPUTS) \
 	 MAKEINFO="$(MAKEINFO) $(MAKEINFOFLAGS)" \
 	 TEXI2DVI="$(TEXI2DVI) -t @finalout" \
 	 $(GENDOCS) $(PACKAGE) '$(PACKAGE_NAME) manual'
