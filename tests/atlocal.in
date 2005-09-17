@@ -8,4 +8,4 @@ CFLOW_OPTIONS=
 export CFLOW_OPTIONS
 CFLOWRC=/dev/null
 export CFLOWRC
-
+unset POSIXLY_CORRECT
