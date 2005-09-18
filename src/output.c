@@ -47,7 +47,7 @@ print_level(int lev, int last)
      int i;
 
      if (print_line_numbers) 
-	  fprintf(outfile, "%d ", out_line);
+	  fprintf(outfile, "%5d ", out_line);
      if (print_levels)
 	  fprintf(outfile, "{%4d} ", lev);
      fprintf(outfile, "%s", level_begin);
