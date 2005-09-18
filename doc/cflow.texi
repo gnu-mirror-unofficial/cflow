@@ -103,7 +103,7 @@ dependencies between various functions.
 @cindex direct graph defined
 @cindex reverse graph defined
 @cindex reverse tree defined
-     The command is able to produce two kind of graphs: direct
+     The program is able to produce two kind of graphs: direct
 and reverse. @dfn{Direct graph} begins with the main function
 (@code{main}), and displays recursively all functions called by it.
 In contrast, @dfn{reverse graph} is a set of subgraphs, charting for
@@ -130,9 +130,10 @@ files. It is a good idea to add a node @samp{POSIX} discussing this.}
 @node Quick Start, Direct and Reverse, Intro, Top
 @chapter Simple Ways to Analyze Programs with @command{cflow}.
 @UNREVISED{}
-     To begin your acquaintance with the GNU @command{cflow} utility,
-let's consider the following simple implementation of @command{whoami}
-command:
+     Let's begin our acquaintance with the GNU @command{cflow} utility
+with an example. Suppose you have a simple implementation of
+@command{whoami} command and you wish to obtain a graph of function
+dependencies. Here is the program:
 
 @smallexample
 @verbatiminclude whoami.c
@@ -149,6 +150,7 @@ will produce the following output:
 
 @cindex GNU Output Format, an example
 @smallexample
+@group
 main() <int main (int argc,char **argv) at whoami.c:26>:
     fprintf()
     who_am_i() <int who_am_i (void) at whoami.c:8>:
@@ -157,6 +159,7 @@ main() <int main (int argc,char **argv) at whoami.c:26>:
         getenv()
         fprintf()
         printf()
+@end group
 @end smallexample
 
 @cindex GNU Output Format described
@@ -165,7 +168,8 @@ in the input file. Each line starts with a function name, followed by
 a pair of parentheses to indicate that it is a function. If this
 function is defined in one of the input files, the line continues by
 displaying, within a pair of angle brackets, a function
-@dfn{signature} and the location of its definition. For example, the
+@dfn{signature} and the location of its definition. If the function
+calls another functions, the line ends with a colon. For example, the
 line
 
 @smallexample
@@ -174,20 +178,21 @@ main() <int main (int argc,char **argv) at whoami.c:25>:
 
 @noindent
 shows that the function @code{main} is defined in file @file{whoami.c}
-at line 25, as @code{int main (int argc, char **argv)}.
+at line 25, as @code{int main (int argc, char **argv)}. Terminating
+semicolon indicates that @code{main} invokes other functions.
 
      The lines following this one show which functions are called by
 @code{main}. Each such line is indented by fixed amount of whitespace
 (by default four spaces) for each nesting level.
 
 @cindex start symbol
-@cindex @option{--main}
-@cindex @option{-m}
+@cindex @option{--main} command line option introduced
+@cindex @option{-m} command line option introduced
      By default, @command{cflow} starts outputting direct tree from
 the function called @code{main}. It is convenient when analyzing a set
 of input files comprising an entire @code{C} program. However, there
-may exist circumstances where a user would want to see only a part of
-the graph starting with some particular function. @command{Cflow}
+are circumstances where a user would want to see only a part of
+the graph starting with on particular function. @command{Cflow}
 allows to select such function using @option{--main} (@option{-m})
 command line option. Thus, running
 
@@ -196,15 +201,17 @@ cflow --main who_am_i whoami.c
 @end smallexample
 
 @noindent
-on the above file will produce:
+on the above file will produce following graph:
 
 @smallexample
+@group
 who_am_i() <int who_am_i (void) at whoami.c:8>:
     getpwuid()
     geteuid()
     getenv()
     fprintf()
     printf()
+@end group
 @end smallexample
 
 @node Direct and Reverse, Output Formats, Quick Start, Top
@@ -212,9 +219,9 @@ who_am_i() <int who_am_i (void) at whoami.c:8>:
 @cindex @option{--reverse}
 @cindex @option{-r}
      In the previous chapter we have discussed @dfn{direct trees},
-displaying @samp{caller---callee} dependencies. Another type of
+displaying @i{caller---callee} dependencies. Another type of
 @command{cflow} output, called @dfn{reverse tree}, charts
-@dfn{callee---caller} dependencies. To produce a reverse tree, invoke
+@dfn{callee---caller} dependencies. To produce a reverse tree, run
 @command{cflow} with @option{--reverse} (@option{-r}) command line
 option. For example, using a sample @file{whoami.c}:
 
@@ -227,6 +234,7 @@ cflow --reverse whoami.c
 @cindex reverse graph, example
 @cindex reverse tree, example
 @smallexample
+@group
 fprintf():
     who_am_i() <int who_am_i (void) at whoami.c:8>:
         main() <int main (int argc,char **argv) at whoami.c:26>
@@ -246,6 +254,7 @@ printf():
         main() <int main (int argc,char **argv) at whoami.c:26>
 who_am_i() <int who_am_i (void) at whoami.c:8>:
     main() <int main (int argc,char **argv) at whoami.c:26>
+@end group    
 @end smallexample
 
      This output consists of several subtrees, each describing callers
@@ -253,19 +262,195 @@ for a particular function. Thus, the first subtree tells that the
 function @code{fprintf} is called from two functions: @code{who_am_i}
 and @code{main}. First of them is, in turn, also called directly by
 @code{main}.
-     
+
+@cindex @option{--brief} command line option introduced
+@cindex @option{-b} command line option introduced
+     The first thing that draws attention in the above output is that
+the subtree starting with @code{who_am_i} function is repeated several
+times. This is @dfn{verbose} output. To make it brief, run
+@command{cflow} with @option{--brief} (@option{-b}). For example:
+
+@cindex brief output, an example of
+@smallexample
+@group
+$ cflow --brief --reverse whoami.c
+fprintf():
+    who_am_i() <int who_am_i (void) at whoami.c:8>:
+        main() <int main (int argc,char **argv) at whoami.c:26>
+    main() <int main (int argc,char **argv) at whoami.c:26> [see 3]
+getenv():
+    who_am_i() <int who_am_i (void) at whoami.c:8>: [see 2]
+geteuid():
+    who_am_i() <int who_am_i (void) at whoami.c:8>: [see 2]
+getpwuid():
+    who_am_i() <int who_am_i (void) at whoami.c:8>: [see 2]
+main() <int main (int argc,char **argv) at whoami.c:26> [see 3]
+printf():
+    who_am_i() <int who_am_i (void) at whoami.c:8>: [see 2]
+who_am_i() <int who_am_i (void) at whoami.c:8>: [see 2]
+@end group
+@end smallexample
+
+@cindex brief output described
+     In brief output, once a subtree for a given function is written,
+subsequent instances of that subtree contain only the definition of
+the function and the @dfn{reference} to the output line where the
+expanded subtree can be found.
+
+@cindex @option{--number} command line option introduced
+@cindex @option{-n} command line option introduced
+     If the output tree is large it can be tedious to find out the
+required line number (unless you use @dfn{Emacs cflow-mode},
+@FIXME-pxref{cflow-mode}). For such cases a special option
+@option{--number} (@option{-n}) is provided, which makes
+@command{cflow} begin each line of the output with a @dfn{reference
+number}, that is ordinal number of this line in the output. With
+this option, the above output will look like:
+
+@smallexample
+$ cflow --number --brief --reverse whoami.c
+@group
+    1 fprintf():
+    2     who_am_i() <int who_am_i (void) at whoami.c:8>:
+    3         main() <int main (int argc,char **argv) at whoami.c:26>
+    4     main() <int main (int argc,char **argv) at whoami.c:26> [see 3]
+    5 getenv():
+    6     who_am_i() <int who_am_i (void) at whoami.c:8>: [see 2]
+    7 geteuid():
+    8     who_am_i() <int who_am_i (void) at whoami.c:8>: [see 2]
+    9 getpwuid():
+   10     who_am_i() <int who_am_i (void) at whoami.c:8>: [see 2]
+   11 main() <int main (int argc,char **argv) at whoami.c:26> [see 3]
+   12 printf():
+   13     who_am_i() <int who_am_i (void) at whoami.c:8>: [see 2]
+   14 who_am_i() <int who_am_i (void) at whoami.c:8>: [see 2]
+@end group
+@end smallexample
+
+     Of course, @option{--brief} and @option{--number} options
+take effect for both direct and reverse flow trees.
+
 @node Output Formats, Recursive Calls, Direct and Reverse, Top
 @chapter Various Output Formats.
-@UNREVISED{}
-@FIXME{Same program - POSIX output. Discuss the differences and the reason
+@cindex POSIX Output described
+     The output format described in previous chapters is called
+@dfn{GNU Output}. Beside this output format, @command{cflow} is also
+able to produce output in format defined in POSIX standard
+(@FIXME-pxref{POSIX standard}). In this format, each line of output
+begins with a @dfn{reference number}, i.e. the ordinal number of this
+line in the output, followed by indentation of fixed amount of columns
+per level (@FIXME-pxref{Setting indentation}). Following this are the
+name of the function, a colon and the function definition, if
+available. The function definition is followed by the location of the
+definition (file name and line number). Both definition and location
+are enclosed in angle brackets. If the function definition is not
+found, the line ends with an empty pair of angle brackets.
+
+@cindex @option{--format=posix}
+@cindex @option{-f posix}
+@vindex POSIXLY_CORRECT
+@cindex POSIX Output Format, generating
+     This output format is used when either a command line option
+@option{--format=posix} (@option{-f posix}) has been given, or
+environment variable @code{POSIXLY_CORRECT} was set.
+
+     The output tree in POSIX format for our sample @file{whoami.c}
+file will look as follows:
+
+@smallexample
+    1 main: int main(int argc,char **argv), <whoami.c 26>
+    2     fprintf: <>
+    3     who_am_i: int who_am_i(void), <whoami.c 8>
+    4         getpwuid: <>
+    5         geteuid: <>
+    6         getenv: <>
+    7         fprintf: <>
+    8         printf: <>
+@end smallexample
+
+@FIXME{Discuss the differences and the reason
 for existence of each output format. Explain that more formats
-will appear in the future.} 
+will appear in the future.}
 
 @node Recursive Calls, Preprocessing, Output Formats, Top
 @chapter Handling Recursive Calls.
-@UNREVISED{}
-@FIXME{Recursive calls. How they are handled.}
+@cindex Recursive functions
+     Sometimes programs contain functions that recursively call
+themselves. GNU output format provides a special indication for such
+functions. The definition of the recursive function is marked with an
+@samp{(R)} at the end of line (before terminating colon). Subsequent
+recursive calls of this function are marked with a @samp{(recursive: see
+@var{refline})} at the end of line. Here, @var{refline} stands for the
+reference line number where the @dfn{recursion root} definition was
+displayed.
 
+     To illustrate this, let's consider the following implementation
+of @dfn{Ackermann's function}:
+
+@smallexample
+@group
+@verbatiminclude ack.c
+@end group
+@end smallexample
+
+     Analyzing it with @command{cflow} gives:
+     
+@smallexample
+@group
+$ cflow ack.c
+ack() <u_long ack (u_long a,u_long b) at ack.c:4> (R):
+    ack() <u_long ack (u_long a,u_long b) at ack.c:4> (recursive: see 1)
+@end group
+@end smallexample
+
+     To provide a more detailed example, consider the following
+program, that prints recursive listing of a directory:
+
+@smallexample
+@verbatiminclude d.c
+@end smallexample
+
+     A brief listing for this program follows (long lines are split
+for readability):
+
+@smallexample
+$ cflow --number --brief d.c
+    1 main() <int main (int argc,char **argv) at d.c:83>:
+    2     fprintf()
+    3     printdir() <void printdir (int level,char *prefix,char
+                  *name) at d.c:52> (R):
+    4         mkfullname() <char *mkfullname (char *prefix,
+                  char *name) at d.c:13>:
+    5             malloc()
+    6             strlen()
+    7             strcat()
+    8             strcpy()
+    9             strdup()
+   10         opendir()
+   11         perror()
+   12         exit()
+   13         readdir()
+   14         printf()
+   15         ignorent() <int ignorent (char *name) at d.c:43>:
+   16             strcmp()
+   17         isdir() <int isdir (char *prefix,char *name) at d.c:26>:
+   18             stat()
+   19             mkfullname() <char *mkfullname (char *prefix,
+                    char *name) at d.c:13>: [see 4]
+   20             perror()
+   21             free()
+   22             S_ISDIR()
+   23         printdir() <void printdir (int level,char *prefix,
+                  char *name) at d.c:52> (recursive: see 3) [see 3]
+   24         free()
+   25         closedir()
+@end smallexample
+
+     The @code{printdir} description in line 3 shows that the function
+is recursive. The recursion call is shown at line 23. It contains
+reference to the recursion root, and to the function definition (in
+this particular case these are the same).
+     
 @node Preprocessing, Symbols, Recursive Calls, Top
 @chapter Running Preprocessor
 @UNREVISED{}

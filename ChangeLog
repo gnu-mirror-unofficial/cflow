@@ -1,3 +1,11 @@
+2005-09-18  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* doc/ack.c: New sample source
+	* doc/Makefile.am (EXTRA_DIST): Add ack.c
+	* doc/cflow.texi: Updated
+	* src/output.c (print_level): Use 5 digits of reference number
+	width. 
+	
 2005-09-17  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* doc/whoami.c: New sample program
