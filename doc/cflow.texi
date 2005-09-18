@@ -483,7 +483,7 @@ Special quirks using --symbol option. }
 @UNREVISED{}
 
 @smallexample
-FLOWCHART_FILES=$(@PACKAGE@_SOURCES)
+FLOWCHART_FILES=$(@@PACKAGE@@_SOURCES)
 $(PACKAGE).cflow: cflow $(FLOWCHART_FILES) cflow.rc Makefile
 	CFLOWRC=$(top_srcdir)/build-aux/cflow.rc \
 	 cflow -o$@ -i^s $(DEFS) $(DEFAULT_INCLUDES) \
