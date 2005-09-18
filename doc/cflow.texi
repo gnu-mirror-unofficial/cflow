@@ -482,6 +482,15 @@ Special quirks using --symbol option. }
 @chapter Using @command{cflow} in Makefiles.
 @UNREVISED{}
 
+@smallexample
+FLOWCHART_FILES=$(@PACKAGE@_SOURCES)
+$(PACKAGE).cflow: cflow $(FLOWCHART_FILES) cflow.rc Makefile
+	CFLOWRC=$(top_srcdir)/build-aux/cflow.rc \
+	 cflow -o$@ -i^s $(DEFS) $(DEFAULT_INCLUDES) \
+                    $(INCLUDES) $(AM_CPPFLAGS) \
+	            $(CPPFLAGS) $(FLOWCHART_FILES)
+@end smallexample
+
 @node Options, Emacs, Makefiles, Top
 @chapter Complete Listing of @command{cflow} Options.
 @UNREVISED{}
