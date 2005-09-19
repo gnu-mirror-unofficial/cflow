@@ -1,3 +1,22 @@
+2005-09-19  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* doc/cflow.texi: Updated
+	* src/c.l: Support BCPL style comments
+	* src/parser.c (parse_function_declaration): Put token back after
+	an error.
+	(dirdcl): Handle wrappers after function declarations. Useful for
+	handling __attribute__.
+	(maybe_parm_list): Fixed counting of parameters. Print error
+	message on eof.
+	* tests/Makefile.am (TESTSUITE_AT): Add
+	attr.at,awrapper.at,pwrapper.at
+	* tests/testsuite.at: Rename CFLOW_ENV to CFLOW_OPT
+	Add attr.at,awrapper.at,pwrapper.at
+	* tests/reverse.at: Rename CFLOW_ENV to CFLOW_OPT
+	* tests/attr.at: New test
+	* tests/awrapper.at: New test
+	* tests/pwrapper.at: New test
+	
 2005-09-18  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* doc/ack.c: New sample source

@@ -192,7 +192,7 @@ semicolon indicates that @code{main} invokes other functions.
 the function called @code{main}. It is convenient when analyzing a set
 of input files comprising an entire @code{C} program. However, there
 are circumstances where a user would want to see only a part of
-the graph starting with on particular function. @command{Cflow}
+the graph starting on particular function. @command{Cflow}
 allows to select such function using @option{--main} (@option{-m})
 command line option. Thus, running
 
@@ -379,7 +379,7 @@ will appear in the future.}
 themselves. GNU output format provides a special indication for such
 functions. The definition of the recursive function is marked with an
 @samp{(R)} at the end of line (before terminating colon). Subsequent
-recursive calls of this function are marked with a @samp{(recursive: see
+recursive calls to this function are marked with a @samp{(recursive: see
 @var{refline})} at the end of line. Here, @var{refline} stands for the
 reference line number where the @dfn{recursion root} definition was
 displayed.
@@ -447,9 +447,9 @@ $ cflow --number --brief d.c
 @end smallexample
 
      The @code{printdir} description in line 3 shows that the function
-is recursive. The recursion call is shown at line 23. It contains
-reference to the recursion root, and to the function definition (in
-this particular case these are the same).
+is recursive. The recursion call is shown in line 23. It contains
+references to the recursion root, and to the function definition (in
+this particular example they refer to the same line).
      
 @node Preprocessing, Symbols, Recursive Calls, Top
 @chapter Running Preprocessor
