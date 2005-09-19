@@ -27,9 +27,6 @@ typedef struct {
      enum storage storage;
 } Ident;
 
-#define is_finction(ip) ((ip)->parmcnt >= 0)
-#define is_extern_dcl(ip) ((ip)->storage == ExplicitExternStorage)
-
 void parse_declaration(Ident*);
 void parse_variable_declaration(Ident*);
 void parse_function_declaration(Ident*);
@@ -341,7 +338,7 @@ is_function()
 void
 parse_declaration(Ident *ident)
 {
-     if (is_function())
+     if (is_function()) 
 	  parse_function_declaration(ident);
      else
 	  parse_variable_declaration(ident);
@@ -419,7 +416,7 @@ parse_function_declaration(Ident *ident)
      default:
 	  if (verbose) 
 	       file_error(_("expected `;'"), 1);
-	  /* should putback() here */
+	  putback();
 	  /* FALLTHRU */
      case ';':
 	  break;
@@ -572,6 +569,7 @@ parse_knr_dcl(Ident *ident)
      parse_dcl(ident);
      if (strict_ansi)
 	  return;
+     
      switch (tok.type) {
      case IDENTIFIER:
      case TYPE:
@@ -684,7 +682,7 @@ parse_dcl(Ident *ident)
      putback();
      dcl(ident);
      save_stack();
-     if (ident->name) {
+     if (ident->name) {	  
 	  declare(ident);
      } else {
 	  finish_save();
@@ -696,7 +694,7 @@ int
 dcl(Ident *idptr)
 {
      int type;
-    
+
      while (nexttoken() != 0 && tok.type != '(') {
 	  if (tok.type == MODIFIER) {
 	       if (idptr && idptr->type_end == -1)
@@ -759,6 +757,27 @@ dirdcl(Ident *idptr)
      }
      if (wrapper)
 	  nexttoken(); /* read ')' */
+
+     if (tok.type == PARM_WRAPPER) {
+	  if (nexttoken() == '(') {
+	       int level = 0;
+	       while (nexttoken()) {
+		    if (tok.type == 0) {
+			 file_error(_("unexpected eof in function declaration"),
+				    0);
+			 return;
+		    } else if (tok.type == '(') 
+			 level++;
+		    else if (tok.type == ')') {
+			 if (level-- == 0) {
+			      nexttoken();
+			      break;
+			 }
+		    } 
+	       }
+	  } else
+	       putback();
+     }
      return 0;
 }
 
@@ -795,18 +814,18 @@ maybe_parm_list(int *parm_cnt_return)
 	  switch (tok.type) {
 	  case ')':
 	       if (parm_cnt_return)
-		    *parm_cnt_return = parmcnt+1;
+		    *parm_cnt_return = parmcnt;
 	       return;
 	  case ',':
-	       parmcnt++;
 	       break;
 	  default:
+	       parmcnt++;
 	       putback();
 	       parmdcl(NULL);
 	       putback();
 	  }
      }
-     /*NOTREACHED*/
+     file_error(_("unexpected eof in parameter list"), 0);
 }
 
 void
