@@ -45,7 +45,10 @@ TESTSUITE_AT = \
  version.at\
  direct.at\
  reverse.at\
- recurse.at
+ recurse.at\
+ attr.at\
+ awrapper.at\
+ pwrapper.at
 
 TESTSUITE = $(srcdir)/testsuite
 
