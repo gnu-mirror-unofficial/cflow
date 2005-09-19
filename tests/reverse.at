@@ -19,7 +19,7 @@
 AT_SETUP([reverse tree])
 AT_KEYWORDS([reverse])
 
-CFLOW_ENV([-r], [
+CFLOW_OPT([-r], [
 
 CFLOW_CHECK([
 foo()
