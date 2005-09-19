@@ -47,6 +47,7 @@ IDENT [a-zA-Z_][a-zA-Z0-9_]*
 WS    [ \t\f\r]* 
 %%
      /* comments */
+"//".*\n                ++line_num;
 "/*"			BEGIN(comment);
 <comment>[^*\n]*	;
 <comment>[^*\n]*\n	++line_num;
