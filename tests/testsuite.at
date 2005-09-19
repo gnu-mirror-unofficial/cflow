@@ -38,7 +38,7 @@ AT_DATA([prog],[$1
 ])
 CFLOW_CHECK_PROG([prog],m4_shift($@))])
 
-m4_define([CFLOW_ENV],[
+m4_define([CFLOW_OPT],[
 m4_pushdef([TEST_CFLOW_OPTIONS],[$1])
 $2
 m4_popdef([TEST_CFLOW_OPTIONS])])
@@ -53,5 +53,8 @@ m4_include([version.at])
 m4_include([direct.at])
 m4_include([reverse.at])
 m4_include([recurse.at])
+m4_include([attr.at])
+m4_include([awrapper.at])
+m4_include([pwrapper.at])
 
 # End of testsuite.at
