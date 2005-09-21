@@ -27,8 +27,8 @@ typedef struct {
      enum storage storage;
 } Ident;
 
-void parse_declaration(Ident*);
-void parse_variable_declaration(Ident*);
+void parse_declaration(Ident*, int);
+void parse_variable_declaration(Ident*, int);
 void parse_function_declaration(Ident*);
 void parse_dcl(Ident*);
 void parse_knr_dcl(Ident*);
@@ -298,13 +298,13 @@ yyparse()
 	       break;
 	  case EXTERN:
 	       identifier.storage = ExplicitExternStorage;
-	       parse_declaration(&identifier);
+	       parse_declaration(&identifier, 0);
 	       break;
 	  case STATIC:
 	       identifier.storage = StaticStorage;
 	       /* FALLTHRU */
 	  default:
-	       parse_declaration(&identifier);
+	       parse_declaration(&identifier, 0);
 	       break;
 	  }
 	  cleanup_stack();
@@ -336,12 +336,12 @@ is_function()
 }
 
 void
-parse_declaration(Ident *ident)
+parse_declaration(Ident *ident, int parm)
 {
      if (is_function()) 
 	  parse_function_declaration(ident);
      else
-	  parse_variable_declaration(ident);
+	  parse_variable_declaration(ident, parm);
 }
 
 
@@ -411,14 +411,22 @@ parse_function_declaration(Ident *ident)
 {
      ident->type_end = -1;
      parse_knr_dcl(ident);
-     
+     int error_recovery = 0;
+
+ restart:
      switch (tok.type) {
      default:
-	  if (verbose) 
-	       file_error(_("expected `;'"), 1);
-	  putback();
-	  /* FALLTHRU */
+	  if (error_recovery) 
+	       nexttoken();
+	  else {
+	       if (verbose) 
+		    file_error(_("expected `;'"), 1);
+	       error_recovery = 1;
+	  }
+	  goto restart;
+	  
      case ';':
+     case ',':
 	  break;
      case LBRACE0:
      case LBRACE:
@@ -467,7 +475,7 @@ fake_struct(Ident *ident)
 }
 
 void
-parse_variable_declaration(Ident *ident)
+parse_variable_declaration(Ident *ident, int parm)
 {
      Stackpos sp;
      
@@ -503,14 +511,20 @@ parse_variable_declaration(Ident *ident)
      
  select:    
      switch (tok.type) {
+     case ')':
+	  if (parm)
+	       break;
+	  /*FALLTHROUGH*/
      default:
 	  if (verbose) 
 	       file_error(_("expected `;'"), 1);
-	  /* should putback() here */
+	  /* FIXME: should putback() here */
 	  /* FALLTHRU */
      case ';':
 	  break;
      case ',':
+	  if (parm)
+	       break;
 	  tos = ident->type_end;
 	  restore(sp);
 	  goto again;
@@ -810,6 +824,8 @@ void
 maybe_parm_list(int *parm_cnt_return)
 {
      int parmcnt = 0;
+     Ident ident;
+     int level;
      while (nexttoken()) {
 	  switch (tok.type) {
 	  case ')':
@@ -818,14 +834,34 @@ maybe_parm_list(int *parm_cnt_return)
 	       return;
 	  case ',':
 	       break;
-	  default:
+	  case IDENTIFIER:
+	  case STRUCT:
+	  case UNION:
+	  case ENUM:
+	  case TYPE:
 	       parmcnt++;
+	       ident.storage = AutoStorage;
+	       parse_declaration(&ident, 1);
 	       putback();
-	       parmdcl(NULL);
+	       break;
+	  default:
+	       if (verbose)
+		    file_error(_("unexpected token in parameter list"), 1);
+	       level = 0;
+	       do {
+		    if (tok.type == '(') 
+			 level++;
+		    else if (tok.type == ')') {
+			 if (level-- == 0)
+			      break;
+		    }
+	       } while (nexttoken());
+		    ;
 	       putback();
 	  }
      }
-     file_error(_("unexpected eof in parameter list"), 0);
+     if (verbose)
+	  file_error(_("unexpected eof in parameter list"), 0);
 }
 
 void
@@ -842,13 +878,17 @@ func_body()
 	       expression();
 	       break;
 	  case STATIC:
+	       ident.storage = StaticStorage;
+	       parse_variable_declaration(&ident, 0);
+	       break;
 	  case TYPE:
+	  case STRUCT:
 	       ident.storage = AutoStorage;
-	       parse_variable_declaration(&ident);
+	       parse_variable_declaration(&ident, 0);
 	       break;
 	  case EXTERN:
 	       ident.storage = ExplicitExternStorage;
-	       parse_declaration(&ident);
+	       parse_declaration(&ident, 0);
 	       break;
 	  case LBRACE0:
 	  case '{':
@@ -894,8 +934,8 @@ declare(Ident *ident)
 	  return;
      } 
      
-     if ((ident->parmcnt >= 0 && tok.type == ';') ||
-	 (ident->parmcnt < 0 && ident->storage == ExplicitExternStorage)) {
+     if ((ident->parmcnt >= 0 && !(tok.type == LBRACE || tok.type == LBRACE0))
+	 || (ident->parmcnt < 0 && ident->storage == ExplicitExternStorage)) {
 	  /* add_external()?? */
 	  return;
      }
@@ -1015,7 +1055,11 @@ reference(char *name, int line)
      Symbol *sp = add_reference(name, line);
      if (!sp)
 	  return;
-     if (caller && !symbol_in_list(sp, caller->callee))
-	 append_to_list(&caller->callee, sp);
+     if (caller) {
+	  if (!symbol_in_list(caller, sp->caller))
+	       append_to_list(&sp->caller, caller);
+	  if (!symbol_in_list(sp, caller->callee))
+	       append_to_list(&caller->callee, sp);
+     }
 }
 
