@@ -132,7 +132,8 @@ auto_processor(void *data, void *proc_data)
 {
      Symbol *s = data;
      int *level = proc_data;
-     if (s->type == SymIdentifier && s->level == *level) 
+     if (s->type == SymIdentifier && s->storage == AutoStorage
+	 && s->level == *level) 
 	  delete_symbol(s);
      return true;
 }
