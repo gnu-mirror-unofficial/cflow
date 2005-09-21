@@ -48,7 +48,9 @@ TESTSUITE_AT = \
  recurse.at\
  attr.at\
  awrapper.at\
- pwrapper.at
+ pwrapper.at\
+ fdecl.at\
+ include.at
 
 TESTSUITE = $(srcdir)/testsuite
 
