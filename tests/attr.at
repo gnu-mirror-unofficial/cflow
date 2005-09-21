@@ -33,8 +33,6 @@ main()
 [main() <main () at prog:4>:
     foo()],
 [prog:2: expected `;' near `__attribute__'
-cflow:prog:4: main/0 redefined
-cflow:prog:2: this is the place of previous definition
 ])
 
 ])
