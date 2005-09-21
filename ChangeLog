@@ -1,3 +1,30 @@
+2005-09-21  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/c.l (types): Add "restrict".
+	* src/cflow.rc: Define __const and __restrict as 'type'
+	* src/main.c (excluded_symbols,included_symbols): Removed
+	(symbol_map): New variable, instead of the previous two. All
+	references updated.
+	(symbol_override): Minor fix.
+	(parse_opt): Allow to use +,- and ^ in any part of the argument
+	string.
+	(included_char): Removed
+	* src/parser.c (parse_variable_declaration)
+	(parse_variable_declaration): Take an
+	extra argument indicating whether we are handling function
+	parameters. All uses changed.
+	(parse_variable_declaration,maybe_parm_list): Add error recovery.
+	(func_body): Handle static symbols separately.
+	(declare): Fix condition of declaring a function definition.
+	(reference): Update caller list as well.
+	* src/symbol.c (auto_processor): Delete only auto variables.
+
+	* tests/fdecl.at: New testcase
+	* tests/include.at: New testcase
+	* tests/attr.at: Fix to match new program diagnostics
+	* tests/Makefile.am: Add fdecl.at and include.at
+	* tests/testsuite.at: Likewise
+
 2005-09-19  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* doc/cflow.texi: Updated
