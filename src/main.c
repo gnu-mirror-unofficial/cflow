@@ -38,7 +38,7 @@ static struct argp_option options[] = {
      { "depth", 'd', N_("NUMBER"), 0,
        N_("Set the depth at which the flowgraph is cut off"), GROUP_ID+1 },
      { "include", 'i', N_("SPEC"), 0,
-       N_("Control the number of included symbols. SPEC is a string consisting of characters, specifying what class of symbols to include in the output (see below). If SPEC starts with ^, its meaning is reversed."), GROUP_ID+1 },
+       N_("Control the number of included symbols. SPEC is a string consisting of characters, specifying what class of symbols to include in the output (see below)."), GROUP_ID+1 },
 
 
      { "format", 'f', N_("NAME"), 0,
@@ -57,6 +57,12 @@ static struct argp_option options[] = {
 
      { NULL, 0, NULL, 0,
        N_("Valid SPEC symbols for --include option:"), GROUP_ID+2 },
+     {"  +", 0, NULL, OPTION_DOC|OPTION_NO_TRANS,
+      N_("Include symbols denoted by the following letters (default)"),
+      GROUP_ID+3 },
+     {"  - or ^", 0, NULL, OPTION_DOC|OPTION_NO_TRANS,
+      N_("Exclude symbols denoted by the following letters (default)"),
+      GROUP_ID+3 },
      {"  x", 0, NULL, OPTION_DOC|OPTION_NO_TRANS,
       N_("all data symbols, both external and static"), GROUP_ID+3 },
      {"  _",  0, NULL, OPTION_DOC|OPTION_NO_TRANS,
@@ -162,15 +168,20 @@ int print_as_tree;      /* Print as tree */
 int brief_listing;      /* Produce short listing */
 int reverse_tree;       /* Generate reverse tree */
 int max_depth;          /* The depth at which the flowgraph is cut off */
-char *included_symbols; /* A list of symbols included in the graph.
-			   Consists of the following letters:
-			     x   Include (external and static) data symbols;
-			     _   Include names that begin with an underscore;
-			     s   Include static functions;
-			     t   Include typedefs (for cross-references only);
-			*/
-char *excluded_symbols; /* A list of symbols *not* included in the graph.
-			   Overrides included_symbols */
+
+#define SM_FUNCTIONS   0x0001
+#define SM_DATA        0x0002
+#define SM_STATIC      0x0004
+#define SM_UNDERSCORE  0x0008
+#define SM_TYPEDEF     0x0010
+
+#define CHAR_TO_SM(c) ((c)=='x' ? SM_DATA : \
+                        (c)=='_' ? SM_UNDERSCORE : \
+                         (c)=='s' ? SM_STATIC : \
+                          (c)=='t' ? SM_TYPEDEF : 0)
+#define SYMBOL_INCLUDE(c) (symbol_map |= CHAR_TO_SM(c))
+#define SYMBOL_EXCLUDE(c) (symbol_map &= ~CHAR_TO_SM(c))
+int symbol_map;  /* A bitmap of symbols included in the graph. */
 
 char *level_indent[] = { NULL, NULL };
 char *level_end[] = { "", "" };
@@ -225,9 +236,7 @@ symbol_override(const char *str)
      char *name;
      Symbol *sp;
      
-     ptr = str;
-     while (*ptr && *ptr != ':') 
-	  ptr++;
+     ptr = strchr(str, ':');
      if (*ptr == ':') {
 	  type = find_option_type(symbol_optype, ptr+1, 0);
 	  if (type == 0) {
@@ -511,17 +520,28 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	  set_level_indent(arg);
 	  break;
      case 'i':
-	  if (arg[0] == '^') {
-	       excluded_symbols = xrealloc(excluded_symbols,
-					   strlen(excluded_symbols) +
-					   strlen(arg+1) + 1);
-	       strcat(excluded_symbols, arg+1);
-	  } else {
-	       included_symbols = xrealloc(included_symbols,
-					   strlen(included_symbols) +
-					   strlen(arg) + 1);
-	       strcat(included_symbols, arg);
-	  }
+	  num = 1;
+	  for (; *arg; arg++) 
+	       switch (*arg) {
+	       case '-':
+	       case '^':
+		    num = 0;
+		    break;
+	       case '+':
+		    num = 1;
+		    break;
+	       case 'x':
+	       case '_':
+	       case 's':
+	       case 't':
+		    if (num)
+			 SYMBOL_INCLUDE(*arg);
+		    else
+			 SYMBOL_EXCLUDE(*arg);
+		    break;
+	       default:
+		    argp_error(state, _("Unknown symbol class: %c"), *arg);
+	       }
 	  break;
      case 'l':
 	  print_levels = 1;
@@ -584,42 +604,36 @@ static struct argp argp = {
 };
 
 int
-included_char(int c)
-{
-     return strchr (included_symbols, c)
-	      && !strchr (excluded_symbols, c);
-}
-
-int
 globals_only()
 {
-     return !included_char('s');
+     return !(symbol_map & SM_STATIC);
 }
 
 int
 include_symbol(Symbol *sym)
 {
      int type = 0;
-
-     if (!sym || sym->type == SymToken)
+     
+     if (!sym)
 	  return 0;
      
-     if (sym->name[0] == '_' && !included_char('_'))
-	  return 0;
-
      if (sym->type == SymIdentifier) {
-	  if (sym->arity == -1)
-	       type = 'x';
-	  else if (sym->storage == StaticStorage)
-	       type = 's';
-     } else if (sym->type == SymToken
-		&& sym->token_type == TYPE
-		&& sym->source)
-	  type = 't';
-     
-     if (type == 0)
-	  return 1;
-     return included_char(type);
+	  if (sym->name[0] == '_' && !(symbol_map & SM_UNDERSCORE))
+	       return 0;
+
+	  if (sym->storage == StaticStorage)
+	       type |= SM_STATIC;
+	  if (sym->arity == -1 && sym->storage != AutoStorage)
+	       type |= SM_DATA;
+	  else if (sym->arity >= 0)
+	       type |= SM_FUNCTIONS;
+     } else if (sym->type == SymToken) {
+	  if (sym->token_type == TYPE && sym->source)
+	       type |= SM_TYPEDEF;
+	  else
+	       return 0;
+     }
+     return (symbol_map & type) == type;
 }
 
 void
@@ -656,8 +670,7 @@ main(int argc, char **argv)
      register_output("gnu", gnu_output_handler, NULL);
      register_output("posix", posix_output_handler, NULL);
 
-     included_symbols = xstrdup("s");
-     excluded_symbols = xstrdup("");
+     symbol_map = SM_FUNCTIONS|SM_STATIC;
 
      if (getenv ("POSIXLY_CORRECT")) {
 	  if (select_output_driver("posix"))
