@@ -56,5 +56,7 @@ m4_include([recurse.at])
 m4_include([attr.at])
 m4_include([awrapper.at])
 m4_include([pwrapper.at])
+m4_include([fdecl.at])
+m4_include([include.at])
 
 # End of testsuite.at
