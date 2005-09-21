@@ -178,6 +178,7 @@ static char *types[] = {
     "int",
     "long",
     "register",
+    "restrict",
     "short",
     "signed",
     "unsigned",
