@@ -110,7 +110,7 @@ struct symbol {
 #define PRINT_TREE 0x02
 
 #ifndef CFLOW_PREPROC
-# define CFLOW_PREPROC "cc -E"
+# define CFLOW_PREPROC "/usr/bin/cpp"
 #endif
 
 #define MAX_OUTPUT_DRIVERS 8
