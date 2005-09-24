@@ -7,59 +7,55 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* Create a full file name from PREFIX and NAME.
-   If PREFIX is NULL, return a copy of NAME. */
-char *
-mkfullname (char *prefix, char *name)
-{
-  if (prefix)
-    {
-      char *p = malloc (strlen (prefix) + strlen (name) + 2);
-      return strcat (strcat (strcpy (p, prefix), "/"), name);
-    }
-  return strdup (name);
-}
-
-/* Return true if file PREFIX/NAME is a directory.
-   PREFIX can be NULL. */
-int
-isdir (char *prefix, char *name)
+/* Return true if file NAME is a directory. */
+static int
+isdir (char *name)
 {
   struct stat st;
-  char *fullname = mkfullname (prefix, name);
   
-  if (stat (fullname, &st))
+  if (stat (name, &st))
     {
-      perror (fullname);
-      free (fullname);
+      perror (name);
       return 0;
     }
-  free (fullname);
   return S_ISDIR (st.st_mode);
 }
+
+static char *ignored_names[] = { ".", "..", NULL };
 
 /* Return true if NAME should not be recursed into */
 int
 ignorent (char *name)
 {
-  return strcmp (name, ".") == 0
-    || strcmp (name, "..") == 0;
+  char **p;
+  for (p = ignored_names; *p; p++)
+    if (strcmp (name, *p) == 0)
+      return 1;
+  return 0;
 }
+
+int max_level = -1;
 
 /* Print contents of the directory PREFIX/NAME.
    Prefix each output line with LEVEL spaces. */
 void
-printdir (int level, char *prefix, char *name)
+printdir (int level, char *name)
 {
   DIR *dir;
   struct dirent *ent;
-  char *fullname = mkfullname (prefix, name);
-  
-  dir = opendir (fullname);
+  char cwd[512];
+
+  if (!getcwd(cwd, sizeof cwd)) 
+    {
+      perror ("cannot save cwd\n");
+      _exit (1);
+    }
+  chdir (name);
+  dir = opendir (".");
   if (!dir)
     {
-      perror (fullname);
-      exit (1);
+      perror (name);
+      _exit (1);
     }
   
   while ((ent = readdir (dir)))
@@ -67,16 +63,22 @@ printdir (int level, char *prefix, char *name)
       printf ("%*.*s%s", level, level, "", ent->d_name);
       if (ignorent (ent->d_name))
 	printf ("\n");
-      else if (isdir (fullname, ent->d_name))
+      else if (isdir (ent->d_name))
 	{
-	  printf (" contains:\n");
-	  printdir (level + 1, fullname, ent->d_name);
+	  printf ("/");
+	  if (level + 1 == max_level)
+	    putchar ('\n');
+	  else
+	    {
+	      printf (" contains:\n");
+	      printdir (level + 1, ent->d_name);
+	    }
 	}
       else
 	printf ("\n");
     }
-  free (fullname);
   closedir (dir);
+  chdir (cwd);
 }
 
 int
@@ -84,12 +86,20 @@ main (int argc, char **argv)
 {
   if (argc < 2)
     {
-      fprintf (stderr, "usage: d DIR [DIR...]\n");
+      fprintf (stderr, "usage: d [-MAX] DIR [DIR...]\n");
       return 1;
     }
 
+  if (argv[1][0] == '-')
+    {
+      if (!(argv[1][1] == '-' && argv[1][2] == 0))
+	max_level = atoi (&argv[1][1]);
+      --argc;
+      ++argv;
+    }
+  
   while (--argc)
-    printdir (0, NULL, *++argv);
+    printdir (0, *++argv);
   
   return 1;
 }
