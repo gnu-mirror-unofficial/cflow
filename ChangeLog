@@ -1,3 +1,11 @@
+2005-09-24  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* doc/cflow.texi: Updated
+	* doc/d.c: Rewritten to better suite sample purposes.
+	* src/Makefile.am (chart.cflow): Modified rule
+	* src/cflow.h (CFLOW_PREPROC): Changed default preprocessor to
+	/usr/bin/cpp.
+
 2005-09-21  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/c.l (types): Add "restrict".
