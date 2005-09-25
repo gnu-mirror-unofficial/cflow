@@ -30,6 +30,7 @@ static char doc[] = N_("generate a program flowgraph");
 #define OPT_DEBUG         258
 #define OPT_PREPROCESS    259
 #define OPT_NO_PREPROCESS 260
+#define OPT_EMACS         261
 
 static struct argp_option options[] = {
 #define GROUP_ID 0
@@ -112,6 +113,8 @@ static struct argp_option options[] = {
        N_("Draw ASCII art tree"), GROUP_ID+1 },
      { "brief", 'b', N_("BOOL"), OPTION_ARG_OPTIONAL,
        N_("Brief output"), GROUP_ID+1 },
+     { "emacs", OPT_EMACS, NULL, 0,
+       N_("Additionally format output for use with GNU Emacs"), GROUP_ID+1 },
 #undef GROUP_ID
 #define GROUP_ID 30                 
      { NULL, 0, NULL, 0,
@@ -168,6 +171,7 @@ int print_as_tree;      /* Print as tree */
 int brief_listing;      /* Produce short listing */
 int reverse_tree;       /* Generate reverse tree */
 int max_depth;          /* The depth at which the flowgraph is cut off */
+int emacs_option;       /* Format and check for use with Emacs cflow-mode */ 
 
 #define SM_FUNCTIONS   0x0001
 #define SM_DATA        0x0002
@@ -512,6 +516,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
      case OPT_DEFINES:
 	  record_defines = 1;
 	  break;
+     case OPT_EMACS:
+	  emacs_option = 1;
+	  break;
      case 'f':
 	  if (select_output_driver(arg))
 	       argp_error(state, _("%s: No such output driver"), optarg);
@@ -675,7 +682,7 @@ main(int argc, char **argv)
 
      if (getenv ("POSIXLY_CORRECT")) {
 	  if (select_output_driver("posix"))
-	       error(0, _("%s: No such output driver"), "posix");
+	       error(1, 0, _("%s: No such output driver"), "posix");
 	  output_init();
      }
      
