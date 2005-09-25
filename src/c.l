@@ -312,10 +312,24 @@ pp_close(FILE *fp)
 int
 yywrap()
 {
+     if (!yyin)
+	  return 1;
      if (preprocess_option)
 	  pp_close(yyin);
+     else
+	  fclose(yyin);
+     yyin = NULL;
+#ifdef FLEX_SCANNER
+     yy_delete_buffer(yy_current_buffer);
+#endif
      delete_statics();
      return 1;
+}
+
+int
+get_token()
+{
+     return yyin ? yylex() : 0;
 }
 
 int
