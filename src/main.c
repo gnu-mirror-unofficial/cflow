@@ -61,7 +61,7 @@ static struct argp_option options[] = {
       N_("Include symbols denoted by the following letters (default)"),
       GROUP_ID+3 },
      {"  - or ^", 0, NULL, OPTION_DOC|OPTION_NO_TRANS,
-      N_("Exclude symbols denoted by the following letters (default)"),
+      N_("Exclude symbols denoted by the following letters"),
       GROUP_ID+3 },
      {"  x", 0, NULL, OPTION_DOC|OPTION_NO_TRANS,
       N_("all data symbols, both external and static"), GROUP_ID+3 },
@@ -109,7 +109,7 @@ static struct argp_option options[] = {
      { "level-indent", OPT_LEVEL_INDENT, "STRING", 0,
        N_("Use STRING when indenting to each new level"), GROUP_ID+1 },
      { "tree", 'T', NULL, 0,
-       N_("Draw tree"), GROUP_ID+1 },
+       N_("Draw ASCII art tree"), GROUP_ID+1 },
      { "brief", 'b', N_("BOOL"), OPTION_ARG_OPTIONAL,
        N_("Brief output"), GROUP_ID+1 },
 #undef GROUP_ID
@@ -326,6 +326,7 @@ number(const char **str_ptr, int base, int count)
 
 static struct option_type level_indent_optype[] = {
      { "begin", 1, LEVEL_BEGIN },
+     { "start", 1, LEVEL_BEGIN },
      { "0", 1, LEVEL_INDENT0 },
      { "1", 1, LEVEL_INDENT1 },
      { "end0", 4, LEVEL_END0 },
