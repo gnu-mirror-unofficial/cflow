@@ -40,7 +40,8 @@ errf (char *fmt, ...)
   va_end (ap);
 }
 
-/* Print error message followed by errno status and exit with error code. */
+/* Print error message followed by errno status and exit
+   with error code. */
 static void
 perrf (char *fmt, ...)
 {
@@ -71,8 +72,8 @@ isword (unsigned char c)
       if ((c) == '\n') \
 	lcount++;
 
-/* Get next word from the input stream. Return 0 on end of file or error
-   condition. Return 1 otherwise. */
+/* Get next word from the input stream. Return 0 on end
+   of file or error condition. Return 1 otherwise. */
 int
 getword (FILE *fp)
 {
