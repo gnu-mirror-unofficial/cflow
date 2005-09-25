@@ -1,5 +1,15 @@
 2005-09-25  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* doc/cflow.texi: Finished! Some @FIXMEs left, though.
+	* elisp/cflow-mode.el (cflow-find-function): Change binding to
+	@key{s}, for compatibility with po-mode.
+	* src/Makefile.am (CFLOW_FLAGS): Use --brief
+	* src/cflow.h (emacs_option): New variable
+	* src/gnu.c: Handle new --emacs option.
+	* src/main.c: Likewise.
+	* src/posix.c: Likewise.
+	* src/output.c (newline): Remove static qualifier
+
 	* doc/foo.c: New sample source
 	* doc/Makefile.am: Add foo.c
 	* doc/cflow.texi: Updated
