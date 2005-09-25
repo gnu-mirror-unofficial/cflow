@@ -30,7 +30,7 @@
 ;; any directory in your Emacs load-path.
 
 ;; Customization:
-;;  To your .emacs or site-start add:
+;;  To your .emacs or site-start.el add:
 ;;  (autoload 'cflow-mode "cflow-mode")
 ;;  (setq auto-mode-alist (append auto-mode-alist
 ;;                                '(("\\.cflow$" . cflow-mode))))
@@ -51,7 +51,7 @@
 (defvar cflow-mode-map (make-sparse-keymap)
   "Keymap used in Cflow mode.")
 
-(define-key cflow-mode-map "f" 'cflow-find-function)
+(define-key cflow-mode-map "s" 'cflow-find-function)
 (define-key cflow-mode-map "r" 'cflow-recursion-root)
 (define-key cflow-mode-map "R" 'cflow-recursion-next)
 (define-key cflow-mode-map "x" 'cflow-goto-expand)
