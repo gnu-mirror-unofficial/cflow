@@ -40,10 +40,11 @@ AM_CPPFLAGS=-DLOCALEDIR=\"$(localedir)\"
 AM_LFLAGS=-dvp
 EXTRA_DIST=cflow.rc
 
-FLOWCHART_FILES=$(cflow_SOURCES)
-
-chart.cflow: cflow $(FLOWCHART_FILES) cflow.rc Makefile
+CFLOW_FLAGS=-i^s
+cflow_CFLOW_INPUT=$(cflow_OBJECTS:.$(OBJEXT)=.c)
+cflow.cflow: $(cflow_CFLOW_INPUT) cflow.rc Makefile
 	CFLOWRC=$(top_srcdir)/src/cflow.rc \
-	 cflow -o$@ -i^s $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+	 cflow -o$@ $(CFLOW_FLAGS) $(DEFS) \
+                    $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	            $(CPPFLAGS) \
-         `echo $(FLOWCHART_FILES)|sed 's/[^ ]*\.h //g;s/\([ ^]*\)\.[ly] /\1.c /g'`
+         $(cflow_CFLOW_INPUT)
