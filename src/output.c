@@ -107,7 +107,7 @@ output_init()
 				         output_driver[driver_index].handler_data);
 }
 
-static void
+void
 newline()
 {
      output_driver[driver_index].handler(cflow_output_newline,
