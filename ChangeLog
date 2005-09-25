@@ -1,5 +1,9 @@
 2005-09-25  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* README: Updated
+	* TODO: Updated
+	* doc/cflow.txt: Removed
+
 	* doc/cflow.texi: Finished! Some @FIXMEs left, though.
 	* elisp/cflow-mode.el (cflow-find-function): Change binding to
 	@key{s}, for compatibility with po-mode.
