@@ -29,7 +29,7 @@ typedef struct {
 
 void parse_declaration(Ident*, int);
 void parse_variable_declaration(Ident*, int);
-void parse_function_declaration(Ident*);
+void parse_function_declaration(Ident*, int);
 void parse_dcl(Ident*);
 void parse_knr_dcl(Ident*);
 void parse_typedef();
@@ -184,7 +184,7 @@ nexttoken()
      int type;
      
      if (curs == tos) {
-	  type = yylex();
+	  type = get_token();
 	  tokpush(type, line_num, yylval.str);
      }
      tok = token_stack[curs];
@@ -302,6 +302,7 @@ yyparse()
 	       break;
 	  case STATIC:
 	       identifier.storage = StaticStorage;
+	       nexttoken();
 	       /* FALLTHRU */
 	  default:
 	       parse_declaration(&identifier, 0);
@@ -339,7 +340,7 @@ void
 parse_declaration(Ident *ident, int parm)
 {
      if (is_function()) 
-	  parse_function_declaration(ident);
+	  parse_function_declaration(ident, parm);
      else
 	  parse_variable_declaration(ident, parm);
 }
@@ -407,7 +408,7 @@ expression()
 }
 
 void
-parse_function_declaration(Ident *ident)
+parse_function_declaration(Ident *ident, int parm)
 {
      ident->type_end = -1;
      parse_knr_dcl(ident);
@@ -415,6 +416,10 @@ parse_function_declaration(Ident *ident)
 
  restart:
      switch (tok.type) {
+     case ')':
+	  if (parm)
+	       break;
+	  /*FALLTHROUGH*/
      default:
 	  if (error_recovery) 
 	       nexttoken();
@@ -879,6 +884,7 @@ func_body()
 	       break;
 	  case STATIC:
 	       ident.storage = StaticStorage;
+	       nexttoken();
 	       parse_variable_declaration(&ident, 0);
 	       break;
 	  case TYPE:
