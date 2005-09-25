@@ -136,6 +136,7 @@ extern int reverse_tree;
 extern int out_line;
 extern char *start_name;
 extern int max_depth;
+extern int emacs_option;
 extern int debug;
 extern int preprocess_option;
 
