@@ -58,5 +58,7 @@ m4_include([awrapper.at])
 m4_include([pwrapper.at])
 m4_include([fdecl.at])
 m4_include([include.at])
+m4_include([ssblock.at])
+m4_include([funcarg.at])
 
 # End of testsuite.at

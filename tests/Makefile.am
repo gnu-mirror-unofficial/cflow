@@ -50,7 +50,9 @@ TESTSUITE_AT = \
  awrapper.at\
  pwrapper.at\
  fdecl.at\
- include.at
+ include.at\
+ ssblock.at\
+ funcarg.at
 
 TESTSUITE = $(srcdir)/testsuite
 
