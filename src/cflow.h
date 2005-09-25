@@ -155,6 +155,7 @@ int collect_symbols(Symbol ***, int (*sel)());
 Consptr append_to_list(Consptr *, void *);
 int symbol_in_list(Symbol *sym, Consptr list);
 
+int get_token(void);
 int source(char *name);
 void init_lex(int debug_level);
 void set_preprocessor(const char *arg);
