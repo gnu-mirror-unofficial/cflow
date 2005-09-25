@@ -1,3 +1,13 @@
+2005-09-25  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* doc/foo.c: New sample source
+	* doc/Makefile.am: Add foo.c
+	* doc/cflow.texi: Updated
+	* doc/wc.c: Minor formatting changes
+	* src/Makefile.am (chart.cflow): Renamed to cflow.cflow and
+	rewritten in accordance with the cflow manual guidelines.
+	* src/main.c: Minor changes.
+
 2005-09-24  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* doc/cflow.texi: Updated

@@ -75,8 +75,8 @@ documents GNU cflow Version @value{VERSION}.
 * Recursive Calls::     Handling Recursive Calls.
 * Symbols::             Controlling Symbol Input and Output.
 * Preprocessing::       Source Files Can Be Preprocessed Before Analyzing.
+* ASCII Tree::          Using ASCII Art to Produce Flow Graphs.
 * Cross-References::    Cross-Reference Output.
-* ASCII Tree::          Using ASCII Art to Produce Flow Trees.
 * Configuration::       Configuration Files and Variables.
 * Makefiles::           Using @command{cflow} in Makefiles.
 * Options::             Complete Listing of @command{cflow} Options.
@@ -86,6 +86,7 @@ documents GNU cflow Version @value{VERSION}.
 
 Appendices
 
+* Source of wc command::
 * Copying This Manual:: The GNU Free Documentation License.
 * Concept Index::       Index of Concepts.
 
@@ -163,6 +164,7 @@ main() <int main (int argc,char **argv) at whoami.c:26>:
 @end smallexample
 
 @cindex GNU Output Format described
+@anchor{GNU Output Format}
      This is a direct tree showing @dfn{caller---callee} dependencies
 in the input file. Each line starts with a function name, followed by
 a pair of parentheses to indicate that it is a function. If this
@@ -188,6 +190,7 @@ semicolon indicates that @code{main} invokes other functions.
 @cindex start symbol
 @cindex @option{--main} command line option introduced
 @cindex @option{-m} command line option introduced
+@anchor{start symbol}
      By default, @command{cflow} starts outputting direct tree from
 the function called @code{main}. It is convenient when analyzing a set
 of input files comprising an entire @code{C} program. However, there
@@ -265,6 +268,7 @@ and @code{main}. First of them is, in turn, also called directly by
 
 @cindex @option{--brief} command line option introduced
 @cindex @option{-b} command line option introduced
+@anchor{--brief}
      The first thing that draws attention in the above output is that
 the subtree starting with @code{who_am_i} function is repeated several
 times. This is @dfn{verbose} output. To make it brief, run
@@ -299,9 +303,10 @@ expanded subtree can be found.
 
 @cindex @option{--number} command line option introduced
 @cindex @option{-n} command line option introduced
+@anchor{--number}
      If the output tree is large it can be tedious to find out the
 required line number (unless you use @dfn{Emacs cflow-mode},
-@FIXME-pxref{cflow-mode}). For such cases a special option
+@pxref{Emacs}). For such cases a special option
 @option{--number} (@option{-n}) is provided, which makes
 @command{cflow} begin each line of the output with a @dfn{reference
 number}, that is ordinal number of this line in the output. With
@@ -333,13 +338,16 @@ take effect for both direct and reverse flow trees.
 @node Output Formats, Recursive Calls, Direct and Reverse, Top
 @chapter Various Output Formats.
 @cindex POSIX Output described
+@anchor{POSIX Output Format}
      The output format described in previous chapters is called
 @dfn{GNU Output}. Beside this output format, @command{cflow} is also
 able to produce output in format defined in POSIX standard
-(@FIXME-pxref{POSIX standard}). In this format, each line of output
+(@url{http://www.opengroup.org/onlinepubs/009695399/utilities/cflow.html,The
+Open Group Base Specifications Issue 6: cflow utility}).
+In this format, each line of output
 begins with a @dfn{reference number}, i.e. the ordinal number of this
 line in the output, followed by indentation of fixed amount of columns
-per level (@FIXME-pxref{Setting indentation}). Following this are the
+per level (@pxref{setting indentation}). Following this are the
 name of the function, a colon and the function definition, if
 available. The function definition is followed by the location of the
 definition (file name and line number). Both definition and location
@@ -583,6 +591,7 @@ chapter we will concentrate on the first method.
 
 @cindex @option{-s} introduced
 @cindex @option{--symbol} introduced
+@anchor{--symbol}
      Command line option @option{--symbol} (@option{-s}) declares a
 type of the symbol. Its argument consists of two strings separated by
 a colon:
@@ -635,13 +644,13 @@ will confuse @command{cflow}. To correctly process it, use option
 @option{--symbol __attribute__:wrapper}.
 
      For the complete list of @option{--symbol} supported types,
-@FIXME-xref{symbol types}.
+@xref{symbol types}.
 
      Notice, finally, that when using @dfn{preprocess mode}, there is
 no need to use @option{--symbol}, since in this mode @command{cflow}
 is able to correctly determine all symbol types by itself.
 
-@node Preprocessing, Cross-References, Symbols, Top
+@node Preprocessing, ASCII Tree, Symbols, Top
 @chapter Running Preprocessor
 @cindex Preprocess mode introduced
 @cindex Running preprocessor
@@ -699,7 +708,151 @@ to run another preprocessor command, specify it as an argument to the
 option, after an equal sign. For example, @command{cflow --cpp='cc
 -E'} will run a @code{C} compiler as a preprocessor.
 
-@node Cross-References, ASCII Tree, Preprocessing, Top
+@node ASCII Tree, Cross-References, Preprocessing, Top
+@chapter Using ASCII Art to Produce Flow Graphs.
+@cindex @option{--level-indent} option introduced.
+@cindex output indentation level, configuring
+@cindex configuring output indentation level
+@anchor{setting indentation}
+     You can configure the exact appearance of the @command{cflow}
+output flow graph using @option{--level-indent} option. The simplest
+use for this option is to change the default indentation per nesting
+level. To do so, give the option a numeric argument specifying the
+number of columns to indent for each nesting level. For example, the
+following command sets the indentation level to 2, which is half of
+the default:
+
+@smallexample
+cflow --level-indent 2 d.c
+@end smallexample
+
+@noindent
+It can be used, for instance, to keep the graph within the page
+margins.
+
+     However, @option{--level-indent} can do much more than that. Each
+line in the flow graph consists of the following graphical elements: a
+@dfn{start marker}, an @dfn{end marker}, with several @dfn{indent fills}
+between them. By default, both start and end markers are empty, and
+each indent fill contains four spaces. 
+
+     If the argument to @option{--level-indent} option has the form
+@var{element}=@var{string}, it specifies a character string that
+should be output in place of a given graph element. The element names
+are:
+
+@cindex @option{--level-indent} keywords
+@vindex start, @option{--level-indent} keyword
+@vindex 0, @option{--level-indent} keyword
+@vindex 1, @option{--level-indent} keyword
+@vindex end0, @option{--level-indent} keyword
+@vindex end1, @option{--level-indent} keyword
+@multitable @columnfractions 0.2 0.8
+@item start @tab Start marker
+@item 0     @tab Indent fill 0
+@item 1     @tab Indent fill 1
+@item end0  @tab End marker 0
+@item end1  @tab End marker 1
+@end multitable
+
+     Why are there two kinds of indent fills and end markers? Remember
+that the flow graph represents a call tree, so it contains terminal
+nodes (@dfn{leaves}), i.e. the calls that end a function, and
+non-terminal nodes (the calls followed by another ones on the same
+nesting level). The @dfn{end marker 0} is for non-terminal nodes, and
+@dfn{end marker 1} is for terminal nodes.
+
+     As for indent fills, @dfn{indent fill 1} is used to represent
+graph edge, whereas @dfn{fill 0} is used to keep the output properly
+aligned.
+
+     To demonstrate this, let's consider following sample program:
+
+@smallexample
+@group
+@verbatiminclude foo.c
+@end group
+@end smallexample
+
+@noindent
+Now, let's represent line elements by the following strings:
+
+@multitable @columnfractions 0.2 0.8
+@item start @tab @samp{::}
+@item 0     @tab @samp{  } (two spaces)
+@item 1     @tab @samp{| } (a vertical bar and a space)
+@item end0  @tab @samp{+-}
+@item end1  @tab @samp{\-}
+@end multitable
+
+@cindex @option{--level-indent} string syntax
+     The corresponding command line will be: @code{cflow --level
+begin=:: --level '0=  ' --level '1=| ' --level end0='+-' --level
+end1='\\-' foo.c}. Notice escaping the backslash characters in
+@code{end1}: generally speaking, @var{string} in
+@option{--level-option} can contain usual @code{C} escape sequences,
+so the backslash character itself must be escaped. Another shortcut,
+allowed in @var{string} is the notation @code{@var{C}x@var{N}}, where
+@var{C} is any single character and @var{N} is a decimal number. This
+notation means ``@i{repeat character @var{C} @var{N}
+times}''. However, character @samp{x} looses its special meaning if
+used at the beginning of the string.
+
+     This command will produce the following output:
+
+@smallexample
+@group
+::+-main() <int main () at foo.c:3>:
+::  +-f() <int f () at foo.c:11>:
+::  | \-h()
+::  \-g()
+@end group
+@end smallexample
+
+@cindex @option{--tree} introduced
+@cindex @option{-T} introduced
+     Thus, we obtained an @dfn{ASCII art} representation of the call
+tree. GNU @command{cflow} provides a special option @option{--tree}
+(@option{-T}), which is a shortcut for @code{--level '0=  ' --level
+'1=| ' --level end0='+-' --level end1='\\-'}. Here is an example of
+tree produced with this option. The source file @file{wc.c} is a
+simple implementation of UNIX @command{wc} command, @xref{Source of wc command}. 
+
+@anchor{ascii tree}
+@smallexample
+@group
+$ cflow --tree --brief --cpp wc.c
++-main() <int main (int argc,char **argv) at wc.c:127>
+  +-errf() <void errf (char *fmt,...) at wc.c:34>
+  | \-error_print()
+  |     <void error_print (int perr,char *fmt,va_list ap) at wc.c:22>
+  |   +-vfprintf()
+  |   +-perror()
+  |   +-fprintf()
+  |   \-exit()
+  +-counter() <void counter (char *file) at wc.c:108>
+  | +-fopen()
+  | +-perrf() <void perrf (char *fmt,...) at wc.c:46>
+  | | \-error_print()
+  | |    <void error_print (int perr,char *fmt,va_list ap)
+  | |    at wc.c:22> [see 3]
+  | +-getword() <int getword (FILE *fp) at wc.c:78>
+  | | +-feof()
+  | | \-isword() <int isword (unsigned char c) at wc.c:64>
+  | |   \-isalpha()
+  | +-fclose()
+  | \-report()
+  |     <void report (char *file,count_t ccount,
+  |       count_t wcount,count_t lcount) at wc.c:57>
+  |   \-printf()
+  \-report()
+       <void report (char *file,count_t ccount,
+         count_t wcount,count_t lcount) at wc.c:57> [see 17]
+@end group
+@end smallexample
+ 
+
+@node Cross-References, Configuration, ASCII Tree, Top
 @chapter Cross-Reference Output.
 @cindex Cross-References introduced
 @cindex @option{--xref} option introduced
@@ -728,41 +881,373 @@ character classes discussed in chapter ``Controlling Symbol Types''
 (@pxref{Symbols}), an additional symbol class @code{t} controls
 listing of type names defined by @code{typedef} keyword.
 
-@node ASCII Tree, Configuration, Cross-References, Top
-@chapter Using ASCII Art to Produce Flow Trees.
-@UNREVISED{}
-@FIXME{Printing ASCII art tree. Controlling its appearance using
---level-indent option.}
-
-@node Configuration, Makefiles, ASCII Tree, Top
+@node Configuration, Makefiles, Cross-References, Top
 @chapter Configuration Files and Variables.
 @UNREVISED{}
-@FIXME{Configuration file. Env. variables CFLOWRC and CFLOW_OPTIONS.}
+     As shown in the previous chapters, GNU @command{cflow} is highly
+configurable. Different command line options have different effects,
+as specifying new operation modes or altering some aspects of the
+output. You will likely use some options frequently, while you will
+use others from time to time, or not at all (@xref{Options}, for a
+full list of options).
+
+@vindex CFLOW_OPTIONS
+@cindex @file{.profile}
+     The @env{CFLOW_OPTIONS} environment variable specifies default
+options to be placed in front of any explicit options. For example,
+if you set @code{CFLOW_OPTIONS="--format=posix --cpp"} in your
+@file{.profile}, @command{cflow} will behave as if the two options
+@option{--format=posix} and @option{--cpp} had been specified before
+any explicit options.
+
+@cindex Configuration file
+@vindex CFLOWRC
+@cindex @file{.cflowrc}
+     There is also another possibility to specify your default
+options. After incorporating eventual content of @env{CFLOW_OPTIONS}
+variable, @command{cflow} checks the value of the environment variable
+@env{CFLOWRC}. This value, if not empty, specifies the name of
+a @dfn{configuration file} to read. If @env{CFLOWRC} is not defined or
+is empty, the program attempts to read file @file{.cflowrc} in the
+user's home directory. It is not an error if any of these
+files does not exit. However, if the file does exist but cannot be
+processed, @command{cflow} will issue an explicit error message.
+
+@cindex Configuration file format
+     The configuration file is read line by line. Empty lines and
+lines beginning with usual @command{shell} comment character
+(@samp{#}) are ignored. Otherwise, the line is split into @dfn{words},
+the same way @command{shell} does, and the resulting words are
+placed in the command line after any options taken from
+@env{CFLOW_OPTIONS} variable, but before any explicit options.
+
+     Pay attention when using such options as @option{-D} in the
+configuration file. The value of @option{-D} option will be added to
+the preprocessor command line and will be processed by the shell, so
+be careful to properly quote its argument. The rule of thumb is:
+``@i{use the same quoting you would have used in the shell command line}''.
+For example, to run @command{cc -E} as a preprocessor, you can use the
+following configuration file:
+
+@smallexample
+@group
+--symbol __const:type
+--symbol __restrict:type
+--cpp='cc -E'
+-D__extension__=
+-D__attribute__\\\(c\\\)=
+-D__asm__\\\(c\\\)=
+@end group
+@end smallexample
 
 @node Makefiles, Options, Configuration, Top
 @chapter Using @command{cflow} in Makefiles.
-@UNREVISED{}
+@cindex @file{Makefile.am}
+     If you wish to use @command{cflow} to analyze your project
+sources, @file{Makefile} or @file{Makefile.am} is the right place to
+do so. In this chapter we will describe a generic rule for
+@file{Makefile.am}. If you do not use @command{automake}, you can
+deduce the rule for plain @file{Makefile} from this one.
+
+     Here is a check list to do to set up a @file{Makefile.am}
+framework:
+
+@itemize @minus
+@item If you use a configuration file, add it to @code{EXTRA_DIST}
+variable.
+
+@item Add variable @code{CFLOW_FLAGS} with any special @command{cflow}
+options you wish to use. The variable can be empty, its main purpose
+is being able to run @command{make CFLOW_FLAGS=@dots{} chart} to
+override the options.
+
+@item For each @var{program} from your @code{@var{dir}_PROGRAMS} list,
+for which you want to generate a flow chart, add the following statements:
 
 @smallexample
-FLOWCHART_FILES=$(@@PACKAGE@@_SOURCES)
-$(PACKAGE).cflow: cflow $(FLOWCHART_FILES) cflow.rc Makefile
-	CFLOWRC=$(top_srcdir)/build-aux/cflow.rc \
-	 cflow -o$@ -i^s $(DEFS) $(DEFAULT_INCLUDES) \
-                    $(INCLUDES) $(AM_CPPFLAGS) \
-	            $(CPPFLAGS) $(FLOWCHART_FILES)
+@group
+@var{program}_CFLOW_INPUT=$(@var{program}_OBJECTS:.$(OBJEXT)=.c)
+@var{program}.cflow: @var{program}_CFLOW_INPUT cflow.rc Makefile
+	CFLOWRC=@var{path-to-your-cflow.rc} \
+	 cflow -o$@@ $(CFLOW_FLAGS) $(DEFS) \
+                    $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+	            $(CPPFLAGS) \
+         $(@var{program}_CFLOW_INPUT)
+@end group
+@end smallexample
+
+@noindent
+Replace @var{program} with program name and
+@var{path-to-your-cflow.rc} with the full file name of your
+@file{cflow.rc} file (if any). If you do not wish to use
+preprocessing, remove from the @command{cflow} command line all
+variables, except @code{CFLOW_FLAGS}.
+
+@item If there are several programs built by this @file{Makefile.am},
+you may wish to add a special rule, allowing to build all flow charts
+with a single command, for example:
+
+@smallexample
+flowcharts: @var{prog1}.cflow @var{prog2}.cflow ...
+@end smallexample
+@end itemize
+
+     As an example, here are the relevant statements which we use in
+@command{cflow} @file{src/Makefile.am}:
+
+@smallexample
+@group
+EXTRA_DIST=cflow.rc
+
+CFLOW_FLAGS=-i^s
+cflow_CFLOW_INPUT=$(cflow_OBJECTS:.$(OBJEXT)=.c)
+cflow.cflow: $(cflow_CFLOW_INPUT) cflow.rc Makefile
+	CFLOWRC=$(top_srcdir)/src/cflow.rc \
+	 cflow -o$@ $(CFLOW_FLAGS) $(DEFS) \
+                    $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+	            $(CPPFLAGS) \
+         $(cflow_CFLOW_INPUT)
+@end group
 @end smallexample
 
 @node Options, Emacs, Makefiles, Top
 @chapter Complete Listing of @command{cflow} Options.
-@UNREVISED{}
-@FIXME{Complete listing of all cflow options.}
+     This chapter contains an alphabetical listing of all
+@command{cflow} command line options, with brief descriptions and cross
+references to more in-depth explanations in the body of the
+manual. Both short and long option forms are listed, so you can use
+this table as a quick reference.
+   
+@table @option
+@cindex @option{-a}
+@cindex @option{--ansi}
+@item -a
+@itemx --ansi
+     Assume input to be written in @acronym{ANSI} @code{C}. Currently
+this means disabling code that parses @dfn{K&R function
+declarations}. This might speed up the processing in some cases.
+
+@cindex @option{-b}
+@cindex @option{--brief}
+@item -b [@var{bool}]
+@item --brief[=@var{bool}]
+     Brief output. @xref{--brief}.
+
+@cindex @option{--cpp}
+@anchor{--cpp}
+@item --cpp[=@var{command}]
+     Run the specified preprocessor command. @xref{Preprocessing}.
+
+@cindex @option{-D}
+@cindex @option{--define}          
+@item -D @var{name}[=@var{defn}]
+@itemx --define=@var{name}[=@var{defn}]
+     Predefine @var{name} as a macro. Implies @option{-cpp}
+(@pxref{Preprocessing}). 
+
+@cindex @option{-d}
+@cindex @option{--depth}
+@item -d @var{number}
+@itemx --depth=@var{number}
+     Set the depth at which the flow graph is cut off. For example,
+@option{--depth=5} means the graph will contain function calls up to
+the 5th nesting level.
+
+@cindex @option{--debug}
+@item --debug[=@var{number}]
+     Set debugging level. Default @var{number} is 1. Use this option
+if you are developing and/or debugging @command{cflow}.
+
+@cindex @option{-f}
+@cindex @option{--format}
+@item -f @var{name}
+@itemx --format=@var{name}
+     Use given output format @var{name}. Valid names are @code{gnu}
+(@pxref{GNU Output Format}) and @code{posix} (@pxref{POSIX Output Format}).
+
+@cindex @option{-?}
+@cindex @option{--help}
+@item -?
+@itemx --help
+     Display usage summary with short explanation for each option.
+
+@cindex @option{-I}
+@cindex @option{--include-dir}     
+@item -I @var{dir}
+@itemx --include-dir=@var{dir}
+     Add the directory @var{dir} to the list of directories to be
+searched for header files. Implies @option{--cpp} (@pxref{Preprocessing}).
+
+@cindex @option{-i}
+@cindex @option{--include}
+@item -i @var{spec}
+@itemx --include=@var{spec}
+     Control the number of included symbols. @var{Spec} is a string
+consisting of characters, specifying what class of symbols to
+include in the output. Valid @var{spec} symbols are:
+
+@table @asis
+@item -
+@itemx ^
+     Exclude symbols denoted by the following letters.
+
+@item +
+     Include symbols denoted by the following letters (default).
+
+@item _
+     Symbols whose names begin with an underscore.
+
+@item s
+     Static symbols.
+
+@item t
+     Typedefs (for cross-references only, @pxref{Cross-References}).
+
+@item x
+     All data symbols, both external and static.
+@end table
+
+For more information, @xref{Symbols}.
+
+@cindex @option{-L}
+@cindex @option{--license}
+@item -L
+@itemx --license
+     Print license and exit.
+
+@cindex @option{-l}     
+@item -l
+     @xref{--print-level}.
+
+@cindex @option{--level-indent}     
+@item --level-indent=@var{string}
+     Use @var{string} when indenting to each new level. @xref{ASCII Tree}.
+
+@cindex @option{-m}
+@cindex @option{--main}     
+@item -m @var{name}
+@item --main=@var{name}
+     Assume main function to be called @var{name}. @xref{start symbol}.
+
+@cindex @option{--no-cpp}
+@cindex @option{--no-preprocess}     
+@item --no-cpp
+@itemx --no-preprocess
+     Do not preprocess the sources. @xref{Preprocessing}.
+
+@cindex @option{-n}
+@cindex @option{--number}     
+@item -n [@var{booll}]
+@itemx --number[=@var{bool}]
+     Print line numbers. @xref{--number}.
+
+@cindex @option{-o}
+@cindex @option{--output}     
+@item -o @var{file}
+@itemx --output=@var{file}
+     Set output file name. Default is @samp{-}, meaning standard output.
+
+@cindex @option{-P}
+@cindex @option{--print}     
+@item -P @var{opt}
+@itemx --print=@var{opt}
+     Set printing option. Valid @var{opt} values are: @samp{xref} (or
+@samp{cross-ref}) and @samp{tree}. Any unambiguous abbreviation of the
+above is also accepted. @FIXME{Is it really needed??}
+
+@cindex @option{-r}
+@cindex @option{--reverse}
+@item -r
+@itemx --reverse
+     Print reverse call tree. @xref{Direct and Reverse}.
+
+@cindex @option{-x}
+@cindex @option{--xref}     
+@item -x
+@itemx --xref
+     Produce cross-reference listing only. @xref{Cross-References}.
+
+@cindex @option{-p}
+@cindex @option{--pushdown}     
+@item -p @var{number}
+@itemx --pushdown=@var{number}
+     Set initial token stack size to @var{number} tokens. Default is
+64. The token stack grows automatically when it needs to accommodate
+more tokens than its current size, so it is seldom necessary to
+use this option. 
+
+@cindex @option{--preprocess}
+@item --preprocess[=@var{command}]
+     Run the specified preprocessor command. @xref{--cpp}.
+
+@cindex @option{-s}
+@cindex @option{--symbol}     
+@item -s @var{sym}:@var{type}
+@itemx --symbol=@var{sym}:@var{type}
+@anchor{symbol types}
+     Define symbol @var{sym} as having type @var{type}. Valid types
+are: @samp{keyword} (or @samp{kw}), @samp{modifier},
+@samp{identifier}, @samp{type}, @samp{wrapper}. Any unambiguous
+abbreviation of the above is also accepted. @xref{--symbol}.
+
+@cindex @option{-S}
+@cindex @option{--use-indentation}
+@item -S [@var{bool}]
+@itemx --use-indentation[=@var{bool}]
+     Use source file indentation as a hint. Currently this means that
+the closing curly brace (@samp{@}}) in the column zero forces
+@command{cflow} to close current function definition. Use this option
+sparingly, it may cause misinterpreation of some sources.
+
+@cindex @option{-U}
+@cindex @option{--undefine}
+@item -U @var{name}
+@itemx --undefine=@var{name}
+     Cancel any previous definition of @var{name}. Implies
+@option{--cpp} (@pxref{Preprocessing}).
+
+@cindex @option{--print-level}
+@cindex @option{-l}
+@item --print-level
+@itemx -l
+@anchor{--print-level}
+     Print nesting level along with the call tree. The level is
+printed after output line number (if @option{--number} or
+@option{--format=posix} is used, enclosed in curly braces.
+
+@cindex @option{-T}
+@cindex @option{--tree}
+@item -T
+@itemx --tree
+     Use ASCII art to print graph. @xref{ASCII Tree}.
+ 
+@cindex @option{--usage}    
+@item --usage
+     Give a short usage message.
+
+@cindex @option{-v}
+@cindex @option{--verbose}     
+@item -v
+@itemx --verbose
+     Verbosely list any errors encountered in the input files. The
+@command{cflow} notion of an error does not match that of @code{C}
+compiler, so by default error messages are turned off. It is useful to
+enable them if you suspect that @command{cflow} misinterprets the
+sources.
+
+@cindex @option{-V}
+@cindex @option{--version}
+@item -V
+@itemx --version
+     Print program version.
+@end table
 
 @node Emacs, Reporting Bugs, Options, Top
 @chapter Using @command{cflow} with GNU Emacs.
 @UNREVISED{}
 @FIXME{Emacs cflow-mode.}
 
-@node Reporting Bugs, Copying This Manual, Emacs, Top
+@node Reporting Bugs, Source of wc command, Emacs, Top
 @chapter How to Report a Bug
 
 Email bug reports to @email{bug-cflow@@gnu.org}.
@@ -777,7 +1262,17 @@ needed is:
 @item Conditions under which the bug appears.
 @end itemize
 
-@node Copying This Manual, Concept Index, Reporting Bugs, Top
+@node Source of wc command, Copying This Manual, Reporting Bugs, Top
+@appendix Source of @command{wc} command
+
+     The source file @file{wc.c}, used to produce sample ASCII tree
+graph (@pxref{ascii tree}).
+
+@smallexample
+@verbatiminclude wc.c
+@end smallexample
+
+@node Copying This Manual, Concept Index, Source of wc command, Top
 @include fdl.texi
 
 @node Concept Index,  , Copying This Manual, Top
