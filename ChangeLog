@@ -1,5 +1,17 @@
 2005-09-25  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* doc/Makefile.am (EXTRA_DIST): Remove cflow.txt
+	* src/c.l (yywrap): Close yyin, and clean up the buffer
+	(get_token): New function. Interface to yylex.
+	* src/cflow.h (get_token): New function
+	* src/parser.c (parse_function_declaration): Take second argument:
+	whether called from parameter declaration. All callers updated.
+	(nexttoken): Use get_token() instead of yylex();
+	(yyparse,func_body): Eat up static qualifier
+	* tests/ssblock.at, tests/funcarg.at: New testcases
+	* tests/Makefile.am: Add ssblock.at and funcarg.at
+	* tests/testsuite.at: Likewise
+
 	* README: Updated
 	* TODO: Updated
 	* doc/cflow.txt: Removed
