@@ -940,6 +940,23 @@ following configuration file:
 @end group
 @end smallexample
 
+@cindex Option cancellation
+     It may sometimes be necessary to cancel the effect of a command
+line option. For example, you might specify @option{--brief} in your
+configuration file, but then occasionally need to obtain verbose
+graph. To make this possible, most of GNU @command{cflow} options take
+an optional argument: a boolean value (@samp{yes} or @samp{no}),
+specifying whether to enable or disable this option. Thus, setting
+@option{--brief=no} cancels the effect of the previous
+@option{--brief} option. @FIXME{This is very inconvenient, since (a)
+this makes it impossible to cluster options, as in @command{cflow
+-nl}; (b) not all options take a boolean value, some of them
+(e.g. @option{--cpp}) have a @option{--no-@var{option}} counterpart,
+and some (e.g. @option{-r}) do not allow cancellation at all. Ideally,
+each @dfn{toggle} option should have a @option{--no-} counterpart. For
+the time being I will have to implement this in @file{main.c}, but in
+the future I plan to introduce this support into @command{argp} module.}
+
 @node Makefiles, Options, Configuration, Top
 @chapter Using @command{cflow} in Makefiles.
 @cindex @file{Makefile.am}
@@ -1057,6 +1074,11 @@ the 5th nesting level.
 @item --debug[=@var{number}]
      Set debugging level. Default @var{number} is 1. Use this option
 if you are developing and/or debugging @command{cflow}.
+
+@cindex @option{--emacs}
+@item --emacs
+     Prepend the output with a line telling Emacs to use @code{cflow}
+mode when visiting this file. Implies @option{--format=gnu}. @xref{--emacs}.
 
 @cindex @option{-f}
 @cindex @option{--format}
@@ -1244,8 +1266,64 @@ sources.
 
 @node Emacs, Reporting Bugs, Options, Top
 @chapter Using @command{cflow} with GNU Emacs.
-@UNREVISED{}
-@FIXME{Emacs cflow-mode.}
+@cindex cflow-mode introduced
+@cindex Emacs
+     GNU @command{cflow} comes with an @command{emacs} module
+providing a major mode for visiting flow charts in GNU Emacs. If you
+have a working @command{emacs} on your machine, the module will be
+installed somewhere in your Emacs @code{load-path}. To load the module
+at startup, add the following lines to your @file{.emacs} or
+@file{site-start.el} file:
+
+@smalllisp
+@group
+(autoload 'cflow-mode "cflow-mode")
+(setq auto-mode-alist (append auto-mode-alist
+                              '(("\\.cflow$" . cflow-mode))))
+@end group
+@end smalllisp
+
+@noindent
+@cindex @option{--emacs} introduced
+@anchor{--emacs}
+The second statement associates @code{cflow-mode} with any file having
+suffix @file{.cflow}. If you prefer to use another suffix for flow
+graph files, use it instead. You can also omit this option, if you do
+not use any special suffix for your graph files. In this case we
+recomment to use @option{--emacs} command line option. This option
+generates the first line telling Emacs to use @code{cflow} major mode
+when visiting the file.
+
+     The buffer opened in @code{cflow} mode is made read-only. The
+following key bindings are defined:
+
+@table @key
+@item E
+     Temporarily exits from @code{cflow} mode and allows you to edit
+the graph file. To resume @code{cflow} mode type @key{M-x} cflow-mode
+@key{RET}. This option is provided mainly for various debugging
+purposes. We do not recommend you to edit chart files, since this
+will change line numbering and thus prevent @code{cflow} mode from
+correctly tracing line references.
+
+@item x
+     Go to expansion of the current graph vertex. Use this key if the
+point stands on a line ending with @samp{[see @var{N}]} reference. It
+will bring you directly to the referenced line. Use
+@code{exchange-point-and-mark} (by default @key{C-x C-x}) to return to
+the line you examined.
+
+@item R
+     If the point is standing on a recursive function, go to the next
+recursion. Sets mark.
+
+@item r
+     If the point is standing on a recursive function, return to its
+definition (a @dfn{recursion root}). Sets mark.
+
+@item s
+     Visit the referenced source file and find the function definition.
+@end table
 
 @node Reporting Bugs, Source of wc command, Emacs, Top
 @chapter How to Report a Bug
