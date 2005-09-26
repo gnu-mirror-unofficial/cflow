@@ -1,8 +1,14 @@
 2005-09-26  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* doc/cflow.texi: Updated
+	* po/pl.po: Updated
+	* po/uk.po: Updated
+	* src/main.c: Updated
+	* src/parser.c: Updated
+
 	* doc/gendocs_template: Bugfixes.
 	* src/main.c: Use --no-OPTION instead of --OPTION=no
-	* doc/cflow.texi (Options): 
+	* doc/cflow.texi: Likewise
 
 2005-09-25  Sergey Poznyakoff  <gray@gnu.org.ua>
 
@@ -10,8 +16,9 @@
 	* src/c.l (yywrap): Close yyin, and clean up the buffer
 	(get_token): New function. Interface to yylex.
 	* src/cflow.h (get_token): New function
-	* src/parser.c (parse_function_declaration): Take second argument:
-	whether called from parameter declaration. All callers updated.
+	* src/parser.c (parse_function_declaration): Take second argument,
+	specifying whether the function is called from parameter
+	declaration. All callers updated. 
 	(nexttoken): Use get_token() instead of yylex();
 	(yyparse,func_body): Eat up static qualifier
 	* tests/ssblock.at, tests/funcarg.at: New testcases

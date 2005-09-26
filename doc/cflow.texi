@@ -1160,13 +1160,17 @@ For more information, @xref{Symbols}.
 @itemx --output=@var{file}
      Set output file name. Default is @samp{-}, meaning standard output.
 
+@FIXME{I am not sure whether the one below is needed:     
+@verbatim
 @cindex @option{-P}
 @cindex @option{--print}     
 @item -P @var{opt}
 @itemx --print=@var{opt}
      Set printing option. Valid @var{opt} values are: @samp{xref} (or
 @samp{cross-ref}) and @samp{tree}. Any unambiguous abbreviation of the
-above is also accepted. @FIXME{Is it really needed??}
+above is also accepted.
+@end verbatim
+}
 
 @cindex @option{-r}
 @cindex @option{--reverse}

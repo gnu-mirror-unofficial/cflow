@@ -370,7 +370,7 @@ expression()
 	       break;
 	  case 0:
 	       if (verbose)
-		    file_error(_("unexpected eof in expression"), 0);
+		    file_error(_("unexpected end of file in expression"), 0);
 	       return;
 	    
 	  case IDENTIFIER:
@@ -440,7 +440,7 @@ parse_function_declaration(Ident *ident, int parm)
 	  break;
      case 0:
 	  if (verbose)
-	       file_error(_("unexpected eof in declaration"), 0);
+	       file_error(_("unexpected end of file in declaration"), 0);
      }
 }
 
@@ -547,7 +547,7 @@ parse_variable_declaration(Ident *ident, int parm)
 	  break;
      case 0:
 	  if (verbose)
-	       file_error(_("unexpected eof in declaration"), 0);
+	       file_error(_("unexpected end of file in declaration"), 0);
      }
 }
 
@@ -569,7 +569,7 @@ initializer_list()
 	       }
 	       break;
 	  case 0:
-	       file_error(_("unexpected eof in initializer list"), 0);
+	       file_error(_("unexpected end of file in initializer list"), 0);
 	       return;
 	  case ',':
 	       break;
@@ -653,7 +653,7 @@ skip_struct()
 	  do {
 	       switch (tok.type) {
 	       case 0:
-		    file_error(_("unexpected eof in struct"), 0);
+		    file_error(_("unexpected end of file in struct"), 0);
 		    return;
 	       case LBRACE:
 	       case LBRACE0:
@@ -782,7 +782,7 @@ dirdcl(Ident *idptr)
 	       int level = 0;
 	       while (nexttoken()) {
 		    if (tok.type == 0) {
-			 file_error(_("unexpected eof in function declaration"),
+			 file_error(_("unexpected end of file in function declaration"),
 				    0);
 			 return;
 		    } else if (tok.type == '(') 
@@ -866,7 +866,7 @@ maybe_parm_list(int *parm_cnt_return)
 	  }
      }
      if (verbose)
-	  file_error(_("unexpected eof in parameter list"), 0);
+	  file_error(_("unexpected end of file in parameter list"), 0);
 }
 
 void
@@ -917,7 +917,7 @@ func_body()
 	       break;
 	  case 0:
 	       if (verbose)
-		    file_error(_("unexpected eof in function body"), 0);
+		    file_error(_("unexpected end of file in function body"), 0);
 	       return;
 	  }
      }
