@@ -23,14 +23,27 @@
 
 const char *argp_program_version = "cflow (" PACKAGE_NAME ") " VERSION;
 const char *argp_program_bug_address = "<" PACKAGE_BUGREPORT ">";
-static char doc[] = N_("generate a program flowgraph");
+/* TRANSLATORS: Please, preserve the vertical tabulation (^K character)
+   in this message */
+static char doc[] = N_("generate a program flowgraph\vThe effect of any option, not taking an argument, can be cancelled by prepending 'no-' to the corresponding long option name (e.g. --no-cpp cancels --cpp)");
 
-#define OPT_DEFINES       256
-#define OPT_LEVEL_INDENT  257
-#define OPT_DEBUG         258
-#define OPT_PREPROCESS    259
-#define OPT_NO_PREPROCESS 260
-#define OPT_EMACS         261
+enum option_code {
+     OPT_DEFINES = 256,
+     OPT_LEVEL_INDENT,
+     OPT_DEBUG,
+     OPT_PREPROCESS,
+     OPT_NO_PREPROCESS,
+     OPT_EMACS,
+     OPT_NO_USE_INDENTATION,
+     OPT_NO_ANSI,
+     OPT_NO_TREE,
+     OPT_NO_BRIEF,
+     OPT_NO_EMACS,
+     OPT_NO_VERBOSE,
+     OPT_NO_NUMBER,
+     OPT_NO_PRINT_LEVEL,
+     OPT_NO_REVERSE
+};
 
 static struct argp_option options[] = {
 #define GROUP_ID 0
@@ -38,12 +51,10 @@ static struct argp_option options[] = {
        N_("General options:"), GROUP_ID },
      { "depth", 'd', N_("NUMBER"), 0,
        N_("Set the depth at which the flowgraph is cut off"), GROUP_ID+1 },
-     { "include", 'i', N_("SPEC"), 0,
-       N_("Control the number of included symbols. SPEC is a string consisting of characters, specifying what class of symbols to include in the output (see below)."), GROUP_ID+1 },
-
-
+     { "include", 'i', N_("CLASSES"), 0,
+       N_("Include specified classes of symbols (see below). Prepend CLASSES with ^ or - to exclude them from the output"), GROUP_ID+1 },
      { "format", 'f', N_("NAME"), 0,
-       N_("Use given output format NAME. Valid names are gnu (default) and posix"),
+       N_("Use given output format NAME. Valid names are `gnu' (default) and `posix'"),
        GROUP_ID+1 },
      { "reverse", 'r', NULL, 0,
        N_("Print reverse call tree"), GROUP_ID+1 },
@@ -56,14 +67,7 @@ static struct argp_option options[] = {
        N_("Set output file name (default -, meaning stdout)"),
        GROUP_ID+1 },
 
-     { NULL, 0, NULL, 0,
-       N_("Valid SPEC symbols for --include option:"), GROUP_ID+2 },
-     {"  +", 0, NULL, OPTION_DOC|OPTION_NO_TRANS,
-      N_("Include symbols denoted by the following letters (default)"),
-      GROUP_ID+3 },
-     {"  - or ^", 0, NULL, OPTION_DOC|OPTION_NO_TRANS,
-      N_("Exclude symbols denoted by the following letters"),
-      GROUP_ID+3 },
+     { NULL, 0, NULL, 0, N_("Symbols classes for --include argument"), GROUP_ID+2 },
      {"  x", 0, NULL, OPTION_DOC|OPTION_NO_TRANS,
       N_("all data symbols, both external and static"), GROUP_ID+3 },
      {"  _",  0, NULL, OPTION_DOC|OPTION_NO_TRANS,
@@ -72,19 +76,24 @@ static struct argp_option options[] = {
       N_("static symbols"), GROUP_ID+3 },
      {"  t",  0, NULL, OPTION_DOC|OPTION_NO_TRANS,
       N_("typedefs (for cross-references only)"), GROUP_ID+3 },
+
      
 #undef GROUP_ID
 #define GROUP_ID 10     
      { NULL, 0, NULL, 0,
        N_("Parser control:"), GROUP_ID },
-     { "use-indentation", 'S', N_("BOOL"), OPTION_ARG_OPTIONAL,
+     { "use-indentation", 'S', NULL, 0,
        N_("Rely on indentation"), GROUP_ID+1 },
+     { "no-use-indentation", OPT_NO_USE_INDENTATION, NULL, OPTION_HIDDEN,
+       "", GROUP_ID+1 },
      { "ansi", 'a', NULL, 0,
        N_("Assume input to be written in ANSI C"), GROUP_ID+1 },
+     { "no-ansi", OPT_NO_ANSI, NULL, OPTION_HIDDEN,
+       "", GROUP_ID+1 },
      { "pushdown", 'p', N_("NUMBER"), 0,
        N_("Set initial token stack size to NUMBER"), GROUP_ID+1 },
-     { "symbol", 's', N_("SYM:TYPE"), 0,
-       N_("Make cflow believe the symbol SYM is of type TYPE. Valid types are: keyword (or kw), modifier, identifier, type, wrapper. Any unambiguous abbreviation of the above is also accepted"), GROUP_ID+1 },
+     { "symbol", 's', N_("SYMBOL:TYPE"), 0,
+       N_("Register SYMBOL with given TYPE. Valid types are: keyword (or kw), modifier, identifier, type, wrapper. Any unambiguous abbreviation of the above is also accepted"), GROUP_ID+1 },
      { "main", 'm', N_("NAME"), 0,
        N_("Assume main function to be called NAME"), GROUP_ID+1 },
      { "define", 'D', N_("NAME[=DEFN]"), 0,
@@ -96,31 +105,43 @@ static struct argp_option options[] = {
      { "preprocess", OPT_PREPROCESS, N_("COMMAND"), OPTION_ARG_OPTIONAL,
        N_("Run the specified preprocessor command"), GROUP_ID+1 },
      { "cpp", 0, NULL, OPTION_ALIAS, NULL, GROUP_ID+1 },
-     { "no-preprocess", OPT_NO_PREPROCESS, NULL, 0,
-       N_("Do not preprocess the sources"), GROUP_ID+1 },
-     { "no-cpp", 0, NULL, OPTION_ALIAS, NULL, GROUP_ID+1 },
+     { "no-preprocess", OPT_NO_PREPROCESS, NULL, OPTION_HIDDEN,
+       "", GROUP_ID+1 },
+     { "no-cpp", 0, NULL, OPTION_ALIAS|OPTION_HIDDEN, NULL, GROUP_ID+1 },
 #undef GROUP_ID
 #define GROUP_ID 20          
      { NULL, 0, NULL, 0,
        N_("Output control:"), GROUP_ID },
-     { "number", 'n', N_("BOOL"), OPTION_ARG_OPTIONAL,
+     { "number", 'n', NULL, 0,
        N_("Print line numbers"), GROUP_ID+1 },
+     { "no-number", OPT_NO_NUMBER, NULL, OPTION_HIDDEN,
+       "", GROUP_ID+1 },
      { "print-level", 'l', NULL, 0,
        N_("Print nesting level along with the call tree"), GROUP_ID+1 },
+     { "no-print-level", OPT_NO_PRINT_LEVEL, NULL, OPTION_HIDDEN,
+       "", GROUP_ID+1 },
      { "level-indent", OPT_LEVEL_INDENT, "STRING", 0,
        N_("Use STRING when indenting to each new level"), GROUP_ID+1 },
      { "tree", 'T', NULL, 0,
        N_("Draw ASCII art tree"), GROUP_ID+1 },
-     { "brief", 'b', N_("BOOL"), OPTION_ARG_OPTIONAL,
+     { "no-tree", OPT_NO_TREE, NULL, OPTION_HIDDEN,
+       "", GROUP_ID+1 },
+     { "brief", 'b', NULL, 0,
        N_("Brief output"), GROUP_ID+1 },
+     { "no-brief", OPT_NO_BRIEF, NULL, OPTION_HIDDEN,
+       "", GROUP_ID+1 },
      { "emacs", OPT_EMACS, NULL, 0,
        N_("Additionally format output for use with GNU Emacs"), GROUP_ID+1 },
+     { "no-emacs", OPT_NO_EMACS, NULL, OPTION_HIDDEN,
+       "", GROUP_ID+1 },
 #undef GROUP_ID
 #define GROUP_ID 30                 
      { NULL, 0, NULL, 0,
        N_("Informational options:"), GROUP_ID },
      { "verbose", 'v', NULL, 0,
        N_("Be verbose on output"), GROUP_ID+1 },
+     { "no-verbose", OPT_NO_VERBOSE, NULL, OPTION_HIDDEN,
+       "", GROUP_ID+1 },
      { "license", 'L', 0, 0,
        N_("Print license and exit"), GROUP_ID+1 },
      { "debug", OPT_DEBUG, "NUMBER", OPTION_ARG_OPTIONAL,
@@ -196,8 +217,6 @@ int preprocess_option = 0; /* Do they want to preprocess sources? */
 char *start_name = "main"; /* Name of start symbol */
 
 Consptr arglist;        /* List of command line arguments */
-
-#define boolean_value(arg) ((arg) ? ((arg)[0] == 'y' || (arg)[0] == 'Y') : 1)
 
 /* Given the option_type array and (possibly abbreviated) option argument
  * find the type corresponding to that argument.
@@ -391,7 +410,7 @@ parse_level_string(const char *str, char **return_ptr)
 	       if (p == text) {
 		    goto copy;
 	       }
-	       num = strtol(str+1, &str, 10);
+	       num = strtol(str+1, (char**)&str, 10);
 	       c = p[-1];
 	       for (i = 1; i < num; i++) {
 		    *p++ = c;
@@ -485,6 +504,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
      case 'a':
 	  strict_ansi = 1;
 	  break;
+     case OPT_NO_ANSI:
+	  strict_ansi = 0;
+	  break;
      case OPT_DEBUG:
 	  debug = arg ? atoi(arg) : 1;
 	  break;
@@ -496,7 +518,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	  set_print_option(arg);
 	  break;
      case 'S':
-	  use_indentation = boolean_value(arg);
+	  use_indentation = 1;
+	  break;
+     case OPT_NO_USE_INDENTATION:
+	  use_indentation = 0;
 	  break;
      case 'T':
 	  print_as_tree = 1;
@@ -505,19 +530,30 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	  set_level_indent("end0=+-");
 	  set_level_indent("end1=\\\\-");
 	  break;
+     case OPT_NO_TREE:
+	  print_as_tree = 0;
+	  level_indent[0] = level_indent[1] = NULL;
+	  level_end[0] = level_end[0] = NULL;
+	  break;
      case 'b':
-	  brief_listing = boolean_value(arg);
+	  brief_listing = 1;
+	  break;
+     case OPT_NO_BRIEF:
+	  brief_listing = 0;
 	  break;
      case 'd':
 	  max_depth = atoi(arg);
 	  if (max_depth < 0)
 	       max_depth = 0;
 	  break;
-     case OPT_DEFINES:
+     case OPT_DEFINES: /* FIXME: Not used. */
 	  record_defines = 1;
 	  break;
      case OPT_EMACS:
 	  emacs_option = 1;
+	  break;
+     case OPT_NO_EMACS:
+	  emacs_option = 0;
 	  break;
      case 'f':
 	  if (select_output_driver(arg))
@@ -553,12 +589,18 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	  break;
      case 'l':
 	  print_levels = 1;
-	  break;	
+	  break;
+     case OPT_NO_PRINT_LEVEL:
+	  print_levels = 0;
+	  break;
      case 'm':
 	  start_name = strdup(arg);
 	  break;
      case 'n':
-	  print_line_numbers = boolean_value(arg);
+	  print_line_numbers = 1;
+	  break;
+     case OPT_NO_NUMBER:
+	  print_line_numbers = 0;
 	  break;
      case 'o':
 	  outname = strdup(arg);
@@ -571,11 +613,17 @@ parse_opt (int key, char *arg, struct argp_state *state)
      case 'r':
 	  reverse_tree = 1;
 	  break;
+     case OPT_NO_REVERSE:
+	  reverse_tree = 0;
+	  break;
      case 's':
 	  symbol_override(arg);
 	  break;
      case 'v':
 	  verbose = 1;
+	  break;
+     case OPT_NO_VERBOSE:
+	  verbose = 0;
 	  break;
      case 'x':
 	  print_option = PRINT_XREF;

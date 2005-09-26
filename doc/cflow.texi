@@ -129,7 +129,6 @@ files. It is a good idea to add a node @samp{POSIX} discussing this.}
 
 @node Quick Start, Direct and Reverse, Intro, Top
 @chapter Simple Ways to Analyze Programs with @command{cflow}.
-@UNREVISED{}
      Let's begin our acquaintance with the GNU @command{cflow} utility
 with an example. Suppose you have a simple implementation of
 @command{whoami} command and you wish to obtain a graph of function
@@ -875,7 +874,6 @@ listing of type names defined by @code{typedef} keyword.
 
 @node Configuration, Makefiles, Cross-References, Top
 @chapter Configuration Files and Variables.
-@UNREVISED{}
      As shown in the previous chapters, GNU @command{cflow} is highly
 configurable. Different command line options have different effects,
 as specifying new operation modes or altering some aspects of the
@@ -936,18 +934,11 @@ following configuration file:
      It may sometimes be necessary to cancel the effect of a command
 line option. For example, you might specify @option{--brief} in your
 configuration file, but then occasionally need to obtain verbose
-graph. To make this possible, most of GNU @command{cflow} options take
-an optional argument: a boolean value (@samp{yes} or @samp{no}),
-specifying whether to enable or disable this option. Thus, setting
-@option{--brief=no} cancels the effect of the previous
-@option{--brief} option. @FIXME{This is very inconvenient, since (a)
-this makes it impossible to cluster options, as in @command{cflow
--nl}; (b) not all options take a boolean value, some of them
-(e.g. @option{--cpp}) have a @option{--no-@var{option}} counterpart,
-and some (e.g. @option{-r}) do not allow cancellation at all. Ideally,
-each @dfn{toggle} option should have a @option{--no-} counterpart. For
-the time being I will have to implement this in @file{main.c}, but in
-the future I plan to introduce this support into @command{argp} module.}
+graph. To cancel effect of any GNU @command{cflow} option that does
+not take arguments, prepend @samp{no-} to the corresponding long
+option name. Thus, specifying @option{--no-brief} cancels the effect
+of the previous @option{--brief} option. @FIXME{The @samp{--no-} support
+should be implemented in  @command{argp} module.}
 
 @node Makefiles, Options, Configuration, Top
 @chapter Using @command{cflow} in Makefiles.
@@ -1026,7 +1017,15 @@ cflow.cflow: $(cflow_CFLOW_INPUT) cflow.rc Makefile
 references to more in-depth explanations in the body of the
 manual. Both short and long option forms are listed, so you can use
 this table as a quick reference.
-   
+
+     Any simple option (i.e. the one that does not take arguments)
+have also its @samp{no-} counterpart, that cancels its effect. For
+example, @option{--no-number} disables previous
+@option{--number} option. It is provided to cancel default options
+specified in the configuration file.
+
+     The @samp{no-} prefix is applicable only to long option names.
+     
 @table @option
 @cindex @option{-a}
 @cindex @option{--ansi}
@@ -1038,8 +1037,8 @@ declarations}. This might speed up the processing in some cases.
 
 @cindex @option{-b}
 @cindex @option{--brief}
-@item -b [@var{bool}]
-@item --brief[=@var{bool}]
+@item -b
+@item --brief
      Brief output. @xref{--brief}.
 
 @cindex @option{--cpp}
@@ -1151,8 +1150,8 @@ For more information, @xref{Symbols}.
 
 @cindex @option{-n}
 @cindex @option{--number}     
-@item -n [@var{booll}]
-@itemx --number[=@var{bool}]
+@item -n
+@itemx --number
      Print line numbers. @xref{--number}.
 
 @cindex @option{-o}
@@ -1206,8 +1205,8 @@ abbreviation of the above is also accepted. @xref{--symbol}.
 
 @cindex @option{-S}
 @cindex @option{--use-indentation}
-@item -S [@var{bool}]
-@itemx --use-indentation[=@var{bool}]
+@item -S
+@itemx --use-indentation
      Use source file indentation as a hint. Currently this means that
 the closing curly brace (@samp{@}}) in the column zero forces
 @command{cflow} to close current function definition. Use this option
