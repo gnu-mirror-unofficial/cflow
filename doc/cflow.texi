@@ -70,7 +70,7 @@ documents GNU cflow Version @value{VERSION}.
 @menu
 * Intro::               Introduction to @command{cflow}.
 * Quick Start::         Simple Ways to Analyze Programs with @command{cflow}.
-* Direct and Reverse::  Two Types of Flow Trees.
+* Direct and Reverse::  Two Types of Flow Graphs.
 * Output Formats::      Supported Output Formats.
 * Recursive Calls::     Handling Recursive Calls.
 * Symbols::             Controlling Symbol Input and Output.
@@ -109,8 +109,7 @@ and reverse. @dfn{Direct graph} begins with the main function
 (@code{main}), and displays recursively all functions called by it.
 In contrast, @dfn{reverse graph} is a set of subgraphs, charting for
 each function its callers, in the reverse order. Due to their
-tree-like appearance, graphs are called @dfn{trees} throughout this
-document.  
+tree-like appearance, graphs can also be called @dfn{trees}.  
 
      In addition to these two output modes, @command{cflow} is able to
 produce a @dfn{cross-reference} listing of all the symbols encountered
@@ -140,18 +139,12 @@ dependencies. Here is the program:
 @verbatiminclude whoami.c
 @end smallexample
 
-     Running @command{cflow}:
-
-@smallexample
-cflow whoami.c
-@end smallexample
-
-@noindent
-will produce the following output:
+     Running @command{cflow} produces the following output:
 
 @cindex GNU Output Format, an example
 @smallexample
 @group
+$ cflow whoami.c
 main() <int main (int argc,char **argv) at whoami.c:26>:
     fprintf()
     who_am_i() <int who_am_i (void) at whoami.c:8>:
@@ -165,7 +158,7 @@ main() <int main (int argc,char **argv) at whoami.c:26>:
 
 @cindex GNU Output Format described
 @anchor{GNU Output Format}
-     This is a direct tree showing @dfn{caller---callee} dependencies
+     This is a direct call graph showing @dfn{caller---callee} dependencies
 in the input file. Each line starts with a function name, followed by
 a pair of parentheses to indicate that it is a function. If this
 function is defined in one of the input files, the line continues by
@@ -179,19 +172,19 @@ main() <int main (int argc,char **argv) at whoami.c:25>:
 @end smallexample
 
 @noindent
-shows that the function @code{main} is defined in file @file{whoami.c}
+shows that function @code{main} is defined in file @file{whoami.c}
 at line 25, as @code{int main (int argc, char **argv)}. Terminating
-semicolon indicates that @code{main} invokes other functions.
+colon indicates that @code{main} invokes other functions.
 
      The lines following this one show which functions are called by
-@code{main}. Each such line is indented by fixed amount of whitespace
+@code{main}. Each such line is indented by fixed amount of white space
 (by default four spaces) for each nesting level.
 
 @cindex start symbol
 @cindex @option{--main} command line option introduced
 @cindex @option{-m} command line option introduced
 @anchor{start symbol}
-     By default, @command{cflow} starts outputting direct tree from
+     By default, @command{cflow} starts outputting direct graph from
 the function called @code{main}. It is convenient when analyzing a set
 of input files comprising an entire @code{C} program. However, there
 are circumstances where a user would want to see only a part of
@@ -218,26 +211,21 @@ who_am_i() <int who_am_i (void) at whoami.c:8>:
 @end smallexample
 
 @node Direct and Reverse, Output Formats, Quick Start, Top
-@chapter Two Types of Flow Trees.
+@chapter Two Types of Flow Graphs.
 @cindex @option{--reverse}
 @cindex @option{-r}
-     In the previous chapter we have discussed @dfn{direct trees},
+     In the previous chapter we have discussed @dfn{direct graphs},
 displaying @i{caller---callee} dependencies. Another type of
-@command{cflow} output, called @dfn{reverse tree}, charts
-@dfn{callee---caller} dependencies. To produce a reverse tree, run
+@command{cflow} output, called @dfn{reverse graph}, charts
+@dfn{callee---caller} dependencies. To produce a reverse graph, run
 @command{cflow} with @option{--reverse} (@option{-r}) command line
 option. For example, using a sample @file{whoami.c}:
-
-@smallexample
-cflow --reverse whoami.c
-@end smallexample
-
-     This command produces the following output:
 
 @cindex reverse graph, example
 @cindex reverse tree, example
 @smallexample
 @group
+$ cflow --reverse whoami.c
 fprintf():
     who_am_i() <int who_am_i (void) at whoami.c:8>:
         main() <int main (int argc,char **argv) at whoami.c:26>
@@ -260,8 +248,8 @@ who_am_i() <int who_am_i (void) at whoami.c:8>:
 @end group    
 @end smallexample
 
-     This output consists of several subtrees, each describing callers
-for a particular function. Thus, the first subtree tells that the
+     This output consists of several subgraphs, each describing callers
+for a particular function. Thus, the first subgraph tells that the
 function @code{fprintf} is called from two functions: @code{who_am_i}
 and @code{main}. First of them is, in turn, also called directly by
 @code{main}.
@@ -270,9 +258,9 @@ and @code{main}. First of them is, in turn, also called directly by
 @cindex @option{-b} command line option introduced
 @anchor{--brief}
      The first thing that draws attention in the above output is that
-the subtree starting with @code{who_am_i} function is repeated several
-times. This is @dfn{verbose} output. To make it brief, run
-@command{cflow} with @option{--brief} (@option{-b}). For example:
+the subgraph starting with @code{who_am_i} function is repeated several
+times. This is @dfn{verbose} output. To make it brief, use
+@option{--brief} (@option{-b}) command line option. For example:
 
 @cindex brief output, an example of
 @smallexample
@@ -296,20 +284,20 @@ who_am_i() <int who_am_i (void) at whoami.c:8>: [see 2]
 @end smallexample
 
 @cindex brief output described
-     In brief output, once a subtree for a given function is written,
-subsequent instances of that subtree contain only the definition of
-the function and the @dfn{reference} to the output line where the
-expanded subtree can be found.
+     In brief output, once a subgraph for a given function is written,
+subsequent instances of calls to that function contain only its
+definition and the @dfn{reference} to the output line where the
+expanded subgraph can be found.
 
 @cindex @option{--number} command line option introduced
 @cindex @option{-n} command line option introduced
 @anchor{--number}
-     If the output tree is large it can be tedious to find out the
+     If the output graph is large it can be tedious to find out the
 required line number (unless you use @dfn{Emacs cflow-mode},
 @pxref{Emacs}). For such cases a special option
 @option{--number} (@option{-n}) is provided, which makes
 @command{cflow} begin each line of the output with a @dfn{reference
-number}, that is ordinal number of this line in the output. With
+number}, that is the ordinal number of this line in the output. With
 this option, the above output will look like:
 
 @smallexample
@@ -333,15 +321,15 @@ $ cflow --number --brief --reverse whoami.c
 @end smallexample
 
      Of course, @option{--brief} and @option{--number} options
-take effect for both direct and reverse flow trees.
+take effect for both direct and reverse flow graphs.
 
 @node Output Formats, Recursive Calls, Direct and Reverse, Top
 @chapter Various Output Formats.
 @cindex POSIX Output described
 @anchor{POSIX Output Format}
      The output format described in previous chapters is called
-@dfn{GNU Output}. Beside this output format, @command{cflow} is also
-able to produce output in format defined in POSIX standard
+@dfn{GNU Output}. Beside this, @command{cflow} is also
+able to produce output format defined in POSIX standard
 (@url{http://www.opengroup.org/onlinepubs/009695399/utilities/cflow.html,The
 Open Group Base Specifications Issue 6: cflow utility}).
 In this format, each line of output
@@ -360,9 +348,9 @@ found, the line ends with an empty pair of angle brackets.
 @cindex POSIX Output Format, generating
      This output format is used when either a command line option
 @option{--format=posix} (@option{-f posix}) has been given, or
-environment variable @code{POSIXLY_CORRECT} was set.
+environment variable @env{POSIXLY_CORRECT} was set.
 
-     The output tree in POSIX format for our sample @file{whoami.c}
+     The output graph in POSIX format for our sample @file{whoami.c}
 file will look as follows:
 
 @smallexample
@@ -429,7 +417,7 @@ $ cflow --number d.c
 @end smallexample
 
      The @code{printdir} description in line 4 shows that the function
-is recursive. The recursion call is shown in line 19. 
+is recursive. The recursion call is shown in line 18. 
      
 @node Symbols, Preprocessing, Recursive Calls, Top
 @chapter Controlling Symbol Types
@@ -480,14 +468,14 @@ symbol classes are excluded from the output.
 
 @cindex Including symbols that begin with an underscore
 @cindex Excluding symbol classes
-     The symbol class @samp{_} includes symbols whose name begin with an
+     The symbol class @samp{_} includes symbols whose names begin with an
 underscore. Another useful symbol class is @samp{s}, representing
 @dfn{static functions or data}. By default, static functions are
 always included in the output. To omit them, one can give
 @option{-i ^s} (or @option{-i -s}@footnote{Notice that @option{-i -s}
-is a single option, here @code{-s} is not an option, in spite of its
-leading dash character. Since this might be confusing, we prefer
-using @samp{^} instead of @samp{-} to denote symbol exclusion.})
+is a single option, in spite of @code{-s} beginning with a minus sign.
+Since this might be confusing, we prefer using @samp{^} instead of
+@samp{-} to denote symbol exclusion.}) 
 command line option. Our sample program @file{d.c} defines static
 function @code{isdir}, running @command{cflow -i ^s}, completely omits
 this function and its callees from the resulting graph:
@@ -514,14 +502,15 @@ $ cflow --number -i ^s d.c
 @end smallexample
 
      Actually, the exclusion sign (@samp{^} or @samp{-}) can be used
-in any place in @option{-i} argument, not only at the beginning. Thus,
+any place in @option{-i} argument, not only at the beginning. Thus,
 option @option{-i _^s} means ``@i{include symbols, beginning with
 underscore and exclude static functions}''. Several @option{-i} options
 accumulate, so the previous example can also be written as
 @option{-i _ -i ^s}.
 
      It is important to notice that by default @command{cflow} graphs
-contain only functions. The symbol class @samp{x} contains @dfn{data
+contain only functions. You can, however, request displaying variables
+as well, by using symbol class @samp{x}. This class contains all @dfn{data
 symbols}, both global and static, so to include these in the output,
 use option @option{-i x}. For example:
 
@@ -558,13 +547,13 @@ $ cflow --number -i x d.c
    26         closedir()
 @end smallexample
 
-     Lines 3 and 4 show data symbols, the latter is listed with its
-definition and location, since it is declared in the input
-file. A rather confusing result appears in lines 7 and 8. Why both type name
-@code{DIR} and automatic variable @code{dir} are listed as data?
+     Now, lines 3, 4, 16 and 23 show data symbols, with their
+definitions when available. Notice, however, lines 7 and 8. Why both
+type name @code{DIR} and automatic variable @code{dir} are listed as
+data? 
 
      To answer this question, let's first describe the @command{cflow}
-notion of symbols. The utility keeps its @dfn{symbol tables}, which
+notion of symbols. The program keeps its @dfn{symbol tables}, which
 are initially filled with @code{C} predefined keywords. When parsing
 input files, @command{cflow} updates these tables. In particular, upon
 encountering a @code{typedef}, it registers the defined symbol as a
@@ -582,12 +571,13 @@ variable. But then the input:
 is parsed as an @emph{expression}, meaning ``multiply @code{DIR} by
 @code{dir}''.
 
-     There are two ways to help @command{cflow} out of this
-confusion. You can either explicitely declare @code{DIR} as data type,
-or let @command{cflow} run preprocessor, so it sees the contents of
-the include files and determines it by itself. Running preprocessor is
-covered by the next chapter (@pxref{Preprocessing}). In the present
-chapter we will concentrate on the first method.
+     Of course, it is wrong. There are two ways to help
+@command{cflow} out of this confusion. You can either explicitly
+declare @code{DIR} as data type, or let @command{cflow} run
+preprocessor, so it sees the contents of the include files and
+determines it by itself. Running preprocessor is covered by the next
+chapter (@pxref{Preprocessing}). In the present chapter we will
+concentrate on the first method. 
 
 @cindex @option{-s} introduced
 @cindex @option{--symbol} introduced
@@ -605,7 +595,7 @@ The first string, @var{sym} is a @code{C} identifier to be recorded in
 the symbol table. The second string, @var{t}, specifies a type to
 be associated with this symbol. If @var{t} is a string @samp{type},
 the symbol @var{sym} will be recorded as a @code{C} type
-definition. Thus, to fix the above example, run:
+definition. Thus, to fix the above output, run:
 
 @smallexample
 $ cflow --number -i x --symbol DIR:type d.c
@@ -614,10 +604,11 @@ $ cflow --number -i x --symbol DIR:type d.c
 @cindex Parameter wrapper defined
 @cindex @code{__P}, special handling using @option{--symbol}
      Another important symbol type is a @dfn{parameter wrapper}. It is
-a kind of a macro often used in sources meant to be compatible with
-pre-@acronym{ASNI} compilers to protect parameter declarations in
-function prototypes. For example, in the declaration below, taken from
-@file{/usr/include/resolv.h}, @code{__P} is a parameter wrapper:
+a kind of a macro, often used in sources that are meant to be
+compatible with pre-@acronym{ASNI} compilers to protect parameter
+declarations in function prototypes. For example, in the declaration
+below, taken from @file{/usr/include/resolv.h}, @code{__P} is a
+parameter wrapper: 
 
 @smallexample
 void res_npquery __P((const res_state, const u_char *, int, FILE *));
@@ -692,8 +683,8 @@ $ cflow --cpp -n d.c
 @end smallexample
 
      Compare this graph with the one obtained without @option{--cpp}
-option (@pxref{sample flowchart}). As you see, it no longer contains a
-reference to @code{S_ISDIR}: the macro has been expanded. Now, try
+option (@pxref{sample flowchart}). As you see, the reference to
+@code{S_ISDIR} is gone: the macro has been expanded. Now, try
 running @code{cflow --cpp --number -i x d.c} and compare the result
 with the graph obtained without preprocessing (@pxref{x
 flowchart}). You will see that it produces correct results without
@@ -706,7 +697,7 @@ using @option{--symbol} option.
      By default @option{--cpp} runs @file{/usr/bin/cpp}. If you wish
 to run another preprocessor command, specify it as an argument to the
 option, after an equal sign. For example, @command{cflow --cpp='cc
--E'} will run a @code{C} compiler as a preprocessor.
+-E'} will run the @code{C} compiler as a preprocessor.
 
 @node ASCII Tree, Cross-References, Preprocessing, Top
 @chapter Using ASCII Art to Produce Flow Graphs.
@@ -714,7 +705,7 @@ option, after an equal sign. For example, @command{cflow --cpp='cc
 @cindex output indentation level, configuring
 @cindex configuring output indentation level
 @anchor{setting indentation}
-     You can configure the exact appearance of the @command{cflow}
+     You can configure the exact appearance of @command{cflow}
 output flow graph using @option{--level-indent} option. The simplest
 use for this option is to change the default indentation per nesting
 level. To do so, give the option a numeric argument specifying the
@@ -814,9 +805,10 @@ used at the beginning of the string.
      Thus, we obtained an @dfn{ASCII art} representation of the call
 tree. GNU @command{cflow} provides a special option @option{--tree}
 (@option{-T}), which is a shortcut for @code{--level '0=  ' --level
-'1=| ' --level end0='+-' --level end1='\\-'}. Here is an example of
-tree produced with this option. The source file @file{wc.c} is a
-simple implementation of UNIX @command{wc} command, @xref{Source of wc command}. 
+'1=| ' --level end0='+-' --level end1='\\-'}. The following is an
+example of flow graph produced with this option. The source file
+@file{wc.c} is a simple implementation of UNIX @command{wc} command,
+@xref{Source of wc command}.  
 
 @anchor{ascii tree}
 @smallexample
@@ -907,10 +899,10 @@ any explicit options.
 options. After incorporating eventual content of @env{CFLOW_OPTIONS}
 variable, @command{cflow} checks the value of the environment variable
 @env{CFLOWRC}. This value, if not empty, specifies the name of
-a @dfn{configuration file} to read. If @env{CFLOWRC} is not defined or
+the @dfn{configuration file} to read. If @env{CFLOWRC} is not defined or
 is empty, the program attempts to read file @file{.cflowrc} in the
 user's home directory. It is not an error if any of these
-files does not exit. However, if the file does exist but cannot be
+files does not exist. However, if the file does exist but cannot be
 processed, @command{cflow} will issue an explicit error message.
 
 @cindex Configuration file format
@@ -966,7 +958,7 @@ do so. In this chapter we will describe a generic rule for
 @file{Makefile.am}. If you do not use @command{automake}, you can
 deduce the rule for plain @file{Makefile} from this one.
 
-     Here is a check list to do to set up a @file{Makefile.am}
+     Here is a check list of steps to do to set up a @file{Makefile.am}
 framework:
 
 @itemize @minus
@@ -975,8 +967,8 @@ variable.
 
 @item Add variable @code{CFLOW_FLAGS} with any special @command{cflow}
 options you wish to use. The variable can be empty, its main purpose
-is being able to run @command{make CFLOW_FLAGS=@dots{} chart} to
-override the options.
+is making it possible to override @command{cflow} options by running
+@command{make CFLOW_FLAGS=@dots{} chart}.
 
 @item For each @var{program} from your @code{@var{dir}_PROGRAMS} list,
 for which you want to generate a flow chart, add the following statements:
@@ -1001,7 +993,7 @@ preprocessing, remove from the @command{cflow} command line all
 variables, except @code{CFLOW_FLAGS}.
 
 @item If there are several programs built by this @file{Makefile.am},
-you may wish to add a special rule, allowing to build all flow charts
+you may wish to add a special rule, allowing to create all flow charts
 with a single command, for example:
 
 @smallexample
@@ -1181,7 +1173,7 @@ above is also accepted. @FIXME{Is it really needed??}
 @cindex @option{--reverse}
 @item -r
 @itemx --reverse
-     Print reverse call tree. @xref{Direct and Reverse}.
+     Print reverse call graph. @xref{Direct and Reverse}.
 
 @cindex @option{-x}
 @cindex @option{--xref}     
@@ -1219,7 +1211,7 @@ abbreviation of the above is also accepted. @xref{--symbol}.
      Use source file indentation as a hint. Currently this means that
 the closing curly brace (@samp{@}}) in the column zero forces
 @command{cflow} to close current function definition. Use this option
-sparingly, it may cause misinterpreation of some sources.
+sparingly, it may cause misinterpretation of some sources.
 
 @cindex @option{-U}
 @cindex @option{--undefine}
@@ -1233,7 +1225,7 @@ sparingly, it may cause misinterpreation of some sources.
 @item --print-level
 @itemx -l
 @anchor{--print-level}
-     Print nesting level along with the call tree. The level is
+     Print nesting level along with the call graph. The level is
 printed after output line number (if @option{--number} or
 @option{--format=posix} is used, enclosed in curly braces.
 
@@ -1287,10 +1279,10 @@ at startup, add the following lines to your @file{.emacs} or
 @cindex @option{--emacs} introduced
 @anchor{--emacs}
 The second statement associates @code{cflow-mode} with any file having
-suffix @file{.cflow}. If you prefer to use another suffix for flow
+suffix @file{.cflow}. If you prefer to have another suffix for flow
 graph files, use it instead. You can also omit this option, if you do
 not use any special suffix for your graph files. In this case we
-recomment to use @option{--emacs} command line option. This option
+recommend using @option{--emacs} command line option. This option
 generates the first line telling Emacs to use @code{cflow} major mode
 when visiting the file.
 
@@ -1301,7 +1293,7 @@ following key bindings are defined:
 @item E
      Temporarily exits from @code{cflow} mode and allows you to edit
 the graph file. To resume @code{cflow} mode type @key{M-x} cflow-mode
-@key{RET}. This option is provided mainly for various debugging
+@key{RET}. This option is provided mainly for debugging
 purposes. We do not recommend you to edit chart files, since this
 will change line numbering and thus prevent @code{cflow} mode from
 correctly tracing line references.
@@ -1328,16 +1320,18 @@ definition (a @dfn{recursion root}). Sets mark.
 @node Reporting Bugs, Source of wc command, Emacs, Top
 @chapter How to Report a Bug
 
-Email bug reports to @email{bug-cflow@@gnu.org}.
+Send bug reports via electronic mail to @email{bug-cflow@@gnu.org}.
 
 As the purpose of bug reporting is to improve software, please be sure
-to include maximum information when reporting a bug. The information
-needed is:
+to include maximum information when reporting a bug. The minimal
+information needed is:
 
 @itemize
 @item Version of the package you are using.
 @item Compilation options used when configuring the package.
-@item Conditions under which the bug appears.
+@item Detailed description of the bug.
+@item Conditions under which the bug appears (command line options,
+input file contents, etc.)
 @end itemize
 
 @node Source of wc command, Copying This Manual, Reporting Bugs, Top
