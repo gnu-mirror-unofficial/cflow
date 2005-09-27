@@ -435,8 +435,10 @@ parse_function_declaration(Ident *ident, int parm)
 	  break;
      case LBRACE0:
      case LBRACE:
-	  caller = lookup(ident->name);
-	  func_body();
+	  if (ident->name) {
+	       caller = lookup(ident->name);
+	       func_body();
+	  }
 	  break;
      case 0:
 	  if (verbose)
