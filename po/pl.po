@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cflow 0.2.1\n"
 "Report-Msgid-Bugs-To: bug-cflow@gnu.org\n"
-"POT-Creation-Date: 2005-09-26 16:52+0300\n"
-"PO-Revision-Date: 2005-09-26 16:57+0300\n"
+"POT-Creation-Date: 2005-09-27 14:21+0300\n"
+"PO-Revision-Date: 2005-09-27 14:58+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Polish <pl@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -43,12 +43,14 @@ msgstr "Nowa pozycja: %s:%d\n"
 #. TRANSLATORS: Please, preserve the vertical tabulation (^K character)
 #. in this message
 #: src/main.c:28
-#, fuzzy
 msgid ""
-"generate a program flowgraphThe effect of any option, not taking an "
-"argument, can be cancelled by prepending 'no-' to the corresponding long "
-"option name (e.g. --no-cpp cancels --cpp)"
-msgstr "generuje wykres przebiegu sterowania w programie"
+"generate a program flowgraph* The effect of each option marked with an "
+"asterisk is reversed if the option's long name is prefixed with `no-'. For "
+"example, --no-cpp cancels --cpp."
+msgstr ""
+"generuje wykres przebiegu sterowania w programie* Ka¿da opcja, zaznaczona "
+"przez gwiazdkê, wykazuje dzia³anie odwrotne gdy jest u¿yta z przyrostkiem "
+"`no-'. Na przyk³ad, --no-cpp wy³±cza preprocesor."
 
 #: src/main.c:51
 msgid "General options:"
@@ -86,7 +88,7 @@ msgstr ""
 "`posix'"
 
 #: src/main.c:60
-msgid "Print reverse call tree"
+msgid "* Print reverse call tree"
 msgstr "Wy¶wietla odwrócone drzewo wywo³añ"
 
 #: src/main.c:62
@@ -139,11 +141,11 @@ msgid "Parser control:"
 msgstr "Zarz±dzanie dzia³aniem analizatora:"
 
 #: src/main.c:86
-msgid "Rely on indentation"
+msgid "* Rely on indentation"
 msgstr "Uwzglêdnienie wciêcia podczas analizy"
 
 #: src/main.c:90
-msgid "Accept only sources in ANSI C"
+msgid "* Accept only sources in ANSI C"
 msgstr "Akcepuje tylko pliki wej¶ciowe w ANSI C"
 
 #: src/main.c:94
@@ -195,7 +197,7 @@ msgid "COMMAND"
 msgstr "POLECENIE"
 
 #: src/main.c:106
-msgid "Run the specified preprocessor command"
+msgid "* Run the specified preprocessor command"
 msgstr "U¿ywa podanego programu jako preprocesora"
 
 #: src/main.c:114
@@ -203,11 +205,11 @@ msgid "Output control:"
 msgstr "Kontrola wyj¶cia:"
 
 #: src/main.c:116
-msgid "Print line numbers"
+msgid "* Print line numbers"
 msgstr "Wy¶wietla numery linii"
 
 #: src/main.c:120
-msgid "Print nesting level along with the call tree"
+msgid "* Print nesting level along with the call tree"
 msgstr "Wy¶wietla poziom zagnie¿d¿ania"
 
 #: src/main.c:124
@@ -215,15 +217,15 @@ msgid "Control graph appearance"
 msgstr "Za¿±dzanie wygl±dem wykresu"
 
 #: src/main.c:126
-msgid "Draw ASCII art tree"
+msgid "* Draw ASCII art tree"
 msgstr "Wykres w postaci drzewa wywo³añ"
 
 #: src/main.c:130
-msgid "Brief output"
+msgid "* Brief output"
 msgstr "Zwiêz³a postaæ wyj¶cia"
 
 #: src/main.c:134
-msgid "Additionally format output for use with GNU Emacs"
+msgid "* Additionally format output for use with GNU Emacs"
 msgstr "Formatuje wykres dla trybu cflow GNU Emacsa"
 
 #: src/main.c:140
@@ -231,7 +233,7 @@ msgid "Informational options:"
 msgstr "Opcje informacyjne:"
 
 #: src/main.c:142
-msgid "Verbose error diagnostics"
+msgid "* Verbose error diagnostics"
 msgstr "Szczegó³owa diagnostyka b³êdów"
 
 #: src/main.c:146
@@ -319,7 +321,7 @@ msgstr "%s: Nie ma takiego sterownika wej¶cia"
 #: src/main.c:587
 #, c-format
 msgid "Unknown symbol class: %c"
-msgstr "Nieznana klasa symbolu: %s"
+msgstr "Nieznana klasa symbolu: %c"
 
 #: src/main.c:655
 msgid "[FILE]..."

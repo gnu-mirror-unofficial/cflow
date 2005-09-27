@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cflow 0.2.1\n"
 "Report-Msgid-Bugs-To: bug-cflow@gnu.org\n"
-"POT-Creation-Date: 2005-09-26 16:52+0300\n"
-"PO-Revision-Date: 2005-09-26 18:58+0300\n"
+"POT-Creation-Date: 2005-09-27 14:21+0300\n"
+"PO-Revision-Date: 2005-09-27 14:58+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Ukrainian <translation-team-uk@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -44,10 +44,13 @@ msgstr "Нове розташування: %s:%d\n"
 #. in this message
 #: src/main.c:28
 msgid ""
-"generate a program flowgraphThe effect of any option, not taking an "
-"argument, can be cancelled by prepending 'no-' to the corresponding long "
-"option name (e.g. --no-cpp cancels --cpp)"
+"generate a program flowgraph* The effect of each option marked with an "
+"asterisk is reversed if the option's long name is prefixed with `no-'. For "
+"example, --no-cpp cancels --cpp."
 msgstr ""
+"Створює граф потоків керування у програмі.* Помічені зірочкою опції мають "
+"зворотну дію, якщо до їх назви додати приросток `no-'. Наприклад, --no-cpp "
+"вимикає препроцесор."
 
 #: src/main.c:51
 msgid "General options:"
@@ -69,7 +72,9 @@ msgstr "КЛАСИ"
 msgid ""
 "Include specified classes of symbols (see below). Prepend CLASSES with ^ or "
 "- to exclude them from the output"
-msgstr "Включити до графу вказані класи символів (див. нижче). Щоб їх виключити додайте ^ або - на початку аргументу"
+msgstr ""
+"Включити до графу вказані класи символів (див. нижче). Щоб їх виключити "
+"додайте ^ або - на початку аргументу"
 
 #: src/main.c:56 src/main.c:97 src/main.c:101
 msgid "NAME"
@@ -78,10 +83,11 @@ msgstr "НАЗВА"
 #: src/main.c:57
 msgid ""
 "Use given output format NAME. Valid names are `gnu' (default) and `posix'"
-msgstr "Встановлює назву вихідного формату. Дозволені назви є: gnu (типово) та posix"
+msgstr ""
+"Встановлює назву вихідного формату. Дозволені назви є: gnu (типово) та posix"
 
 #: src/main.c:60
-msgid "Print reverse call tree"
+msgid "* Print reverse call tree"
 msgstr "Друкує зворотне дерево викликів"
 
 #: src/main.c:62
@@ -133,11 +139,11 @@ msgid "Parser control:"
 msgstr "Керування аналізатором:"
 
 #: src/main.c:86
-msgid "Rely on indentation"
+msgid "* Rely on indentation"
 msgstr "Використовувати відступи під час аналізу"
 
 #: src/main.c:90
-msgid "Accept only sources in ANSI C"
+msgid "* Accept only sources in ANSI C"
 msgstr "Приймати тільки джерела в ANSI C"
 
 #: src/main.c:94
@@ -153,7 +159,10 @@ msgid ""
 "Register SYMBOL with given TYPE. Valid types are: keyword (or kw), modifier, "
 "identifier, type, wrapper. Any unambiguous abbreviation of the above is also "
 "accepted"
-msgstr "Реєструє СИМВОЛ з вказаним ТИПом. Дозволені типи то: keyword (або kw), modifier, identifier, type, wrapper. Дозволяється використовувати будь-яке однозначне скорочення цих слів"
+msgstr ""
+"Реєструє СИМВОЛ з вказаним ТИПом. Дозволені типи то: keyword (або kw), "
+"modifier, identifier, type, wrapper. Дозволяється використовувати будь-яке "
+"однозначне скорочення цих слів"
 
 #: src/main.c:98
 msgid "Assume main function to be called NAME"
@@ -186,7 +195,7 @@ msgid "COMMAND"
 msgstr "КОМАНДА"
 
 #: src/main.c:106
-msgid "Run the specified preprocessor command"
+msgid "* Run the specified preprocessor command"
 msgstr "Вказує як запускати препроцесор"
 
 #: src/main.c:114
@@ -194,11 +203,11 @@ msgid "Output control:"
 msgstr "Керування виводом:"
 
 #: src/main.c:116
-msgid "Print line numbers"
+msgid "* Print line numbers"
 msgstr "Друкувати номери рядків"
 
 #: src/main.c:120
-msgid "Print nesting level along with the call tree"
+msgid "* Print nesting level along with the call tree"
 msgstr "Друкувати рівень вкладеності"
 
 #: src/main.c:124
@@ -206,15 +215,15 @@ msgid "Control graph appearance"
 msgstr "Налаштування вигляду графу"
 
 #: src/main.c:126
-msgid "Draw ASCII art tree"
+msgid "* Draw ASCII art tree"
 msgstr "Друкувати граф у формі дерева викликів"
 
 #: src/main.c:130
-msgid "Brief output"
+msgid "* Brief output"
 msgstr "Короткий вихідний формат"
 
 #: src/main.c:134
-msgid "Additionally format output for use with GNU Emacs"
+msgid "* Additionally format output for use with GNU Emacs"
 msgstr "Форматувати граф для режіму cflow GNU Emacsа"
 
 #: src/main.c:140
@@ -222,7 +231,7 @@ msgid "Informational options:"
 msgstr "Інформаційні опції:"
 
 #: src/main.c:142
-msgid "Verbose error diagnostics"
+msgid "* Verbose error diagnostics"
 msgstr "Докладна діагностика помилок"
 
 #: src/main.c:146
