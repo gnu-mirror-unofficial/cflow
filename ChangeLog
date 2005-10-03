@@ -1,6 +1,5 @@
 2005-10-03  Sergey Poznyakoff  <gray@gnu.org.ua>
 
-	
 	* configure.ac: Raised version number to 1.0.
 	Set RENDITION level depending on the program version.
 	Make sure HAVE_DECL_PROGRAM_INVOCATION_NAME is 1.
