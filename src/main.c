@@ -60,7 +60,7 @@ static struct argp_option options[] = {
        N_("* Print reverse call tree"), GROUP_ID+1 },
      { "xref", 'x', NULL, 0,
        N_("Produce cross-reference listing only"), GROUP_ID+1 },
-     { "print", 'P', N_("OPT"), 0,
+     { "print", 'P', N_("OPT"), OPTION_HIDDEN,
        N_("Set printing option to OPT. Valid OPT values are: xref (or cross-ref), tree. Any unambiguous abbreviation of the above is also accepted"),
        GROUP_ID+1 },
      { "output", 'o', N_("FILE"), 0,
