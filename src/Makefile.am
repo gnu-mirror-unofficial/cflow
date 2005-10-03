@@ -41,7 +41,7 @@ AM_LFLAGS=-dvp
 EXTRA_DIST=cflow.rc
 
 CFLOW_FLAGS=-i^s --brief
-cflow_CFLOW_INPUT=$(cflow_OBJECTS:.$(OBJEXT)=.c)
+cflow_CFLOW_INPUT=$(cflow_OBJECTS:.@OBJEXT@=.c)
 cflow.cflow: $(cflow_CFLOW_INPUT) cflow.rc Makefile
 	CFLOWRC=$(top_srcdir)/src/cflow.rc \
 	 cflow -o$@ $(CFLOW_FLAGS) $(DEFS) \
