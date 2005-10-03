@@ -35,7 +35,7 @@ cflow_SOURCES = \
 
 localedir = $(datadir)/locale
 
-cflow_LDADD=../lib/libcflow.a
+cflow_LDADD=../lib/libcflow.a $(LIBINTL)
 AM_CPPFLAGS=-DLOCALEDIR=\"$(localedir)\"
 AM_LFLAGS=-dvp
 EXTRA_DIST=cflow.rc
