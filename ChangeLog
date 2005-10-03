@@ -1,16 +1,24 @@
 2005-10-03  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	
 	* configure.ac: Raised version number to 1.0.
 	Set RENDITION level depending on the program version.
+	Make sure HAVE_DECL_PROGRAM_INVOCATION_NAME is 1.
 	* NEWS: Updated
 	* doc/Makefile.am (RENDITION): Removed assignment.
 	* doc/cflow.texi: Fix typo
 	* doc/d.c, doc/wc.c: Untabify
 	* src/Makefile.am (cflow_LDADD): Add $(LIBINTL)
 	* src/main.c ("print" option): Set hidden attribute. I'm not sure
-	whether we need this option. 
+	whether we need this option.
+	Include strndup.h
 	* src/parser.c (parse_function_declaration): Fix ANSI compatibility 
 
+	* lib/argcv.c (argcv_unquote_copy): Minor fix.
+
+	* src/Makefile.am (cflow_CFLOW_INPUT): Use @OBJEXT@ instead of
+	$(OBJEXT) to satisfy non-GNU makes. 
+	
 2005-09-27  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* configure.ac: Raised version number to 0.2.3
