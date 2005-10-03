@@ -19,7 +19,7 @@
 # 02110-1301 USA.
 
 AC_PREREQ(2.59)
-AC_INIT([GNU cflow], [0.2.3], [bug-cflow@gnu.org])
+AC_INIT([GNU cflow], [1.0], [bug-cflow@gnu.org])
 AC_CONFIG_SRCDIR([src/cflow.h])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE
@@ -75,6 +75,17 @@ AC_SUBST(lisp_LISP)
 # Gettext.
 AM_GNU_GETTEXT([external], [need-ngettext])
 AM_GNU_GETTEXT_VERSION(0.14.1)
+
+# Doc hints.
+# Select a rendition level:
+#  DISTRIB for stable releases (at most one dot in the version number)
+#  PROOF for alpha releases.
+#  PUBLISH can only be required manually when running make in doc/
+AC_SUBST(RENDITION)
+case `echo $VERSION|sed  's/[[^.]]//g'` in
+""|".")  RENDITION=DISTRIB;;
+*)     RENDITION=PROOF;;
+esac
 
 ### Initialize the test suite.
 AC_CONFIG_TESTDIR(tests)
