@@ -5,5 +5,14 @@ Makevars.template
 POTFILES
 Rules-quot
 cflow.pot
+boldquot.sed
+en@boldquot.header
+en@quot.header
+insert-header.sin
+mailutils.pot
+quot.sed
+remove-potcdate.sin
 remove-potcdate.sed
 stamp-po
+*.mo
+*.gmo

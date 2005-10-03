@@ -1,8 +1,13 @@
-GNU cflow NEWS -- history of user-visible changes.  2005-09-27
+GNU cflow NEWS -- history of user-visible changes.  2005-10-03
 Copyright (C) 2005 Sergey Poznyakoff
 See the end of file for copying conditions.
 
 Please send cflow bug reports to <bug-cflow@gnu.org>.
+
+Version 1.0:
+
+* First official release.
+
 
 Version 0.2.3:
 
