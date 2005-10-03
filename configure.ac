@@ -39,6 +39,13 @@ AC_CHECK_HEADERS([stdlib.h string.h unistd.h locale.h])
 AC_FUNC_ERROR_AT_LINE
 AC_CHECK_FUNCS([memmove memset strdup strerror strtol setlocale])
 
+# Dirty hack: make sure HAVE_DECL_PROGRAM_INVOCATION_NAME is defined
+# This must be done before gl_ARGP, which attempts
+# an AC_CHECK_DECLS([program_invocation_name), because autoconf machinery
+# gives preference to the first definition, in spite of what the comment
+# at autoconf/status.m4:574 sais
+AC_DEFINE([HAVE_DECL_PROGRAM_INVOCATION_NAME], 1)
+
 cflow_GNULIB
 MU_DEBUG_MODE
 
@@ -48,11 +55,11 @@ AH_TEMPLATE([PROGRAM_INVOCATION_NAME_DECLARED],
 # This variable should have been set in m4/argp.m4
 if test "$ac_cv_have_decl_program_invocation_name" = no; then
 	AC_LIBOBJ([pin])
-	AC_DEFINE([HAVE_DECL_PROGRAM_INVOCATION_NAME],1)
 	AC_DEFINE_UNQUOTED([PROGRAM_INVOCATION_NAME_DECLARED],0)
 else
 	AC_DEFINE_UNQUOTED([PROGRAM_INVOCATION_NAME_DECLARED],1)
 fi
+
 
 AH_BOTTOM([
 #if !PROGRAM_INVOCATION_NAME_DECLARED
