@@ -28,7 +28,6 @@ clean-local:
 
 # The rendering level is one of PUBLISH, DISTRIB or PROOF.
 # Just call `make RENDITION=PROOF [target]' if you want PROOF rendition.
-RENDITION = DISTRIB
 
 MAKEINFOFLAGS=-D$(RENDITION)
 
