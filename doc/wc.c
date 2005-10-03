@@ -70,7 +70,7 @@ isword (unsigned char c)
 #define COUNT(c)       \
       ccount++;        \
       if ((c) == '\n') \
-	lcount++;
+        lcount++;
 
 /* Get next word from the input stream. Return 0 on end
    of file or error condition. Return 1 otherwise. */
@@ -86,10 +86,10 @@ getword (FILE *fp)
   while ((c = getc (fp)) != EOF)
     {
       if (isword (c))
-	{
-	  wcount++;
-	  break;
-	}
+        {
+          wcount++;
+          break;
+        }
       COUNT (c);
     }
 
@@ -97,7 +97,7 @@ getword (FILE *fp)
     {
       COUNT (c);
       if (!isword (c))
-	break;
+        break;
     }
 
   return c != EOF;

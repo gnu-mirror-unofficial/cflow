@@ -62,20 +62,20 @@ printdir (int level, char *name)
     {
       printf ("%*.*s%s", level, level, "", ent->d_name);
       if (ignorent (ent->d_name))
-	printf ("\n");
+        printf ("\n");
       else if (isdir (ent->d_name))
-	{
-	  printf ("/");
-	  if (level + 1 == max_level)
-	    putchar ('\n');
-	  else
-	    {
-	      printf (" contains:\n");
-	      printdir (level + 1, ent->d_name);
-	    }
-	}
+        {
+          printf ("/");
+          if (level + 1 == max_level)
+            putchar ('\n');
+          else
+            {
+              printf (" contains:\n");
+              printdir (level + 1, ent->d_name);
+            }
+        }
       else
-	printf ("\n");
+        printf ("\n");
     }
   closedir (dir);
   chdir (cwd);
@@ -93,7 +93,7 @@ main (int argc, char **argv)
   if (argv[1][0] == '-')
     {
       if (!(argv[1][1] == '-' && argv[1][2] == 0))
-	max_level = atoi (&argv[1][1]);
+        max_level = atoi (&argv[1][1]);
       --argc;
       ++argv;
     }
@@ -103,7 +103,3 @@ main (int argc, char **argv)
   
   return 1;
 }
-
-	  
-    
-  
