@@ -604,7 +604,7 @@ $ cflow --number -i x --symbol DIR:type d.c
 @cindex @code{__P}, special handling using @option{--symbol}
      Another important symbol type is a @dfn{parameter wrapper}. It is
 a kind of a macro, often used in sources that are meant to be
-compatible with pre-@acronym{ASNI} compilers to protect parameter
+compatible with pre-@acronym{ANSI} compilers to protect parameter
 declarations in function prototypes. For example, in the declaration
 below, taken from @file{/usr/include/resolv.h}, @code{__P} is a
 parameter wrapper: 
@@ -937,8 +937,7 @@ configuration file, but then occasionally need to obtain verbose
 graph. To cancel effect of any GNU @command{cflow} option that does
 not take arguments, prepend @samp{no-} to the corresponding long
 option name. Thus, specifying @option{--no-brief} cancels the effect
-of the previous @option{--brief} option. @FIXME{The @samp{--no-} support
-should be implemented in  @command{argp} module.}
+of the previous @option{--brief} option.
 
 @node Makefiles, Options, Configuration, Top
 @chapter Using @command{cflow} in Makefiles.
