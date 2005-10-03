@@ -410,9 +410,9 @@ expression()
 void
 parse_function_declaration(Ident *ident, int parm)
 {
+     int error_recovery = 0;
      ident->type_end = -1;
      parse_knr_dcl(ident);
-     int error_recovery = 0;
 
  restart:
      switch (tok.type) {
