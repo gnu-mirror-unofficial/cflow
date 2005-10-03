@@ -20,6 +20,7 @@
 #include <argp.h>
 #include <stdarg.h>
 #include <parser.h>
+#include <strndup.h>
 
 const char *argp_program_version = "cflow (" PACKAGE_NAME ") " VERSION;
 const char *argp_program_bug_address = "<" PACKAGE_BUGREPORT ">";
