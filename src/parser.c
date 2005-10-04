@@ -289,7 +289,7 @@ finish_save_stack(char *name)
 	  if (level == 0)
 	       save_token(token_stack+i);
      }
-
+     obstack_1grow(&text_stk, 0);
      return obstack_finish(&text_stk);
 }
 
