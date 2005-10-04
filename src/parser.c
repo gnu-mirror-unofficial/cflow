@@ -33,7 +33,6 @@ void parse_function_declaration(Ident*, int);
 void parse_dcl(Ident*);
 void parse_knr_dcl(Ident*);
 void parse_typedef();
-void parse_struct();
 void expression();
 void initializer_list();
 void func_body();
@@ -258,7 +257,7 @@ void
 save_stack()
 {
      int i;
-     
+
      need_space = 0;
      for (i = 0; i < curs-1; i++) 
 	  save_token(token_stack+i);
@@ -691,11 +690,6 @@ parse_typedef()
 }
 
 void
-parse_struct()
-{
-}
-
-void
 parse_dcl(Ident *ident)
 {
      ident->parmcnt = -1;
@@ -833,6 +827,7 @@ maybe_parm_list(int *parm_cnt_return)
      int parmcnt = 0;
      Ident ident;
      int level;
+
      while (nexttoken()) {
 	  switch (tok.type) {
 	  case ')':
