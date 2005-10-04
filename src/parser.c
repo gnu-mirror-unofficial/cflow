@@ -49,7 +49,6 @@ void call(char*, int);
 void reference(char*, int);
 
 int level;
-char *declstr;
 Symbol *caller;
 struct obstack text_stk;
 
@@ -166,17 +165,6 @@ clearstack()
      tos = curs = 0;
 }
 
-void
-delete_tokens(Stackpos sp)
-{
-     int delta = tos - curs;
-     
-     if (delta)
-	  memmove(token_stack+sp[0], token_stack+curs,
-		  delta*sizeof(token_stack[0]));
-     restore(sp);
-}
-
 int
 nexttoken()
 {
@@ -253,21 +241,56 @@ save_token(TOKSTK *tokptr)
      }
 }
 
+static Stackpos start_pos; /* Start position in stack for saving tokens */
+static int save_end;       /* Stack position up to which the tokens are saved */
+
 void
 save_stack()
 {
-     int i;
-
-     need_space = 0;
-     for (i = 0; i < curs-1; i++) 
-	  save_token(token_stack+i);
+     mark(start_pos);
+     save_end = curs - 1;
 }
 
 void
-finish_save()
+undo_save_stack()
 {
-     obstack_1grow(&text_stk, 0);
-     declstr = obstack_finish(&text_stk);
+     save_end = -1;
+}
+
+char *
+finish_save_stack(char *name)
+{
+     int i;
+     int level = 0;
+     int found_ident = !omit_symbol_name_option;
+
+     need_space = 0;
+     for (i = 0; i < save_end ; i++) {
+	  switch (token_stack[i].type) {
+	  case '(':
+	       if (omit_arguments_option) {
+		    if (level == 0) {
+			 save_token(token_stack+i);
+		    }
+		    level++;
+	       }
+	       break;
+	  case ')':
+	       if (omit_arguments_option) 
+		    level--;
+	       break;
+	  case IDENTIFIER:
+	       if (!found_ident && strcmp (name, token_stack[i].token) == 0) {
+		    need_space = 1;
+		    found_ident = 1;
+		    continue;
+	       }
+	  }
+	  if (level == 0)
+	       save_token(token_stack+i);
+     }
+
+     return obstack_finish(&text_stk);
 }
 
 void
@@ -697,12 +720,10 @@ parse_dcl(Ident *ident)
      putback();
      dcl(ident);
      save_stack();
-     if (ident->name) {	  
+     if (ident->name)
 	  declare(ident);
-     } else {
-	  finish_save();
-	  obstack_free(&text_stk, declstr);
-     }
+     else 
+	  undo_save_stack();
 }
 
 int
@@ -925,10 +946,8 @@ declare(Ident *ident)
 {
      Symbol *sp;
      
-     finish_save();
-     
      if (ident->storage == AutoStorage) {
-	  obstack_free(&text_stk, declstr);
+	  undo_save_stack();
 	  sp = install(ident->name);
 	  sp->type = SymIdentifier;
 	  sp->storage = ident->storage;
@@ -939,6 +958,7 @@ declare(Ident *ident)
      
      if ((ident->parmcnt >= 0 && !(tok.type == LBRACE || tok.type == LBRACE0))
 	 || (ident->parmcnt < 0 && ident->storage == ExplicitExternStorage)) {
+	  undo_save_stack();
 	  /* add_external()?? */
 	  return;
      }
@@ -956,7 +976,7 @@ declare(Ident *ident)
      sp->arity = ident->parmcnt;
      sp->storage = (ident->storage == ExplicitExternStorage) ?
 	  ExternStorage : ident->storage;
-     sp->decl = declstr;
+     sp->decl = finish_save_stack(ident->name);
      sp->source = filename;
      sp->def_line = ident->line;
      sp->level = level;
@@ -965,7 +985,7 @@ declare(Ident *ident)
 		 filename,
 		 line_num,
 		 ident->name, ident->parmcnt,
-		 declstr);
+		 sp->decl);
 }
 
 void
@@ -973,7 +993,7 @@ declare_type(Ident *ident)
 {
      Symbol *sp;
      
-     finish_save();
+     undo_save_stack();
      sp = lookup(ident->name);
      for ( ; sp; sp = sp->next)
 	  if (sp->type == SymToken && sp->token_type == TYPE)
