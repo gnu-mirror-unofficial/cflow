@@ -43,7 +43,11 @@ enum option_code {
      OPT_NO_VERBOSE,
      OPT_NO_NUMBER,
      OPT_NO_PRINT_LEVEL,
-     OPT_NO_REVERSE
+     OPT_NO_REVERSE,
+     OPT_OMIT_ARGUMENTS,
+     OPT_NO_OMIT_ARGUMENTS,
+     OPT_OMIT_SYMBOL_NAME,
+     OPT_NO_OMIT_SYMBOL_NAME
 };
 
 static struct argp_option options[] = {
@@ -135,6 +139,14 @@ static struct argp_option options[] = {
        N_("* Additionally format output for use with GNU Emacs"), GROUP_ID+1 },
      { "no-emacs", OPT_NO_EMACS, NULL, OPTION_HIDDEN,
        "", GROUP_ID+1 },
+     { "omit-arguments", OPT_OMIT_ARGUMENTS, NULL, 0,
+       N_("* Do not print function arguments in declaration strings"), GROUP_ID+1 },
+     { "no-ignore-arguments", OPT_NO_OMIT_ARGUMENTS, NULL, OPTION_HIDDEN,
+       "", GROUP_ID+1 },
+     { "omit-symbol-name", OPT_OMIT_SYMBOL_NAME, NULL, 0,
+       N_("* Do not print symbol names in declaration strings"), GROUP_ID+1 },
+     { "no-omit-symbol-name", OPT_NO_OMIT_SYMBOL_NAME, NULL, OPTION_HIDDEN,
+       "", GROUP_ID+1 },
 #undef GROUP_ID
 #define GROUP_ID 30                 
      { NULL, 0, NULL, 0,
@@ -194,6 +206,8 @@ int brief_listing;      /* Produce short listing */
 int reverse_tree;       /* Generate reverse tree */
 int max_depth;          /* The depth at which the flowgraph is cut off */
 int emacs_option;       /* Format and check for use with Emacs cflow-mode */ 
+int omit_arguments_option;   /* Omit arguments from function declaration string */
+int omit_symbol_name_option; /* Omit symbol name from symbol declaration string */
 
 #define SM_FUNCTIONS   0x0001
 #define SM_DATA        0x0002
@@ -587,6 +601,18 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	       default:
 		    argp_error(state, _("Unknown symbol class: %c"), *arg);
 	       }
+	  break;
+     case OPT_OMIT_ARGUMENTS:
+	  omit_arguments_option = 1;
+	  break;
+     case OPT_NO_OMIT_ARGUMENTS:
+	  omit_arguments_option = 0;
+	  break;
+     case OPT_OMIT_SYMBOL_NAME:
+	  omit_symbol_name_option = 1;
+	  break;
+     case OPT_NO_OMIT_SYMBOL_NAME:
+	  omit_symbol_name_option = 0;
 	  break;
      case 'l':
 	  print_levels = 1;

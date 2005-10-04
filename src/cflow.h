@@ -139,6 +139,8 @@ extern int max_depth;
 extern int emacs_option;
 extern int debug;
 extern int preprocess_option;
+extern int omit_arguments_option;
+extern int omit_symbol_name_option;
 
 extern int token_stack_length;
 extern int token_stack_increase;
