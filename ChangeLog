@@ -1,6 +1,16 @@
 2005-10-04  Sergey Poznyakoff  <gray@gnu.org.ua>
 
-	* src/parser.c (parse_struct): Removed function'
+	* doc/cflow.texi: Fix posix output
+	* src/parser.c (parse_struct): Removed function
+	* src/cflow.h (omit_arguments_option,omit_symbol_name): New
+	options.
+	* src/main.c: Likewise.
+	* src/parser.c (save_stack): Rewritten. Save only stack positions,
+	do not create character string
+	(undo_save_stack,finish_save_stack): New functions
+	(finish_save): Removed
+	* src/posix.c (print_symbol_type): Updated to match new
+	finish_save_stack strategy.
 
 2005-10-03  Sergey Poznyakoff  <gray@gnu.org.ua>
 
