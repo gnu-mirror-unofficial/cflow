@@ -22,35 +22,12 @@
 static void
 print_symbol_type(FILE *outfile, Symbol *sym)
 {
-     if (sym->decl) {
-	  char *p = sym->decl;
-	       
-	  while (*p) {
-	       char *q = p;
-
-	       /* Skip whitespace */
-	       while (*q && isspace (*q))
-		    q++;
-	       
-	       if (*q == '(') {
-		    /* Do not print function name */
-		    p = q;
-		    break;
-	       }
-
-	       /* Skip identifier */
-	       while (*q && !isspace (*q))
-		    q++;
-		    
-	       for (; p < q; p++)
-		    fputc(*p, outfile);
-	  }
-	  
+     if (sym->decl) 
 	  fprintf(outfile, "%s, <%s %d>",
-		  p,
+		  sym->decl,
 		  sym->source,
 		  sym->def_line);
-     } else
+     else
 	  fprintf(outfile, "<>");
 }
 
@@ -81,7 +58,7 @@ posix_output_handler(cflow_output_command cmd,
 	  /* Additional check for consistency */
 	  if (emacs_option)
 	       error(1, 0, _("--format=posix is not compatible with --emacs"));
-	  brief_listing = print_line_numbers = 1;
+	  brief_listing = print_line_numbers = omit_symbol_name_option = 1;
 	  break;
      case cflow_output_begin:
      case cflow_output_end:
