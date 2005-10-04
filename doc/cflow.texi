@@ -355,7 +355,7 @@ file will look as follows:
 @smallexample
     1 main: int main(int argc,char **argv), <whoami.c 26>
     2     fprintf: <>
-    3     who_am_i: int who_am_i(void), <whoami.c 8>
+    3     who_am_i: int (void), <whoami.c 8>
     4         getpwuid: <>
     5         geteuid: <>
     6         getenv: <>
