@@ -264,7 +264,7 @@ finish_save_stack(char *name)
 {
      int i;
      int level = 0;
-     int found_ident = !omit_symbol_name_option;
+     int found_ident = !omit_symbol_names_option;
 
      need_space = 0;
      for (i = 0; i < save_end ; i++) {

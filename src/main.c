@@ -206,8 +206,8 @@ int brief_listing;      /* Produce short listing */
 int reverse_tree;       /* Generate reverse tree */
 int max_depth;          /* The depth at which the flowgraph is cut off */
 int emacs_option;       /* Format and check for use with Emacs cflow-mode */ 
-int omit_arguments_option;   /* Omit arguments from function declaration string */
-int omit_symbol_name_option; /* Omit symbol name from symbol declaration string */
+int omit_arguments_option;    /* Omit arguments from function declaration string */
+int omit_symbol_names_option; /* Omit symbol name from symbol declaration string */
 
 #define SM_FUNCTIONS   0x0001
 #define SM_DATA        0x0002
@@ -609,10 +609,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	  omit_arguments_option = 0;
 	  break;
      case OPT_OMIT_SYMBOL_NAMES:
-	  omit_symbol_name_option = 1;
+	  omit_symbol_names_option = 1;
 	  break;
      case OPT_NO_OMIT_SYMBOL_NAMES:
-	  omit_symbol_name_option = 0;
+	  omit_symbol_names_option = 0;
 	  break;
      case 'l':
 	  print_levels = 1;

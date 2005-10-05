@@ -58,7 +58,7 @@ posix_output_handler(cflow_output_command cmd,
 	  /* Additional check for consistency */
 	  if (emacs_option)
 	       error(1, 0, _("--format=posix is not compatible with --emacs"));
-	  brief_listing = print_line_numbers = omit_symbol_name_option = 1;
+	  brief_listing = print_line_numbers = omit_symbol_names_option = 1;
 	  break;
      case cflow_output_begin:
      case cflow_output_end:
