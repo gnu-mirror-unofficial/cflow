@@ -1,5 +1,9 @@
 2005-10-05  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* src/cflow.h (newline): New prototype
+	* src/parser.c: Minor fixes
+	* src/symbol.c: Minor fixes
+
 	* doc/cflow.texi: Updated. Mention cflow2vcg and vcg tools.
 	* src/cflow.h (enum symbol_flag): New type
 	(struct symbol): Replace `int temp' with `enum symbol_flag flag'
