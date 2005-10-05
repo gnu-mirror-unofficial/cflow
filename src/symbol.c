@@ -58,7 +58,12 @@ install(char *name)
      memset(sym, 0, sizeof(*sym));
      sym->type = SymUndefined;
      sym->name = name;
-     sym->temp = canonical_filename && strcmp(filename, canonical_filename);
+
+     if (canonical_filename && strcmp(filename, canonical_filename))
+	  sym->flag = symbol_temp;
+     else
+	  sym->flag = symbol_none;
+     
      if (! ((symbol_table
 	     || (symbol_table = hash_initialize (0, 0, 
 						 hash_symbol_hasher,
@@ -113,7 +118,7 @@ temp_processor(void *data, void *proc_data)
 {
      Symbol *s = data;
      
-     if (s->temp) 
+     if (s->flag == symbol_temp) 
 	  delete_symbol(s);
      return true;
 }
@@ -219,6 +224,48 @@ collect_symbols(Symbol ***return_sym, int (*sel)(Symbol *p))
      hash_do_for_each (symbol_table, collect_processor, &cdata);
      *return_sym = cdata.sym;
      return cdata.index;
+}
+
+
+/* Special handling for function parameters */
+
+static bool
+delete_parm_processor(void *data, void *proc_data)
+{
+     Symbol *s = data;
+     int *level = proc_data;
+     if (s->type == SymIdentifier && s->storage == AutoStorage
+	 && s->flag == symbol_parm && s->level > *level)
+	  delete_symbol(s);
+     return true;
+}
+
+/* Delete all parameters with parameter nesting level greater than LEVEL */
+void
+delete_parms(int level)
+{
+     hash_do_for_each (symbol_table, delete_parm_processor, &level);
+}
+
+static bool
+move_parm_processor(void *data, void *proc_data)
+{
+     Symbol *s = data;
+     int *level = proc_data;
+     if (s->type == SymIdentifier && s->storage == AutoStorage
+	 && s->flag == symbol_parm) {
+	  s->level = *(int*)proc_data;
+	  s->flag = symbol_none;
+     }
+     return true;
+}
+
+/* Redeclare all saved parameters as automatic variables with the
+   given nesting level */
+void
+move_parms(int level)
+{
+     hash_do_for_each (symbol_table, move_parm_processor, &level);
 }
 
 
