@@ -1,3 +1,25 @@
+2005-10-05  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* doc/cflow.texi: Updated. Mention cflow2vcg and vcg tools.
+	* src/cflow.h (enum symbol_flag): New type
+	(struct symbol): Replace `int temp' with `enum symbol_flag flag'
+	(delete_parms,move_parms): New functions
+	* src/main.c: Rename --omit-symbol-name to --omit-symbol-name for
+	consistency.
+	* src/parser.c: Fix handling of function formal parameters:
+	(parm_level): New variable
+	(parse_declaration): Call delete_parms
+	(maybe_parm_list): Keep track of the parameter nesting level.
+	(func_body): Call move_parms
+	(declare): Special handling for parameters.
+	* src/symbol.c (install): Initialize sym->flag
+	(temp_processor): Use s->flag
+	(delete_parms,move_parms): New functions
+
+	* tests/parm.at: New testcase
+	* tests/Makefile.am: Add parm.at
+	* tests/testsuite.at: Likewise
+
 2005-10-04  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* doc/cflow.texi: Fix posix output
