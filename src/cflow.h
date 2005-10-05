@@ -74,14 +74,21 @@ typedef struct {
      char *source;
 } Ref;
 
+enum symbol_flag {
+     symbol_none,
+     symbol_temp,                  /* Temporary symbol. Must be deleted after
+				      processing of the current module */
+     symbol_parm                   /* Parameter */
+};
+
 typedef struct symbol Symbol;
 
 struct symbol {
      Symbol *next;                 /* Next symbol with the same hash */
      enum symtype type;            /* Type of the symbol */
      char *name;                   /* Identifier */
-     int temp;                     /* Temporary symbol. Must be deleted after
-				      processing of the current module */
+     enum symbol_flag flag;        /* Specific flag */
+     
      int active;                   /* Set to 1 when the symbol's subtree is
 				      being processed, prevent recursion */
      int expand_line;              /* Output line when this symbol was first
@@ -92,7 +99,8 @@ struct symbol {
      int def_line;                 /* Source line */
      Consptr ref_line;             /* Referenced in */
      
-     int level;                    /* Nesting level (for local vars only) */
+     int level;                    /* Block nesting level (for local vars),
+				      Parameter nesting level (for params) */
      
      char *decl;                   /* Declaration */ 
      enum storage storage;         /* Storage type */
@@ -152,6 +160,8 @@ Symbol *lookup(char*);
 Symbol *install(char*);
 void delete_autos(int level);
 void delete_statics(void);
+void delete_parms(int level);
+void move_parms(int level);
 void cleanup(void);
 int collect_symbols(Symbol ***, int (*sel)());
 Consptr append_to_list(Consptr *, void *);
