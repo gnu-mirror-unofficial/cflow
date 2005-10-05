@@ -177,6 +177,7 @@ void init_parse(void);
 int yyparse(void);
 
 void output(void);
+void newline(void);
 void print_level(int lev, int last);
 int globals_only(void);
 int include_symbol(Symbol *sym);
