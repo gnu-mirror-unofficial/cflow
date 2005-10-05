@@ -143,7 +143,7 @@ dependencies. Here is the program:
 @cindex GNU Output Format, an example
 @smallexample
 @group
-$ cflow whoami.c
+$ @kbd{cflow whoami.c}
 main() <int main (int argc,char **argv) at whoami.c:26>:
     fprintf()
     who_am_i() <int who_am_i (void) at whoami.c:8>:
@@ -178,6 +178,22 @@ colon indicates that @code{main} invokes other functions.
      The lines following this one show which functions are called by
 @code{main}. Each such line is indented by fixed amount of white space
 (by default four spaces) for each nesting level.
+
+@cindex @option{--omit-symbol-names} option introduced
+@cindex @option{--omit-arguments} option introduced
+@anchor{omit signature parts}
+     Usually @command{cflow} prints a full function signature. However,
+sometimes you may wish to omit some part of it. Several options are
+provided for this purpose. To print signatures without function names,
+use @option{--omit-symbol-names} option. To omit argument list, use
+@option{--omit-arguments}. These options can be needed for a variety
+of reasons, one of them being to make the resulting graph more
+compact. To illustrate their effect, here is how would the first line of the
+above graph look if you had used both @option{--omit-} options:
+
+@smallexample
+main() <int () at whoami.c:25>:
+@end smallexample
 
 @cindex start symbol
 @cindex @option{--main} command line option introduced
@@ -224,7 +240,7 @@ option. For example, using a sample @file{whoami.c}:
 @cindex reverse tree, example
 @smallexample
 @group
-$ cflow --reverse whoami.c
+$ @kbd{cflow --reverse whoami.c}
 fprintf():
     who_am_i() <int who_am_i (void) at whoami.c:8>:
         main() <int main (int argc,char **argv) at whoami.c:26>
@@ -264,7 +280,7 @@ times. This is @dfn{verbose} output. To make it brief, use
 @cindex brief output, an example of
 @smallexample
 @group
-$ cflow --brief --reverse whoami.c
+$ @kbd{cflow --brief --reverse whoami.c}
 fprintf():
     who_am_i() <int who_am_i (void) at whoami.c:8>:
         main() <int main (int argc,char **argv) at whoami.c:26>
@@ -300,7 +316,7 @@ number}, that is the ordinal number of this line in the output. With
 this option, the above output will look like:
 
 @smallexample
-$ cflow --number --brief --reverse whoami.c
+$ @kbd{cflow --number --brief --reverse whoami.c}
 @group
     1 fprintf():
     2     who_am_i() <int who_am_i (void) at whoami.c:8>:
@@ -353,6 +369,7 @@ environment variable @env{POSIXLY_CORRECT} was set.
 file will look as follows:
 
 @smallexample
+$ @kbd{cflow --format=posix whoami.c}
     1 main: int (int argc,char **argv), <whoami.c 26>
     2     fprintf: <>
     3     who_am_i: int (void), <whoami.c 8>
@@ -363,9 +380,58 @@ file will look as follows:
     8         printf: <>
 @end smallexample
 
+     It is not clear from the @acronym{POSIX} specification whether
+the output should contain argument lists in function declarations, or
+not. By default @command{cflow} will print them. However, some programs,
+analyzing @command{cflow} output expect them to be absent. If you use
+such a program, add @option{--omit-arguments} option to
+@command{cflow} command line (@pxref{omit signature parts}).
+     
 @FIXME{Discuss the differences and the reason
 for existence of each output format. Explain that more formats
 will appear in the future.}
+
+     Future versions of @command{cflow} will offer more output
+formats, including @acronym{XML} and @acronym{HTML}
+outputs. Currently, you can use @command{VCG} tool
+(@url{http://rw4.cs.uni-sb.de/@/users/@/sander/@/html/gsvcg1.html})
+to create graphical representation of the produced graphs. To
+transform @command{cflow} output to @command{xvcg} input syntax, use
+@command{cflow2vcg} program
+(@url{http://cflow2vcg.sourceforge.net/}). Both programs are available
+under GPL.
+
+@cindex @command{cflow2vcg}, using with @command{cflow}
+@cindex @command{xvcg}, using with @command{cflow}
+     @command{Cflow2vcg} expects @acronym{POSIX} call graphs, indented
+with exactly one horizontal tabulation character per nesting level,
+with an additional tab character for zeroth level and without argument
+lists in function declaration. So, to produce an output suitable for
+@command{cflow2vcg}, invoke @command{cflow} as
+follows@footnote{(@xref{ASCII Tree, level-indent}, for the detailed
+description of @option{--level-indent} option}:
+
+@smallexample
+@group
+@kbd{cflow --format=posix --omit-arguments \
+      --level-indent='0=\t' --level-indent='1=\t' \
+      --level-indent=start='\t'}
+@end group
+@end smallexample
+
+     You can use the following script to visualize call graphs using
+the three tools:
+
+@smallexample
+@group
+#! /bin/sh
+
+cflow --format=posix --omit-arguments \
+      --level-indent='0=\t' --level-indent='1=\t' \
+      --level-indent=start='\t' $* |
+  cflow2vcg | xvcg -
+@end group
+@end smallexample
 
 @node Recursive Calls, Symbols, Output Formats, Top
 @chapter Handling Recursive Calls.
@@ -391,7 +457,7 @@ nesting level:
 
 @anchor{sample flowchart}     
 @smallexample
-$ cflow --number d.c
+$ @kbd{cflow --number d.c}
     1 main() <int main (int argc,char **argv) at d.c:85>:
     2     fprintf()
     3     atoi()
@@ -430,7 +496,7 @@ specify @option{-i _} (or @option{--include _}) command line option.
 Continuing our example:
 
 @smallexample
-$ cflow --number -i _ d.c
+$ @kbd{cflow --number -i _ d.c}
     1 main() <int main (int argc,char **argv) at d.c:85>:
     2     fprintf()
     3     atoi()
@@ -480,7 +546,7 @@ function @code{isdir}, running @command{cflow -i ^s}, completely omits
 this function and its callees from the resulting graph:
 
 @smallexample
-$ cflow --number -i ^s d.c
+$ @kbd{cflow --number -i ^s d.c}
     1 main() <int main (int argc,char **argv) at d.c:85>:
     2     fprintf()
     3     atoi()
@@ -515,7 +581,7 @@ use option @option{-i x}. For example:
 
 @anchor{x flowchart}
 @smallexample
-$ cflow --number -i x d.c
+$ @kbd{cflow --number -i x d.c}
     1 main() <int main (int argc,char **argv) at d.c:85>:
     2     fprintf()
     3     stderr
@@ -597,7 +663,7 @@ the symbol @var{sym} will be recorded as a @code{C} type
 definition. Thus, to fix the above output, run:
 
 @smallexample
-$ cflow --number -i x --symbol DIR:type d.c
+$ @kbd{cflow --number -i x --symbol DIR:type d.c}
 @end smallexample
 
 @cindex Parameter wrapper defined
@@ -658,7 +724,7 @@ preprocessing, run the utility with @option{--cpp}
 @cindex @option{--cpp} option, an example
 @cindex @option{--preprocess} option, an example
 @smallexample
-$ cflow --cpp -n d.c
+$ @kbd{cflow --cpp -n d.c}
     1 main() <int main (int argc,char **argv) at d.c:85>:
     2     fprintf()
     3     atoi()
@@ -812,7 +878,7 @@ example of flow graph produced with this option. The source file
 @anchor{ascii tree}
 @smallexample
 @group
-$ cflow --tree --brief --cpp wc.c
+$ @kbd{cflow --tree --brief --cpp wc.c}
 +-main() <int main (int argc,char **argv) at wc.c:127>
   +-errf() <void errf (char *fmt,...) at wc.c:34>
   | \-error_print()
@@ -1159,6 +1225,17 @@ For more information, @xref{Symbols}.
 @itemx --output=@var{file}
      Set output file name. Default is @samp{-}, meaning standard output.
 
+@cindex @option{--omit-arguments}
+@item --ommit-arguments
+     @bullet{} Do not print argument lists in function
+declarations. @xref{omit signature parts}. 
+
+@cindex @option{--omit-symbol-names}
+@item --omit-symbol-names
+     @bullet{} Do not print symbol names in declarations. @xref{omit
+signature parts}. This option is turned on in @samp{posix} output
+mode (@pxref{POSIX Output Format}.
+          
 @FIXME{I am not sure whether the one below is needed:     
 @verbatim
 @cindex @option{-P}
