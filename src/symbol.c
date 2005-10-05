@@ -251,10 +251,10 @@ static bool
 move_parm_processor(void *data, void *proc_data)
 {
      Symbol *s = data;
-     int *level = proc_data;
+     int level = *(int*)proc_data;
      if (s->type == SymIdentifier && s->storage == AutoStorage
 	 && s->flag == symbol_parm) {
-	  s->level = *(int*)proc_data;
+	  s->level = level;
 	  s->flag = symbol_none;
      }
      return true;

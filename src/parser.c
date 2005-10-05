@@ -804,7 +804,7 @@ dirdcl(Ident *idptr)
 		    if (tok.type == 0) {
 			 file_error(_("unexpected end of file in function declaration"),
 				    0);
-			 return;
+			 return 1;
 		    } else if (tok.type == '(') 
 			 level++;
 		    else if (tok.type == ')') {
