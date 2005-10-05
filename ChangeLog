@@ -1,5 +1,8 @@
 2005-10-05  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* src/cflow.h,src/main.c,src/parser.c,src/posix.c
+	(omit_symbol_name_option): Rename to omit_symbol_names_option. 
+
 	* src/cflow.h (newline): New prototype
 	* src/parser.c: Minor fixes
 	* src/symbol.c: Minor fixes
