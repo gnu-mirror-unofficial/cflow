@@ -60,5 +60,6 @@ m4_include([fdecl.at])
 m4_include([include.at])
 m4_include([ssblock.at])
 m4_include([funcarg.at])
+m4_include([parm.at])
 
 # End of testsuite.at

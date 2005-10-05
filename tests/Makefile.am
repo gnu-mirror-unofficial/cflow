@@ -52,7 +52,8 @@ TESTSUITE_AT = \
  fdecl.at\
  include.at\
  ssblock.at\
- funcarg.at
+ funcarg.at\
+ parm.at
 
 TESTSUITE = $(srcdir)/testsuite
 
