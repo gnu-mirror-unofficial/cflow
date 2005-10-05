@@ -46,8 +46,8 @@ enum option_code {
      OPT_NO_REVERSE,
      OPT_OMIT_ARGUMENTS,
      OPT_NO_OMIT_ARGUMENTS,
-     OPT_OMIT_SYMBOL_NAME,
-     OPT_NO_OMIT_SYMBOL_NAME
+     OPT_OMIT_SYMBOL_NAMES,
+     OPT_NO_OMIT_SYMBOL_NAMES
 };
 
 static struct argp_option options[] = {
@@ -140,12 +140,12 @@ static struct argp_option options[] = {
      { "no-emacs", OPT_NO_EMACS, NULL, OPTION_HIDDEN,
        "", GROUP_ID+1 },
      { "omit-arguments", OPT_OMIT_ARGUMENTS, NULL, 0,
-       N_("* Do not print function arguments in declaration strings"), GROUP_ID+1 },
+       N_("* Do not print argument lists in function declarations"), GROUP_ID+1 },
      { "no-ignore-arguments", OPT_NO_OMIT_ARGUMENTS, NULL, OPTION_HIDDEN,
        "", GROUP_ID+1 },
-     { "omit-symbol-name", OPT_OMIT_SYMBOL_NAME, NULL, 0,
+     { "omit-symbol-names", OPT_OMIT_SYMBOL_NAMES, NULL, 0,
        N_("* Do not print symbol names in declaration strings"), GROUP_ID+1 },
-     { "no-omit-symbol-name", OPT_NO_OMIT_SYMBOL_NAME, NULL, OPTION_HIDDEN,
+     { "no-omit-symbol-names", OPT_NO_OMIT_SYMBOL_NAMES, NULL, OPTION_HIDDEN,
        "", GROUP_ID+1 },
 #undef GROUP_ID
 #define GROUP_ID 30                 
@@ -608,10 +608,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
      case OPT_NO_OMIT_ARGUMENTS:
 	  omit_arguments_option = 0;
 	  break;
-     case OPT_OMIT_SYMBOL_NAME:
+     case OPT_OMIT_SYMBOL_NAMES:
 	  omit_symbol_name_option = 1;
 	  break;
-     case OPT_NO_OMIT_SYMBOL_NAME:
+     case OPT_NO_OMIT_SYMBOL_NAMES:
 	  omit_symbol_name_option = 0;
 	  break;
      case 'l':
