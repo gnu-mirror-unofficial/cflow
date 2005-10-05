@@ -48,9 +48,11 @@ void maybe_parm_list(int *parm_cnt_return);
 void call(char*, int);
 void reference(char*, int);
 
-int level;
-Symbol *caller;
-struct obstack text_stk;
+int level;                  /* Current nesting level */
+Symbol *caller;             /* Current caller */
+struct obstack text_stk;    /* Obstack for composing declaration line */
+
+int parm_level;             /* Parameter declaration nesting level */
 
 typedef struct {
      int type;
@@ -365,6 +367,7 @@ parse_declaration(Ident *ident, int parm)
 	  parse_function_declaration(ident, parm);
      else
 	  parse_variable_declaration(ident, parm);
+     delete_parms(parm_level);
 }
 
 
@@ -849,11 +852,13 @@ maybe_parm_list(int *parm_cnt_return)
      Ident ident;
      int level;
 
+     parm_level++;
      while (nexttoken()) {
 	  switch (tok.type) {
 	  case ')':
 	       if (parm_cnt_return)
 		    *parm_cnt_return = parmcnt;
+	       parm_level--;
 	       return;
 	  case ',':
 	       break;
@@ -893,6 +898,7 @@ func_body()
      Ident ident;
      
      level++;
+     move_parms(level);
      while (level) {
 	  cleanup_stack();
 	  nexttoken();
@@ -951,7 +957,11 @@ declare(Ident *ident)
 	  sp = install(ident->name);
 	  sp->type = SymIdentifier;
 	  sp->storage = ident->storage;
-	  sp->level = level;
+	  if (parm_level) {
+	       sp->level = parm_level;
+	       sp->flag = symbol_parm;
+	  } else
+	       sp->level = level;
 	  sp->arity = -1;
 	  return;
      } 
