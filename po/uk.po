@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cflow 0.2.3\n"
 "Report-Msgid-Bugs-To: bug-cflow@gnu.org\n"
-"POT-Creation-Date: 2005-09-27 14:21+0300\n"
+"POT-Creation-Date: 2005-10-04 17:16+0300\n"
 "PO-Revision-Date: 2005-09-27 14:58+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Ukrainian <translation-team-uk@lists.sourceforge.net>\n"
@@ -42,7 +42,7 @@ msgstr "Нове розташування: %s:%d\n"
 
 #. TRANSLATORS: Please, preserve the vertical tabulation (^K character)
 #. in this message
-#: src/main.c:28
+#: src/main.c:29
 msgid ""
 "generate a program flowgraph* The effect of each option marked with an "
 "asterisk is reversed if the option's long name is prefixed with `no-'. For "
@@ -52,23 +52,23 @@ msgstr ""
 "зворотну дію, якщо до їх назви додати приросток `no-'. Наприклад, --no-cpp "
 "вимикає препроцесор."
 
-#: src/main.c:51
+#: src/main.c:56
 msgid "General options:"
 msgstr "Загальні опції:"
 
-#: src/main.c:52 src/main.c:93
+#: src/main.c:57 src/main.c:98
 msgid "NUMBER"
 msgstr "ЧИСЛО"
 
-#: src/main.c:53
+#: src/main.c:58
 msgid "Set the depth at which the flowgraph is cut off"
 msgstr "Встановити максимальну висоту дерева викликів"
 
-#: src/main.c:54
+#: src/main.c:59
 msgid "CLASSES"
 msgstr "КЛАСИ"
 
-#: src/main.c:55
+#: src/main.c:60
 msgid ""
 "Include specified classes of symbols (see below). Prepend CLASSES with ^ or "
 "- to exclude them from the output"
@@ -76,29 +76,29 @@ msgstr ""
 "Включити до графу вказані класи символів (див. нижче). Щоб їх виключити "
 "додайте ^ або - на початку аргументу"
 
-#: src/main.c:56 src/main.c:97 src/main.c:101
+#: src/main.c:61 src/main.c:102 src/main.c:106
 msgid "NAME"
 msgstr "НАЗВА"
 
-#: src/main.c:57
+#: src/main.c:62
 msgid ""
 "Use given output format NAME. Valid names are `gnu' (default) and `posix'"
 msgstr ""
 "Встановлює назву вихідного формату. Дозволені назви є: gnu (типово) та posix"
 
-#: src/main.c:60
+#: src/main.c:65
 msgid "* Print reverse call tree"
-msgstr "Друкує зворотне дерево викликів"
+msgstr "* Друкує зворотне дерево викликів"
 
-#: src/main.c:62
+#: src/main.c:67
 msgid "Produce cross-reference listing only"
 msgstr "Друкує тільки таблицю посилань"
 
-#: src/main.c:63
+#: src/main.c:68
 msgid "OPT"
 msgstr "ОЗНАКА"
 
-#: src/main.c:64
+#: src/main.c:69
 msgid ""
 "Set printing option to OPT. Valid OPT values are: xref (or cross-ref), tree. "
 "Any unambiguous abbreviation of the above is also accepted"
@@ -106,55 +106,55 @@ msgstr ""
 "Встановлює опцію друкування. Дозволені ОЗНАКИ то: xref (або cross-ref) та "
 "tree. Дозволяється використовувати будь-яке однозначне скорочення цих слів"
 
-#: src/main.c:66
+#: src/main.c:71
 msgid "FILE"
 msgstr "ФАЙЛ"
 
-#: src/main.c:67
+#: src/main.c:72
 msgid "Set output file name (default -, meaning stdout)"
 msgstr "Встановлює назву вихідного файлу (типово -, тобто стандартний вихід)"
 
-#: src/main.c:70
+#: src/main.c:75
 msgid "Symbols classes for --include argument"
 msgstr "Класи символів для опції --include"
 
-#: src/main.c:72
+#: src/main.c:77
 msgid "all data symbols, both external and static"
 msgstr "всі символи-дані, як зовнішні так статичні"
 
-#: src/main.c:74
+#: src/main.c:79
 msgid "symbols whose names begin with an underscore"
 msgstr "символи що їх назви починаються зі знаку підкреслення"
 
-#: src/main.c:76
+#: src/main.c:81
 msgid "static symbols"
 msgstr "статичні символі"
 
-#: src/main.c:78
+#: src/main.c:83
 msgid "typedefs (for cross-references only)"
 msgstr "назви типів з typedef (тільки для таблиці посилань)"
 
-#: src/main.c:84
+#: src/main.c:89
 msgid "Parser control:"
 msgstr "Керування аналізатором:"
 
-#: src/main.c:86
+#: src/main.c:91
 msgid "* Rely on indentation"
-msgstr "Використовувати відступи під час аналізу"
+msgstr "* Використовувати відступи під час аналізу"
 
-#: src/main.c:90
+#: src/main.c:95
 msgid "* Accept only sources in ANSI C"
-msgstr "Приймати тільки джерела в ANSI C"
+msgstr "* Приймати тільки джерела в ANSI C"
 
-#: src/main.c:94
+#: src/main.c:99
 msgid "Set initial token stack size to NUMBER"
 msgstr "Встановити початковий розмір стеку"
 
-#: src/main.c:95
+#: src/main.c:100
 msgid "SYMBOL:TYPE"
 msgstr "СИМВОЛ:ТИП"
 
-#: src/main.c:96
+#: src/main.c:101
 msgid ""
 "Register SYMBOL with given TYPE. Valid types are: keyword (or kw), modifier, "
 "identifier, type, wrapper. Any unambiguous abbreviation of the above is also "
@@ -164,85 +164,93 @@ msgstr ""
 "modifier, identifier, type, wrapper. Дозволяється використовувати будь-яке "
 "однозначне скорочення цих слів"
 
-#: src/main.c:98
+#: src/main.c:103
 msgid "Assume main function to be called NAME"
 msgstr "Встановлює назву головної функції (типово `main')"
 
-#: src/main.c:99
+#: src/main.c:104
 msgid "NAME[=DEFN]"
 msgstr "НАЗВА=[ВИЗНАЧЕННЯ]"
 
-#: src/main.c:100
+#: src/main.c:105
 msgid "Predefine NAME as a macro"
 msgstr "Визначити макрос з вказаною назвою"
 
-#: src/main.c:102
+#: src/main.c:107
 msgid "Cancel any previous definition of NAME"
 msgstr "Скасувати попередні визначення макросу"
 
-#: src/main.c:103
+#: src/main.c:108
 msgid "DIR"
 msgstr "КАТАЛОГ"
 
-#: src/main.c:104
+#: src/main.c:109
 msgid ""
 "Add the directory DIR to the list of directories to be searched for header "
 "files."
 msgstr "Додає каталог до шляху пошуку файлів-заголовків"
 
-#: src/main.c:105
+#: src/main.c:110
 msgid "COMMAND"
 msgstr "КОМАНДА"
 
-#: src/main.c:106
+#: src/main.c:111
 msgid "* Run the specified preprocessor command"
-msgstr "Вказує як запускати препроцесор"
+msgstr "* Вказує як запускати препроцесор"
 
-#: src/main.c:114
+#: src/main.c:119
 msgid "Output control:"
 msgstr "Керування виводом:"
 
-#: src/main.c:116
+#: src/main.c:121
 msgid "* Print line numbers"
-msgstr "Друкувати номери рядків"
+msgstr "* Друкувати номери рядків"
 
-#: src/main.c:120
+#: src/main.c:125
 msgid "* Print nesting level along with the call tree"
-msgstr "Друкувати рівень вкладеності"
+msgstr "* Друкувати рівень вкладеності"
 
-#: src/main.c:124
+#: src/main.c:129
 msgid "Control graph appearance"
 msgstr "Налаштування вигляду графу"
 
-#: src/main.c:126
+#: src/main.c:131
 msgid "* Draw ASCII art tree"
-msgstr "Друкувати граф у формі дерева викликів"
+msgstr "* Друкувати граф у формі дерева викликів"
 
-#: src/main.c:130
+#: src/main.c:135
 msgid "* Brief output"
-msgstr "Короткий вихідний формат"
+msgstr "* Короткий вихідний формат"
 
-#: src/main.c:134
+#: src/main.c:139
 msgid "* Additionally format output for use with GNU Emacs"
-msgstr "Форматувати граф для режіму cflow GNU Emacsа"
+msgstr "* Форматувати граф для режіму cflow GNU Emacsа"
 
-#: src/main.c:140
+#: src/main.c:143
+msgid "* Do not print function arguments in declaration strings"
+msgstr ""
+
+#: src/main.c:147
+msgid "* Do not print symbol names in declaration strings"
+msgstr ""
+
+#: src/main.c:153
 msgid "Informational options:"
 msgstr "Інформаційні опції:"
 
-#: src/main.c:142
+#: src/main.c:155
 msgid "* Verbose error diagnostics"
-msgstr "Докладна діагностика помилок"
+msgstr "* Докладна діагностика помилок"
 
-#: src/main.c:146
+#: src/main.c:159
 msgid "Print license and exit"
 msgstr "Вивести текст ліцензії та вийти"
 
-#: src/main.c:148
+#: src/main.c:161
 msgid "Set debugging level"
 msgstr "Встановити рівень налагодження"
 
-#: src/main.c:154
+#: src/main.c:167
 msgid ""
 "   GNU cflow is free software; you can redistribute it and/or modify\n"
 "   it under the terms of the GNU General Public License as published by\n"
@@ -277,30 +285,30 @@ msgstr ""
 "\n"
 "\n"
 
-#: src/main.c:266
+#: src/main.c:281
 #, c-format
 msgid "unknown symbol type: %s"
 msgstr "невідомий тип символу: %s"
 
-#: src/main.c:295
+#: src/main.c:310
 #, c-format
 msgid "unknown print option: %s"
 msgstr "невідома ознака друкування: %s"
 
-#: src/main.c:418 src/main.c:427
+#: src/main.c:433 src/main.c:442
 msgid "level indent string is too long"
 msgstr "рядок вирівнювання надто довгий"
 
-#: src/main.c:455
+#: src/main.c:470
 msgid "level-indent syntax"
 msgstr "помилка синтаксису рядку вирівнювання"
 
-#: src/main.c:479
+#: src/main.c:494
 #, c-format
 msgid "unknown level indent option: %s"
 msgstr "невідомий опція рядку вирівнювання: %s"
 
-#: src/main.c:514
+#: src/main.c:529
 #, c-format
 msgid ""
 "License for %s:\n"
@@ -309,100 +317,100 @@ msgstr ""
 "Ліцензія для %s\n"
 "\n"
 
-#: src/main.c:560 src/main.c:733
+#: src/main.c:575 src/main.c:760
 #, c-format
 msgid "%s: No such output driver"
 msgstr "%s: не має такого вихідного приладу"
 
-#: src/main.c:587
+#: src/main.c:602
 #, c-format
 msgid "Unknown symbol class: %c"
 msgstr "Невідомий клас символу: %c"
 
-#: src/main.c:655
+#: src/main.c:682
 msgid "[FILE]..."
 msgstr "[FILE]..."
 
-#: src/main.c:698
+#: src/main.c:725
 msgid "Exiting"
 msgstr "Вихід"
 
-#: src/main.c:765
+#: src/main.c:792
 msgid "no input files"
 msgstr "не вказані вхідні файли"
 
-#: src/parser.c:119
+#: src/parser.c:117
 #, c-format
 msgid " near "
 msgstr " біля "
 
-#: src/parser.c:199
+#: src/parser.c:186
 msgid "INTERNAL ERROR: cannot return token to stream"
 msgstr "ВНУТРІШНЯ ПОМИЛКА: не вдається повернути символ у потік"
 
-#: src/parser.c:373
+#: src/parser.c:395
 msgid "unexpected end of file in expression"
 msgstr "неочікуваний кінець файлу у виразі"
 
-#: src/parser.c:428 src/parser.c:525
+#: src/parser.c:450 src/parser.c:549
 msgid "expected `;'"
 msgstr "очікувалось `;'"
 
-#: src/parser.c:443 src/parser.c:550
+#: src/parser.c:467 src/parser.c:574
 msgid "unexpected end of file in declaration"
 msgstr "неочікуваний кінець файлу у декларації"
 
-#: src/parser.c:475
+#: src/parser.c:499
 msgid "missing `;' after struct declaration"
 msgstr "після декларації структури пропущено `;' "
 
-#: src/parser.c:572
+#: src/parser.c:596
 msgid "unexpected end of file in initializer list"
 msgstr "неочікуваний кінець файлу у переліку початкових значень"
 
-#: src/parser.c:656
+#: src/parser.c:680
 msgid "unexpected end of file in struct"
 msgstr "неочікуваний кінець файлу у структурі"
 
-#: src/parser.c:749 src/parser.c:772
+#: src/parser.c:766 src/parser.c:789
 msgid "expected `)'"
 msgstr "очікувалася `)'"
 
-#: src/parser.c:785
+#: src/parser.c:802
 msgid "unexpected end of file in function declaration"
 msgstr "неочікуваний кінець файлу у декларації функції"
 
-#: src/parser.c:854
+#: src/parser.c:872
 msgid "unexpected token in parameter list"
 msgstr "неочікуваний елемент у переліку параметрів"
 
-#: src/parser.c:869
+#: src/parser.c:887
 msgid "unexpected end of file in parameter list"
 msgstr "неочікуваний кінець файлу у переліку параметрів"
 
-#: src/parser.c:906
+#: src/parser.c:924
 msgid "forced function body close"
 msgstr "примусове закінчення тіла функції"
 
-#: src/parser.c:920
+#: src/parser.c:938
 msgid "unexpected end of file in function body"
 msgstr "неочікуваний кінець файлу у тілі функції"
 
-#: src/parser.c:952
+#: src/parser.c:969
 #, c-format
 msgid "%s/%d redefined"
 msgstr "перевизначення %s/%d"
 
-#: src/parser.c:955
+#: src/parser.c:972
 msgid "this is the place of previous definition"
 msgstr "це місце першого визначення"
 
-#: src/parser.c:967
+#: src/parser.c:984
 #, c-format
 msgid "%s:%d: %s/%d defined to %s\n"
 msgstr "%s:%d: %s/%d визначено на %s\n"
 
-#: src/parser.c:992
+#: src/parser.c:1009
 #, c-format
 msgid "%s:%d: type %s\n"
 msgstr "%s:%d: тип: %s\n"
