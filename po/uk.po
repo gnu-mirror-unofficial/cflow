@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cflow 0.2.3\n"
 "Report-Msgid-Bugs-To: bug-cflow@gnu.org\n"
-"POT-Creation-Date: 2005-10-04 17:16+0300\n"
-"PO-Revision-Date: 2005-09-27 14:58+0300\n"
+"POT-Creation-Date: 2005-10-07 10:22+0300\n"
+"PO-Revision-Date: 2005-10-07 13:18+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Ukrainian <translation-team-uk@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -227,12 +227,12 @@ msgid "* Additionally format output for use with GNU Emacs"
 msgstr "* Форматувати граф для режіму cflow GNU Emacsа"
 
 #: src/main.c:143
-msgid "* Do not print function arguments in declaration strings"
-msgstr ""
+msgid "* Do not print argument lists in function declarations"
+msgstr "* Не друкувати переліки аргументів у деклараціях функцій"
 
 #: src/main.c:147
 msgid "* Do not print symbol names in declaration strings"
-msgstr ""
+msgstr "* Не друкувати назви символів у деклараціях"
 
 #: src/main.c:153
 msgid "Informational options:"
@@ -339,78 +339,78 @@ msgstr "Вихід"
 msgid "no input files"
 msgstr "не вказані вхідні файли"
 
-#: src/parser.c:117
+#: src/parser.c:119
 #, c-format
 msgid " near "
 msgstr " біля "
 
-#: src/parser.c:186
+#: src/parser.c:188
 msgid "INTERNAL ERROR: cannot return token to stream"
 msgstr "ВНУТРІШНЯ ПОМИЛКА: не вдається повернути символ у потік"
 
-#: src/parser.c:395
+#: src/parser.c:398
 msgid "unexpected end of file in expression"
 msgstr "неочікуваний кінець файлу у виразі"
 
-#: src/parser.c:450 src/parser.c:549
+#: src/parser.c:453 src/parser.c:552
 msgid "expected `;'"
 msgstr "очікувалось `;'"
 
-#: src/parser.c:467 src/parser.c:574
+#: src/parser.c:470 src/parser.c:577
 msgid "unexpected end of file in declaration"
 msgstr "неочікуваний кінець файлу у декларації"
 
-#: src/parser.c:499
+#: src/parser.c:502
 msgid "missing `;' after struct declaration"
 msgstr "після декларації структури пропущено `;' "
 
-#: src/parser.c:596
+#: src/parser.c:599
 msgid "unexpected end of file in initializer list"
 msgstr "неочікуваний кінець файлу у переліку початкових значень"
 
-#: src/parser.c:680
+#: src/parser.c:683
 msgid "unexpected end of file in struct"
 msgstr "неочікуваний кінець файлу у структурі"
 
-#: src/parser.c:766 src/parser.c:789
+#: src/parser.c:769 src/parser.c:792
 msgid "expected `)'"
 msgstr "очікувалася `)'"
 
-#: src/parser.c:802
+#: src/parser.c:805
 msgid "unexpected end of file in function declaration"
 msgstr "неочікуваний кінець файлу у декларації функції"
 
-#: src/parser.c:872
+#: src/parser.c:877
 msgid "unexpected token in parameter list"
 msgstr "неочікуваний елемент у переліку параметрів"
 
-#: src/parser.c:887
+#: src/parser.c:892
 msgid "unexpected end of file in parameter list"
 msgstr "неочікуваний кінець файлу у переліку параметрів"
 
-#: src/parser.c:924
+#: src/parser.c:930
 msgid "forced function body close"
 msgstr "примусове закінчення тіла функції"
 
-#: src/parser.c:938
+#: src/parser.c:944
 msgid "unexpected end of file in function body"
 msgstr "неочікуваний кінець файлу у тілі функції"
 
-#: src/parser.c:969
+#: src/parser.c:979
 #, c-format
 msgid "%s/%d redefined"
 msgstr "перевизначення %s/%d"
 
-#: src/parser.c:972
+#: src/parser.c:982
 msgid "this is the place of previous definition"
 msgstr "це місце першого визначення"
 
-#: src/parser.c:984
+#: src/parser.c:994
 #, c-format
 msgid "%s:%d: %s/%d defined to %s\n"
 msgstr "%s:%d: %s/%d визначено на %s\n"
 
-#: src/parser.c:1009
+#: src/parser.c:1019
 #, c-format
 msgid "%s:%d: type %s\n"
 msgstr "%s:%d: тип: %s\n"
@@ -419,7 +419,7 @@ msgstr "%s:%d: тип: %s\n"
 msgid "not enough memory to process rc file"
 msgstr "Недостатньо пам'яті для перетворення файлу конфігурації"
 
-#: src/symbol.c:270
+#: src/symbol.c:317
 msgid "not enough core"
 msgstr "недостатньо пам'яті"
 
