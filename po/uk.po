@@ -4,10 +4,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cflow 1.0\n"
+"Project-Id-Version: cflow 1ю0\n"
 "Report-Msgid-Bugs-To: bug-cflow@gnu.org\n"
 "POT-Creation-Date: 2005-10-07 10:22+0300\n"
-"PO-Revision-Date: 2005-10-16 00:08+0300\n"
+"PO-Revision-Date: 2005-10-16 00:06+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Ukrainian <translation-team-uk@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
