@@ -5,6 +5,8 @@
 	produce an error.
 	* tests/version.at: Fix displaying version warning
 
+	* po/pl.po,po/uk.po: Updated translations.
+	
 2005-10-05  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/cflow.h,src/main.c,src/parser.c,src/posix.c
