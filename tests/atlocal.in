@@ -8,4 +8,7 @@ CFLOW_OPTIONS=
 export CFLOW_OPTIONS
 CFLOWRC=/dev/null
 export CFLOWRC
+# On some systems unsetting undefined variable produces an error, so
+# make sure it is defined.
+POSIXLY_CORRECT=0
 unset POSIXLY_CORRECT
