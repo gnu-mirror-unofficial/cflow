@@ -24,7 +24,6 @@ AT_CHECK([cflow --version],
          [cflow (AT_PACKAGE_NAME) AT_PACKAGE_VERSION
 ],
 [],
-[],
 [
 echo '=============================================================='
 echo 'WARNING: Not using the proper version, *all* checks dubious...'
