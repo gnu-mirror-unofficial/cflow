@@ -1,3 +1,7 @@
+2005-10-19  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* build-aux/gnulib.modules (snprintf): Add module
+
 2005-10-15  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* THANKS: Add Nelson Beebe.
