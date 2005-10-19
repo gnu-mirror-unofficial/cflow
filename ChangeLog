@@ -1,5 +1,6 @@
 2005-10-19  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* README: Minor fixes.
 	* build-aux/gnulib.modules (snprintf): Add module
 
 2005-10-15  Sergey Poznyakoff  <gray@gnu.org.ua>
