@@ -8,3 +8,4 @@ malloc
 error
 hash
 gettext
+snprintf
