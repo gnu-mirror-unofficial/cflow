@@ -31,16 +31,15 @@ a GNU package.
 
 The package compiles and runs on GNU/Linux systems. It supports all
 command line switches required by POSIX, plus a number of extended
-ones. It is able to produce output two formats: default output format
-(which I call GNU cflow format and which is the default) and in POSIX
-format.
+ones. It is able to produce output in two formats: in GNU cflow format
+(which is the default) and in POSIX format.
 
 Currently the utility is only able to process C sources. It is the
-only deviation from POSIX specs, that require the ability to process
+only deviation from POSIX specs, which requires ability to process
 YACC and LEX sources as well as binary object files. This support will
 appear in future versions.
 
-Emacs module cflow-mode.el works wit files in GNU cflow format (as
+Emacs module cflow-mode.el works with files in GNU cflow format (as
 opposed to POSIX format). It has been tested with Emacs 21.3.
 
 * Compilation
@@ -67,7 +66,7 @@ http://www.gnu.org/software/texinfo for information on where to obtain it.
 
 * Bug reporting.
 
-Send bug reports to <bug-cflow@gnu.org>.
+Send bug reports and suggestions to <bug-cflow@gnu.org>.
 
 * Copyright Information:
 
