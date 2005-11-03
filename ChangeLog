@@ -1,3 +1,17 @@
+2005-11-03  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* build-aux/bootstrap: If file `.bootstrap' exists in the cwd and is
+	readable, prepend its contents to the command line
+	* src/parser.c (dcl): Fix bug introduced 2005-03-22
+	* tests/nfarg.at: New test.
+	* tests/nfparg.at: New test.
+	* tests/Makefile.am: Add new tests.
+	* tests/testsuite.at: Likewise
+
+	* configure.ac: Raise version number to 1.1
+	* NEWS: Likewise
+	* THANKS: Add Shigio YAMAGUCHI.
+	
 2005-10-19  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* README: Minor fixes.
