@@ -61,5 +61,7 @@ m4_include([include.at])
 m4_include([ssblock.at])
 m4_include([funcarg.at])
 m4_include([parm.at])
+m4_include([nfparg.at])
+m4_include([nfarg.at])
 
 # End of testsuite.at
