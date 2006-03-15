@@ -1,5 +1,5 @@
 /* This file is part of GNU cflow
-   Copyright (C) 1997,2005 Sergey Poznyakoff
+   Copyright (C) 1997, 2005, 2006 Sergey Poznyakoff
  
    GNU cflow is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -43,6 +43,7 @@ int parmdcl(Ident*);
 int dirdcl(Ident*);
 void skip_struct();
 Symbol *get_symbol(char *name);
+Symbol *install_ident(char *name);
 void maybe_parm_list(int *parm_cnt_return);
     
 void call(char*, int);
@@ -974,11 +975,16 @@ declare(Ident *ident)
      
      sp = get_symbol(ident->name);
      if (sp->source) {
-	  error_at_line(0, 0, filename, ident->line, 
-			_("%s/%d redefined"),
-			ident->name, sp->arity);
-	  error_at_line(0, 0, sp->source, sp->def_line,
-			_("this is the place of previous definition"));
+	  if (ident->storage == StaticStorage
+	      && (sp->storage != StaticStorage || level > 0)) {
+	       sp = install_ident(ident->name);
+	  } else {
+	       error_at_line(0, 0, filename, ident->line, 
+			     _("%s/%d redefined"),
+			     ident->name, sp->arity);
+	       error_at_line(0, 0, sp->source, sp->def_line,
+			     _("this is the place of previous definition"));
+	  }
      }
 
      sp->type = SymIdentifier;
@@ -1022,18 +1028,10 @@ declare_type(Ident *ident)
 }
 
 Symbol *
-get_symbol(char *name)
+install_ident(char *name)
 {
      Symbol *sp;
-     
-     if (sp = lookup(name)) {
-	  for (; sp; sp = sp->next) {
-	       if (sp->type == SymIdentifier && strcmp(sp->name, name) == 0)
-		    break;
-	  }
-	  if (sp)
-	       return sp;
-     }
+
      sp = install(name);
      sp->type = SymIdentifier;
      sp->arity = -1;
@@ -1048,12 +1046,29 @@ get_symbol(char *name)
 }
 
 Symbol *
+get_symbol(char *name)
+{
+     Symbol *sp;
+     
+     if (sp = lookup(name)) {
+	  for (; sp; sp = sp->next) {
+	       if (sp->type == SymIdentifier && strcmp(sp->name, name) == 0)
+		    break;
+	  }
+	  if (sp)
+	       return sp;
+     }
+     return install_ident(name);
+}
+
+Symbol *
 add_reference(char *name, int line)
 {
      Symbol *sp = get_symbol(name);
      Ref *refptr;
 
-     if (sp->storage == AutoStorage)
+     if (sp->storage == AutoStorage
+	 || (sp->storage == StaticStorage && globals_only()))
 	  return NULL;
      refptr = xmalloc(sizeof(*refptr));
      refptr->source = filename;
