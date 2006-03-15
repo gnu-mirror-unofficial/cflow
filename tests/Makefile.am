@@ -55,7 +55,9 @@ TESTSUITE_AT = \
  funcarg.at\
  parm.at\
  nfparg.at\
- nfarg.at
+ nfarg.at\
+ hiding.at\
+ multi.at
 
 TESTSUITE = $(srcdir)/testsuite
 
