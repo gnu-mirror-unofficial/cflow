@@ -1,3 +1,30 @@
+2006-03-15  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	Fix bug spotted by Jerry St.Clair: incorrect handling of
+	global/static and static/static name clashes.
+	
+	* src/parser.c (declare): Do not report name clashes
+	if a static symbol overrides another static or global.
+	(add_reference): Do not refer to static symbols if
+	-i^s was used.
+	* src/symbol.c: Change organization of the symbol table: the
+	table entry contains struct table_entry, which contains a pointer
+	to the head of the symbol list associated with the entry. Thus,
+	deletions from the table can be handled in a more natural manner.
+	All functions changed to reflect the change.
+	(unlink_symbol): New function.
+	(delete_symbol): Rewritten using unlink_symbol
+	(delete_statics): always call static_processor
+	* THANKS: Add Jerry St.Clair.
+	* tests/Makefile.am: Add hiding.at, multi.at
+	* tests/testsuite.at: Likewise.
+	* tests/hiding.at: New testcase
+	* tests/multi.at: New testcase
+	* tests/fdecl.at, tests/funcarg.at, tests/include.at,
+	tests/nfarg.at, tests/nfparg.at, tests/parm.at,
+	tests/ssblock.at: Uniformly begin AT_SETUP text with a lowercase
+	letter. 
+	
 2005-11-03  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* build-aux/bootstrap: If file `.bootstrap' exists in the cwd and is
