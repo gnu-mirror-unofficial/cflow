@@ -16,7 +16,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA.
 
-AT_SETUP([Included symbols])
+AT_SETUP([included symbols])
 AT_KEYWORDS([include])
 
 AT_DATA([prog],[

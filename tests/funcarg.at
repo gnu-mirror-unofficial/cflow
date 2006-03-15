@@ -16,7 +16,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA.
 
-AT_SETUP([Functional arguments])
+AT_SETUP([functional arguments])
 AT_KEYWORDS([funcarg])
 
 CFLOW_OPT([-v --main=foo],[

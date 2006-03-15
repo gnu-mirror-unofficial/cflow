@@ -16,7 +16,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA.
 
-AT_SETUP([Forward function declarations])
+AT_SETUP([forward function declarations])
 AT_KEYWORDS([fdecl])
 
 CFLOW_OPT([-v],[

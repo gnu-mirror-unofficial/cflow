@@ -23,7 +23,7 @@
 # FIXME: Possibly it would be better to flag an error in such case, but
 # cflow is not supposed to be a substitute for cc or lint.
 
-AT_SETUP([Nameless function arguments])
+AT_SETUP([nameless function arguments])
 AT_KEYWORDS([nfarg function arguments])
 
 CFLOW_CHECK([

@@ -18,7 +18,7 @@
 
 # Test for correct handling of the nameless function pointer arguments
 
-AT_SETUP([Nameless function pointer arguments])
+AT_SETUP([nameless function pointer arguments])
 AT_KEYWORDS([nfp nfparg function pointer arguments])
 
 CFLOW_CHECK([

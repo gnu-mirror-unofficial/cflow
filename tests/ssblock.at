@@ -16,7 +16,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA.
 
-AT_SETUP([Static struct in block scope])
+AT_SETUP([static struct in block scope])
 AT_KEYWORDS([ssblock])
 
 CFLOW_OPT([-v -ix],[
