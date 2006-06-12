@@ -1,3 +1,8 @@
+2006-06-12  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/output.c (set_level_mark): Fix allocation condition
+	(output): Remove erroneous initialization of level_mark.
+
 2006-03-15  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	Fix bug spotted by Jerry St.Clair: incorrect handling of
