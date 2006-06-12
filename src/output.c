@@ -32,7 +32,7 @@ FILE *outfile;    /* Output file */
 static void
 set_level_mark(int lev, int mark)
 {
-     if (lev > level_mark_size) {
+     if (lev >= level_mark_size) {
 	  level_mark_size += level_mark_incr;
 	  level_mark = xrealloc(level_mark, level_mark_size);
      }
@@ -410,7 +410,6 @@ output()
 	       error(2, errno, _("cannot open file `%s'"), outname);
      } 
      
-     level_mark = xmalloc(level_mark_size);
      set_level_mark(0, 0);
      if (print_option & PRINT_XREF) {
 	  xref_output();
