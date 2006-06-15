@@ -1,3 +1,8 @@
+2006-06-15  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* vi.po: New translation by Clytie Siddall
+	* LINGUAS: Add vi
+
 2006-03-15  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* LINGUAS: Add da
