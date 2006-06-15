@@ -1,13 +1,17 @@
-GNU cflow NEWS -- history of user-visible changes.  2005-11-03
-Copyright (C) 2005 Sergey Poznyakoff
+GNU cflow NEWS -- history of user-visible changes.  
+Copyright (C) 2005, 2006 Sergey Poznyakoff
 See the end of file for copying conditions.
 
 Please send cflow bug reports to <bug-cflow@gnu.org>.
 
-Version 1.1:
+Version 1.1 (CVS)
 
 * Bugfixes:
 ** Fix stack overflow on erroneous nameless function arguments.
+** Fix global/static and static/static name clashes.
+** Fix initial allocation for level mark array
+
+* New localization: Danish and Vietnamese
 
 
 Version 1.0:
@@ -46,7 +50,7 @@ Initial version restored from 1997 snapshots.
 ----------------------------------------------------------------------
 * Copyright information:
 
-Copyright (C) 2005 Sergey Poznyakoff
+Copyright (C) 2005, 2006 Sergey Poznyakoff
 
    Permission is granted to anyone to make or distribute verbatim copies
    of this document as received, in any medium, provided that the
