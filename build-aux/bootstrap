@@ -19,7 +19,7 @@
 
 # Written by Paul Eggert and Sergey Poznyakoff.
 
-# FIXME: *Eventual* URL of our text domain page in Translation Project
+# URL of our text domain page in Translation Project
 TP_URL="http://www.iro.umontreal.ca/translation/maint/cflow/"
 
 # Ensure file names are sorted consistently across platforms;
