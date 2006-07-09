@@ -4,7 +4,7 @@ See the end of file for copying conditions.
 
 Please send cflow bug reports to <bug-cflow@gnu.org>.
 
-Version 1.1 (CVS)
+Version 1.1:
 
 * Bugfixes:
 ** Fix stack overflow on erroneous nameless function arguments.
