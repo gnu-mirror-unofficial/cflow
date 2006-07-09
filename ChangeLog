@@ -1,3 +1,7 @@
+2006-07-09  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* THANKS: Add Louis Bertrand.
+
 2006-06-12  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/output.c (set_level_mark): Fix allocation condition
