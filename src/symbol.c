@@ -107,7 +107,11 @@ unlink_symbol(struct table_entry *tp)
 static void
 delete_symbol(struct table_entry *tp)
 {
-     free(unlink_symbol(tp));
+     Symbol *s = unlink_symbol(tp);
+     /* The symbol could have been referenced even if it is static
+	in -i^s mode. See tests/static.at for details. */
+     if (s->ref_line == NULL) 
+	  free(s);
 }     
 
 static void cleanup_symbol_refs(Symbol *sym);
