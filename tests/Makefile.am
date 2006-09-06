@@ -41,23 +41,24 @@ $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 ## ------------ ##
 
 TESTSUITE_AT = \
- testsuite.at\
- version.at\
- direct.at\
- reverse.at\
- recurse.at\
  attr.at\
  awrapper.at\
- pwrapper.at\
+ direct.at\
  fdecl.at\
- include.at\
- ssblock.at\
  funcarg.at\
- parm.at\
- nfparg.at\
- nfarg.at\
  hiding.at\
- multi.at
+ include.at\
+ multi.at\
+ nfarg.at\
+ nfparg.at\
+ parm.at\
+ pwrapper.at\
+ recurse.at\
+ reverse.at\
+ ssblock.at\
+ static.at\
+ testsuite.at\
+ version.at
 
 TESTSUITE = $(srcdir)/testsuite
 
