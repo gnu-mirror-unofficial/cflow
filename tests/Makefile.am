@@ -48,6 +48,7 @@ TESTSUITE_AT = \
  funcarg.at\
  hiding.at\
  include.at\
+ knr.at\
  multi.at\
  nfarg.at\
  nfparg.at\
