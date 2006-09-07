@@ -1,3 +1,21 @@
+2006-09-07  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/parser.c (declare, parse_dcl, parse_knr_dcl): Fix parsing of
+	K&R declarations, broken by modifications on 2005-09-21.
+
+	* tests/knr.at: New test case
+	* tests/Makefile.am: Add new testcase
+	* tests/testsuite.at: Likewise
+
+	* THANKS: Add Laurent and Robert E. Michael
+
+2006-09-06  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/symbol.c (delete_symbol): Do not free referenced symbols.
+	* tests/static.at: New testcase
+	* tests/Makefile.am: Add new testcase
+	* tests/testsuite.at: Likewise
+
 2006-07-21  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* build-aux/bootstrap (update_po): Fix updating a single
