@@ -30,13 +30,13 @@ typedef struct {
 void parse_declaration(Ident*, int);
 void parse_variable_declaration(Ident*, int);
 void parse_function_declaration(Ident*, int);
-void parse_dcl(Ident*);
+void parse_dcl(Ident*, int maybe_knr);
 void parse_knr_dcl(Ident*);
 void parse_typedef();
 void expression();
 void initializer_list();
 void func_body();
-void declare(Ident*);
+void declare(Ident*, int maybe_knr);
 void declare_type(Ident*);
 int dcl(Ident*);
 int parmdcl(Ident*);
@@ -540,7 +540,7 @@ parse_variable_declaration(Ident *ident, int parm)
 	  }
      }
  again:
-     parse_dcl(ident);
+     parse_dcl(ident, 0);
      
  select:    
      switch (tok.type) {
@@ -613,58 +613,7 @@ void
 parse_knr_dcl(Ident *ident)
 {
      ident->type_end = -1;
-     parse_dcl(ident);
-     if (strict_ansi)
-	  return;
-     
-     switch (tok.type) {
-     case IDENTIFIER:
-     case TYPE:
-     case STRUCT:
-	  if (ident->parmcnt >= 0) {
-	       /* maybe K&R function definition */
-	       int parmcnt, stop;
-	       Stackpos sp, new_sp;
-	       Ident id;
-	       
-	       mark(sp);
-	       parmcnt = 0;
-	       
-	       for (stop = 0; !stop && parmcnt < ident->parmcnt;
-		    nexttoken()) {
-		    id.type_end = -1;
-		    switch (tok.type) {
-		    case LBRACE:
-		    case LBRACE0:
-			 putback();
-			 stop = 1;
-			 break;
-		    case TYPE:
-		    case IDENTIFIER:
-		    case STRUCT:
-			 putback();
-			 mark(new_sp);
-			 if (dcl(&id) == 0) {
-			      parmcnt++;
-			      if (tok.type == ',') {
-				   do {
-					tos = id.type_end; /* ouch! */
-					restore(new_sp);
-					dcl(&id);
-				   } while (tok.type == ',');
-			      } else if (tok.type != ';')
-				   putback();
-			      break;
-			 }
-			 /* else */
-			 /* FALLTHRU */
-		    default:
-			 restore(sp);
-			 return;
-		    }
-	       }
-	  }
-     }
+     parse_dcl(ident, !strict_ansi);     
 }
 
 void
@@ -717,7 +666,7 @@ parse_typedef()
 }
 
 void
-parse_dcl(Ident *ident)
+parse_dcl(Ident *ident, int maybe_knr)
 {
      ident->parmcnt = -1;
      ident->name = NULL;
@@ -725,7 +674,7 @@ parse_dcl(Ident *ident)
      dcl(ident);
      save_stack();
      if (ident->name)
-	  declare(ident);
+	  declare(ident, maybe_knr);
      else 
 	  undo_save_stack();
 }
@@ -947,8 +896,61 @@ func_body()
      }
 }
 
+int
+get_knr_args(Ident *ident)
+{
+     int parmcnt, stop;
+     Stackpos sp, new_sp;
+     Ident id;
+
+     switch (tok.type) {
+     case IDENTIFIER:
+     case TYPE:
+     case STRUCT:
+	  /* maybe K&R function definition */
+	  
+	  mark(sp);
+	  parmcnt = 0;
+	  
+	  for (stop = 0; !stop && parmcnt < ident->parmcnt;
+	       nexttoken()) {
+	       id.type_end = -1;
+	       switch (tok.type) {
+	       case LBRACE:
+	       case LBRACE0:
+		    putback();
+		    stop = 1;
+		    break;
+	       case TYPE:
+	       case IDENTIFIER:
+	       case STRUCT:
+		    putback();
+		    mark(new_sp);
+		    if (dcl(&id) == 0) {
+			 parmcnt++;
+			 if (tok.type == ',') {
+			      do {
+				   tos = id.type_end; /* ouch! */
+				   restore(new_sp);
+				   dcl(&id);
+			      } while (tok.type == ',');
+			 } else if (tok.type != ';')
+			      putback();
+			 break;
+		    }
+		    /* else */
+		    /* FALLTHRU */
+	       default:
+		    restore(sp);
+		    return 1;
+	       }
+	  }
+     }
+     return 0;
+}
+
 void
-declare(Ident *ident)
+declare(Ident *ident, int maybe_knr)
 {
      Symbol *sp;
      
@@ -965,8 +967,10 @@ declare(Ident *ident)
 	  sp->arity = -1;
 	  return;
      } 
-     
-     if ((ident->parmcnt >= 0 && !(tok.type == LBRACE || tok.type == LBRACE0))
+
+     if ((ident->parmcnt >= 0
+	  && (!maybe_knr || get_knr_args(ident) == 0)
+	  && !(tok.type == LBRACE || tok.type == LBRACE0 || tok.type == TYPE))
 	 || (ident->parmcnt < 0 && ident->storage == ExplicitExternStorage)) {
 	  undo_save_stack();
 	  /* add_external()?? */
