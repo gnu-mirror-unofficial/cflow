@@ -1,3 +1,14 @@
+2006-09-10  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* configure.ac: Remove definition of
+	HAVE_DECL_PROGRAM_INVOCATION_NAME and
+	PROGRAM_INVOCATION_NAME_DECLARED.
+	Temporarly add AM_MKINSTALLDIRS
+	* build-aux/bootstrap: Minor fixes
+	* lib/Makefile.tmpl: Define AM_CPPFLAGS
+	(EXTRA_DIST): Remove pin.c
+	* lib/pin.c: Remove
+
 2006-09-07  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/parser.c (declare, parse_dcl, parse_knr_dcl): Fix parsing of
