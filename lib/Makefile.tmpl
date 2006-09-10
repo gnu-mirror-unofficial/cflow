@@ -22,9 +22,9 @@ noinst_HEADERS = argcv.h
 libcflow_a_SOURCES = argcv.c
 libcflow_a_LIBADD = $(LIBOBJS) $(ALLOCA)
 libcflow_a_DEPENDENCIES = $(libcflow_a_LIBADD)
-
+AM_CPPFLAGS=
 BUILT_SOURCES =
-EXTRA_DIST = Makefile.tmpl pin.c
+EXTRA_DIST = Makefile.tmpl 
 MAINTAINERCLEANFILES =
 MOSTLYCLEANFILES =
 lib_OBJECTS = $(libcflow_a_OBJECTS)
