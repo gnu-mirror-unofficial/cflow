@@ -48,7 +48,7 @@ The following two options are reserved for future use:
  --no-po                      Do not download po files.
  --update-po[=LANG]           Update po file(s) and exit.
 
-If the file `.bootstrap' exists in the current working directory, its
+If the file \`.bootstrap' exists in the current working directory, its
 contents is read, comments and empty lines removed, shell variables expanded
 and the result is prepended to the command line options.
 
@@ -239,7 +239,7 @@ for gnulib_file in $gnulib_files; do
   # old jm_.* macro names, so we have to keep both copies.
   m4/gettext.m4 | m4/glibc21.m4 | m4/inttypes_h.m4 | m4/lib-ld.m4 | \
   m4/lib-prefix.m4 | m4/po.m4 | m4/stdint_h.m4 | m4/uintmax_t.m4 | \
-  m4/ulonglong.m4)
+  m4/ulonglong.m4 | m4/longlong.m4)
            dest=`expr $gnulib_file : '\(.*\).m4'`_gl.m4;;
   *)       dest=$gnulib_file;;
   esac
@@ -259,7 +259,8 @@ echo "$0: Creating m4/gnulib.m4"
  echo "])") > ./m4/gnulib.m4
 
 echo "$0: Creating lib/Makefile.am"
-(echo "# This file is generated automatically from lib/Makefile.am. Do not edit!"
+(echo "# -*- buffer-read-only: t -*- vi: set ro:"
+ echo "# This file is generated automatically from lib/Makefile.tmpl. Do not edit!"
  cat lib/Makefile.tmpl
 
  for gnulib_module in $gnulib_modules; do
