@@ -24,9 +24,9 @@
 
 const char *argp_program_version = "cflow (" PACKAGE_NAME ") " VERSION;
 const char *argp_program_bug_address = "<" PACKAGE_BUGREPORT ">";
-/* TRANSLATORS: Please, preserve the vertical tabulation (^K character)
-   in this message */
-static char doc[] = N_("generate a program flowgraph\v* The effect of each option marked with an asterisk is reversed if the option's long name is prefixed with `no-'. For example, --no-cpp cancels --cpp.");
+static char doc[] = N_("generate a program flowgraph")
+"\v"
+N_("* The effect of each option marked with an asterisk is reversed if the option's long name is prefixed with `no-'. For example, --no-cpp cancels --cpp.");
 
 enum option_code {
      OPT_DEFINES = 256,
@@ -746,6 +746,8 @@ main(int argc, char **argv)
 {
      int index;
 
+     program_name = argv[0]; /* Until gnulib provides a better way */
+     
      setlocale(LC_ALL, "");
      bindtextdomain(PACKAGE, LOCALEDIR);
      textdomain(PACKAGE);
@@ -755,7 +757,7 @@ main(int argc, char **argv)
 
      symbol_map = SM_FUNCTIONS|SM_STATIC;
 
-     if (getenv ("POSIXLY_CORRECT")) {
+     if (getenv("POSIXLY_CORRECT")) {
 	  if (select_output_driver("posix"))
 	       error(1, 0, _("%s: No such output driver"), "posix");
 	  output_init();
