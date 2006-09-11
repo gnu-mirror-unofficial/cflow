@@ -1,3 +1,9 @@
+2006-09-11  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/main.c (doc): Reformat argp docstring in accordance with the
+	new argp guidelines.  Remove unneeded translators comment.
+	(main): Set program_name.
+
 2006-09-10  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* configure.ac: Remove definition of
