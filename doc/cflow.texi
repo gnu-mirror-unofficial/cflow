@@ -1192,12 +1192,6 @@ include in the output. Valid @var{spec} symbols are:
 
 For more information, @xref{Symbols}.
 
-@cindex @option{-L}
-@cindex @option{--license}
-@item -L
-@itemx --license
-     Print license and exit.
-
 @cindex @option{-l}     
 @item -l
      @xref{--print-level}.

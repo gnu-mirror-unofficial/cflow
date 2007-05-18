@@ -74,6 +74,8 @@ unistd.h
 unistd_.h
 vasnprintf.c
 vasnprintf.h
+version-etc.c
+version-etc.h
 vsnprintf.c
 wchar.h
 wchar_.h

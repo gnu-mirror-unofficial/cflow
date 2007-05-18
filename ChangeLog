@@ -1,5 +1,9 @@
 2007-05-18  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* build-aux/gnulib.modules: Add version-etc
+	* src/main.c, doc/cflow.texi: Remove --license option
+	* tests/version.at: Update
+	
 	* bootstrap.conf: New file
 	* build-aux/bootstrap: Replaced from the gnulib CVS
 	* configure.ac: Update

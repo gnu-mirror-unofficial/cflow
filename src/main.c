@@ -20,6 +20,7 @@
 #include <argp.h>
 #include <stdarg.h>
 #include <parser.h>
+#include <version-etc.h>
 
 const char *argp_program_version = "cflow (" PACKAGE_NAME ") " VERSION;
 const char *argp_program_bug_address = "<" PACKAGE_BUGREPORT ">";
@@ -747,12 +748,26 @@ init()
      init_parse();
 }
 
+const char version_etc_copyright[] =
+  /* Do *not* mark this string for translation.  %s is a copyright
+     symbol suitable for this locale, and %d is the copyright
+     year.  */
+  "Copyright %s 2005, 2006, %d Sergey Poznyakoff";
+
+static void
+cflow_version(FILE *stream, struct argp_state *state)
+{
+     	version_etc(stream, "cflow", PACKAGE_NAME, PACKAGE_VERSION,
+		    "Sergey Poznyakoff", NULL);
+}
+
 int
 main(int argc, char **argv)
 {
      int index;
 
      program_name = argv[0]; /* Until gnulib provides a better way */
+     argp_program_version_hook = cflow_version;
      
      setlocale(LC_ALL, "");
      bindtextdomain(PACKAGE, LOCALEDIR);
