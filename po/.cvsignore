@@ -5,6 +5,7 @@ LINGUAS
 Makefile
 Makefile.in
 Makefile.in.in
+Makevars
 Makevars.template
 POTFILES
 Rules-quot
