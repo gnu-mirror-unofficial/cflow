@@ -20,7 +20,6 @@
 #include <argp.h>
 #include <stdarg.h>
 #include <parser.h>
-#include <strndup.h>
 
 const char *argp_program_version = "cflow (" PACKAGE_NAME ") " VERSION;
 const char *argp_program_bug_address = "<" PACKAGE_BUGREPORT ">";
@@ -214,11 +213,13 @@ int omit_symbol_names_option; /* Omit symbol name from symbol declaration string
 #define SM_STATIC      0x0004
 #define SM_UNDERSCORE  0x0008
 #define SM_TYPEDEF     0x0010
+#define SM_UNDEFINED   0x0020
 
 #define CHAR_TO_SM(c) ((c)=='x' ? SM_DATA : \
                         (c)=='_' ? SM_UNDERSCORE : \
                          (c)=='s' ? SM_STATIC : \
-                          (c)=='t' ? SM_TYPEDEF : 0)
+                          (c)=='t' ? SM_TYPEDEF : \
+                           (c)=='u' ? SM_UNDEFINED : 0)
 #define SYMBOL_INCLUDE(c) (symbol_map |= CHAR_TO_SM(c))
 #define SYMBOL_EXCLUDE(c) (symbol_map &= ~CHAR_TO_SM(c))
 int symbol_map;  /* A bitmap of symbols included in the graph. */
@@ -593,6 +594,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	       case '_':
 	       case 's':
 	       case 't':
+	       case 'u':
 		    if (num)
 			 SYMBOL_INCLUDE(*arg);
 		    else
@@ -710,6 +712,10 @@ include_symbol(Symbol *sym)
 	       type |= SM_DATA;
 	  else if (sym->arity >= 0)
 	       type |= SM_FUNCTIONS;
+
+	  if (!sym->source)
+	       type |= SM_UNDEFINED;
+	  
      } else if (sym->type == SymToken) {
 	  if (sym->token_type == TYPE && sym->source)
 	       type |= SM_TYPEDEF;
@@ -755,7 +761,7 @@ main(int argc, char **argv)
      register_output("gnu", gnu_output_handler, NULL);
      register_output("posix", posix_output_handler, NULL);
 
-     symbol_map = SM_FUNCTIONS|SM_STATIC;
+     symbol_map = SM_FUNCTIONS|SM_STATIC|SM_UNDEFINED;
 
      if (getenv("POSIXLY_CORRECT")) {
 	  if (select_output_driver("posix"))

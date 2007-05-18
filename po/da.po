@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cflow 1.0\n"
 "Report-Msgid-Bugs-To: bug-cflow@gnu.org\n"
-"POT-Creation-Date: 2005-10-07 10:22+0300\n"
+"POT-Creation-Date: 2006-09-10 15:17+0300\n"
 "PO-Revision-Date: 2005-11-01 00:27+0200\n"
 "Last-Translator: Morten Bo Johansen <mojo@mbjnet.dk>\n"
 "Language-Team: Danish <dansk@klid.dk>\n"
@@ -37,11 +37,20 @@ msgstr "kan ikke åbne \"%s\""
 msgid "New location: %s:%d\n"
 msgstr "Ny placering: %s:%d\n"
 
-#. TRANSLATORS: Please, preserve the vertical tabulation (^K character)
-#. in this message
+#: src/main.c:27
+msgid "generate a program flowgraph"
+msgstr ""
+
 #: src/main.c:29
-msgid "generate a program flowgraph* The effect of each option marked with an asterisk is reversed if the option's long name is prefixed with `no-'. For example, --no-cpp cancels --cpp."
-msgstr "generér en flowgraf for program.* Virkningen af at tilvalg er markeret med en asterisk er den modsatte hvis tilvalgets lange navn har præfikset \"no-\". F.eks. --no-cpp annullerer --cpp."
+#, fuzzy
+msgid ""
+"* The effect of each option marked with an asterisk is reversed if the "
+"option's long name is prefixed with `no-'. For example, --no-cpp cancels --"
+"cpp."
+msgstr ""
+"generér en flowgraf for program.* Virkningen af at tilvalg er markeret med "
+"en asterisk er den modsatte hvis tilvalgets lange navn har præfikset \"no-"
+"\". F.eks. --no-cpp annullerer --cpp."
 
 #: src/main.c:56
 msgid "General options:"
@@ -60,16 +69,23 @@ msgid "CLASSES"
 msgstr "KLASSER"
 
 #: src/main.c:60
-msgid "Include specified classes of symbols (see below). Prepend CLASSES with ^ or - to exclude them from the output"
-msgstr "Medtag de anførte symbolklasser (se nedenfor). Lad KLASSER begynde med ^ eller - for at fjerne dem fra uddata"
+msgid ""
+"Include specified classes of symbols (see below). Prepend CLASSES with ^ or "
+"- to exclude them from the output"
+msgstr ""
+"Medtag de anførte symbolklasser (se nedenfor). Lad KLASSER begynde med ^ "
+"eller - for at fjerne dem fra uddata"
 
-#: src/main.c:61 src/main.c:102 src/main.c:106
+#: src/main.c:61 src/main.c:102 src/main.c:106 lib/argp-parse.c:84
 msgid "NAME"
 msgstr "NAVN"
 
 #: src/main.c:62
-msgid "Use given output format NAME. Valid names are `gnu' (default) and `posix'"
-msgstr "Brug det anførte navn for format på uddata: Gyldige navne er \"gnu\" (standard) og \"posix\""
+msgid ""
+"Use given output format NAME. Valid names are `gnu' (default) and `posix'"
+msgstr ""
+"Brug det anførte navn for format på uddata: Gyldige navne er \"gnu"
+"\" (standard) og \"posix\""
 
 #: src/main.c:65
 msgid "* Print reverse call tree"
@@ -84,8 +100,13 @@ msgid "OPT"
 msgstr "TILVALG"
 
 #: src/main.c:69
-msgid "Set printing option to OPT. Valid OPT values are: xref (or cross-ref), tree. Any unambiguous abbreviation of the above is also accepted"
-msgstr "Sæt tilvalg for udskrivning til TILVALG. Gyldige værdier for TILVALG er: xref (eller cross-xref), tree. Enhver entydig forkortelse af disse værdier kan også godkendes"
+msgid ""
+"Set printing option to OPT. Valid OPT values are: xref (or cross-ref), tree. "
+"Any unambiguous abbreviation of the above is also accepted"
+msgstr ""
+"Sæt tilvalg for udskrivning til TILVALG. Gyldige værdier for TILVALG er: "
+"xref (eller cross-xref), tree. Enhver entydig forkortelse af disse værdier "
+"kan også godkendes"
 
 #: src/main.c:71
 msgid "FILE"
@@ -93,7 +114,8 @@ msgstr "FIL"
 
 #: src/main.c:72
 msgid "Set output file name (default -, meaning stdout)"
-msgstr "Angiv navn på uddata-fil (standard er \"-\" som betyder standarduddata)"
+msgstr ""
+"Angiv navn på uddata-fil (standard er \"-\" som betyder standarduddata)"
 
 #: src/main.c:75
 msgid "Symbols classes for --include argument"
@@ -136,8 +158,14 @@ msgid "SYMBOL:TYPE"
 msgstr "SYMBOL:TYPE"
 
 #: src/main.c:101
-msgid "Register SYMBOL with given TYPE. Valid types are: keyword (or kw), modifier, identifier, type, wrapper. Any unambiguous abbreviation of the above is also accepted"
-msgstr "Registrér SYMBOL for angiven TYPE. Gyldig typer er: keyword (eller kw), modifier, identifier, type, wrapper. Enhver entydig forkortelse af disse typer kan også godkendes"
+msgid ""
+"Register SYMBOL with given TYPE. Valid types are: keyword (or kw), modifier, "
+"identifier, type, wrapper. Any unambiguous abbreviation of the above is also "
+"accepted"
+msgstr ""
+"Registrér SYMBOL for angiven TYPE. Gyldig typer er: keyword (eller kw), "
+"modifier, identifier, type, wrapper. Enhver entydig forkortelse af disse "
+"typer kan også godkendes"
 
 #: src/main.c:103
 msgid "Assume main function to be called NAME"
@@ -160,8 +188,12 @@ msgid "DIR"
 msgstr "KATALOG"
 
 #: src/main.c:109
-msgid "Add the directory DIR to the list of directories to be searched for header files."
-msgstr "Tilføj kataloget KATALOG til listen over kataloger der skal gennemsøges for inkluderingsfiler."
+msgid ""
+"Add the directory DIR to the list of directories to be searched for header "
+"files."
+msgstr ""
+"Tilføj kataloget KATALOG til listen over kataloger der skal gennemsøges for "
+"inkluderingsfiler."
 
 #: src/main.c:110
 msgid "COMMAND"
@@ -289,7 +321,7 @@ msgstr ""
 "Licens til %s:\n"
 "\n"
 
-#: src/main.c:575 src/main.c:760
+#: src/main.c:575 src/main.c:762
 #, c-format
 msgid "%s: No such output driver"
 msgstr "%s: Ingen sådan uddata-driver"
@@ -307,40 +339,40 @@ msgstr "[FIL]..."
 msgid "Exiting"
 msgstr "Afslutter"
 
-#: src/main.c:792
+#: src/main.c:794
 msgid "no input files"
 msgstr "ingen inddatafiler"
 
-#: src/parser.c:119
+#: src/parser.c:120
 #, c-format
 msgid " near "
 msgstr " nær "
 
-#: src/parser.c:188
+#: src/parser.c:189
 msgid "INTERNAL ERROR: cannot return token to stream"
 msgstr "INTERN FEJL: kan ikke returnere element til datastrøm"
 
-#: src/parser.c:398
+#: src/parser.c:399
 msgid "unexpected end of file in expression"
 msgstr "uventet slutning på fil i udtryk "
 
-#: src/parser.c:453 src/parser.c:552
+#: src/parser.c:454 src/parser.c:553
 msgid "expected `;'"
 msgstr "forventede ';'"
 
-#: src/parser.c:470 src/parser.c:577
+#: src/parser.c:471 src/parser.c:578
 msgid "unexpected end of file in declaration"
 msgstr "uventet slutning på fil i erklæring"
 
-#: src/parser.c:502
+#: src/parser.c:503
 msgid "missing `;' after struct declaration"
 msgstr "manglende ';' efter struct-erklæring"
 
-#: src/parser.c:599
+#: src/parser.c:600
 msgid "unexpected end of file in initializer list"
 msgstr "uventet slutning på fil i liste over startværdier"
 
-#: src/parser.c:683
+#: src/parser.c:684
 msgid "unexpected end of file in struct"
 msgstr "uventet slutning på fil i struct"
 
@@ -368,21 +400,21 @@ msgstr "gennemtvang afslutning af funktionens krop"
 msgid "unexpected end of file in function body"
 msgstr "uventet slutning på fil i funktionens indhold"
 
-#: src/parser.c:979
+#: src/parser.c:983
 #, c-format
 msgid "%s/%d redefined"
 msgstr "%s/%d omdefineret"
 
-#: src/parser.c:982
+#: src/parser.c:986
 msgid "this is the place of previous definition"
 msgstr "dette er stedet for den forrige definition"
 
-#: src/parser.c:994
+#: src/parser.c:999
 #, c-format
 msgid "%s:%d: %s/%d defined to %s\n"
 msgstr "%s:%d: %s/%d defineret til %s\n"
 
-#: src/parser.c:1019
+#: src/parser.c:1024
 #, c-format
 msgid "%s:%d: type %s\n"
 msgstr "%s:%d: type %s\n"
@@ -391,145 +423,168 @@ msgstr "%s:%d: type %s\n"
 msgid "not enough memory to process rc file"
 msgstr "ikke nok hukommelse til at behandle rc-fil"
 
-#: src/symbol.c:317
+#: src/symbol.c:368
 msgid "not enough core"
 msgstr "ikke nok kernehukommelse (core)"
 
-#: lib/argp-help.c:195
+#: lib/argp-help.c:148
+#, c-format
+msgid "ARGP_HELP_FMT: %s value is less than or equal to %s"
+msgstr ""
+
+#: lib/argp-help.c:221
 #, c-format
 msgid "%.*s: ARGP_HELP_FMT parameter requires a value"
 msgstr "%.*s: ARGP_HELP_FMT-parameteren kræver en værdi"
 
-#: lib/argp-help.c:204
+#: lib/argp-help.c:227
+#, fuzzy, c-format
+msgid "%.*s: ARGP_HELP_FMT parameter must be positive"
+msgstr "%.*s: ARGP_HELP_FMT-parameteren kræver en værdi"
+
+#: lib/argp-help.c:236
 #, c-format
 msgid "%.*s: Unknown ARGP_HELP_FMT parameter"
 msgstr "%.*s: Ukendt ARGP_HELP_FMT-parameter"
 
-#: lib/argp-help.c:216
+#: lib/argp-help.c:248
 #, c-format
 msgid "Garbage in ARGP_HELP_FMT: %s"
 msgstr "Snavs i ARGP_HELP_FMT: %s"
 
-#: lib/argp-help.c:1195
-msgid "Mandatory or optional arguments to long options are also mandatory or optional for any corresponding short options."
-msgstr "Obligatoriske eller frivillige argumenter til lange tilvalg er også obligatoriske eller frivillige for tilsvarende korte tilvalg."
+#: lib/argp-help.c:1229
+msgid ""
+"Mandatory or optional arguments to long options are also mandatory or "
+"optional for any corresponding short options."
+msgstr ""
+"Obligatoriske eller frivillige argumenter til lange tilvalg er også "
+"obligatoriske eller frivillige for tilsvarende korte tilvalg."
 
-#: lib/argp-help.c:1582
+#: lib/argp-help.c:1622
 msgid "Usage:"
 msgstr "Brug:"
 
-#: lib/argp-help.c:1586
+#: lib/argp-help.c:1626
 msgid "  or: "
 msgstr "  eller: "
 
-#: lib/argp-help.c:1598
+#: lib/argp-help.c:1638
 msgid " [OPTION...]"
 msgstr " [FLAG...]"
 
-#: lib/argp-help.c:1625
+#: lib/argp-help.c:1665
 #, c-format
 msgid "Try `%s --help' or `%s --usage' for more information.\n"
 msgstr "Prøv '%s --help' eller '%s --usage' for mere information.\n"
 
-#: lib/argp-help.c:1653
+#: lib/argp-help.c:1693
 #, c-format
 msgid "Report bugs to %s.\n"
 msgstr ""
 "Rapportér fejl til %s.\n"
 "Rapportér fejl i oversættelsen til dansk@dansk-gruppen.dk.\n"
 
-#: lib/argp-help.c:1873 lib/error.c:122
+#: lib/argp-help.c:1912 lib/error.c:125
 msgid "Unknown system error"
 msgstr "Ukendt systemfejl"
 
-#: lib/argp-parse.c:83
-msgid "Give this help list"
+#: lib/argp-parse.c:82
+#, fuzzy
+msgid "give this help list"
 msgstr "Vis denne hjælpeliste"
 
-#: lib/argp-parse.c:84
-msgid "Give a short usage message"
+#: lib/argp-parse.c:83
+#, fuzzy
+msgid "give a short usage message"
 msgstr "Giv en kort brugsmeddelelse"
 
-#: lib/argp-parse.c:85
-msgid "Set the program name"
+#: lib/argp-parse.c:84
+#, fuzzy
+msgid "set the program name"
 msgstr "Angiv programnavnet"
 
-#: lib/argp-parse.c:87
-msgid "Hang for SECS seconds (default 3600)"
+#: lib/argp-parse.c:85
+msgid "SECS"
+msgstr ""
+
+#: lib/argp-parse.c:86
+#, fuzzy
+msgid "hang for SECS seconds (default 3600)"
 msgstr "Hæng i SEK sekunder (forvalgt 3600)"
 
-#: lib/argp-parse.c:148
-msgid "Print program version"
+#: lib/argp-parse.c:143
+#, fuzzy
+msgid "print program version"
 msgstr "Skriv programversion"
 
-#: lib/argp-parse.c:164
+#: lib/argp-parse.c:159
 msgid "(PROGRAM ERROR) No version known!?"
 msgstr "(PROGRAMFEJL) Ingen kendt version!?"
 
-#: lib/argp-parse.c:620
+#: lib/argp-parse.c:612
 #, c-format
 msgid "%s: Too many arguments\n"
 msgstr "%s: For mange argumenter\n"
 
-#: lib/argp-parse.c:763
+#: lib/argp-parse.c:755
 msgid "(PROGRAM ERROR) Option should have been recognized!?"
 msgstr "(PROGRAMFEJL) Flag skulle have været genkendt!?"
 
-#: lib/getopt.c:552 lib/getopt.c:571
+#: lib/getopt.c:531 lib/getopt.c:547
 #, c-format
 msgid "%s: option `%s' is ambiguous\n"
 msgstr "%s: tilvalget '%s' er ikke entydigt\n"
 
-#: lib/getopt.c:604 lib/getopt.c:608
+#: lib/getopt.c:580 lib/getopt.c:584
 #, c-format
 msgid "%s: option `--%s' doesn't allow an argument\n"
 msgstr "%s: tilvalget '--%s' tillader ikke argumenter\n"
 
-#: lib/getopt.c:617 lib/getopt.c:622
+#: lib/getopt.c:593 lib/getopt.c:598
 #, c-format
 msgid "%s: option `%c%s' doesn't allow an argument\n"
 msgstr "%s: tilvalget '%c%s' tillader ikke argument\n"
 
-#: lib/getopt.c:668 lib/getopt.c:690 lib/getopt.c:1021 lib/getopt.c:1043
+#: lib/getopt.c:641 lib/getopt.c:660 lib/getopt.c:976 lib/getopt.c:995
 #, c-format
 msgid "%s: option `%s' requires an argument\n"
 msgstr "%s: tilvalget '%s' skal have et argument\n"
 
-#: lib/getopt.c:728 lib/getopt.c:731
+#: lib/getopt.c:698 lib/getopt.c:701
 #, c-format
 msgid "%s: unrecognized option `--%s'\n"
 msgstr "%s: ukendt tilvalg '--%s'\n"
 
-#: lib/getopt.c:739 lib/getopt.c:742
+#: lib/getopt.c:709 lib/getopt.c:712
 #, c-format
 msgid "%s: unrecognized option `%c%s'\n"
 msgstr "%s: ukendt tilvalg '%c%s'\n"
 
-#: lib/getopt.c:797 lib/getopt.c:800
+#: lib/getopt.c:764 lib/getopt.c:767
 #, c-format
 msgid "%s: illegal option -- %c\n"
 msgstr "%s: ugyldigt tilvalg -- %c\n"
 
-#: lib/getopt.c:806 lib/getopt.c:809
+#: lib/getopt.c:773 lib/getopt.c:776
 #, c-format
 msgid "%s: invalid option -- %c\n"
 msgstr "%s: ugyldigt tilvalg -- %c\n"
 
-#: lib/getopt.c:864 lib/getopt.c:883 lib/getopt.c:1096 lib/getopt.c:1117
+#: lib/getopt.c:828 lib/getopt.c:844 lib/getopt.c:1048 lib/getopt.c:1066
 #, c-format
 msgid "%s: option requires an argument -- %c\n"
 msgstr "%s: tilvalget skal have et argument -- %c\n"
 
-#: lib/getopt.c:936 lib/getopt.c:955
+#: lib/getopt.c:897 lib/getopt.c:913
 #, c-format
 msgid "%s: option `-W %s' is ambiguous\n"
 msgstr "%s: tilvalget '-W %s' er ikke entydigt\n"
 
-#: lib/getopt.c:979 lib/getopt.c:1000
+#: lib/getopt.c:937 lib/getopt.c:955
 #, c-format
 msgid "%s: option `-W %s' doesn't allow an argument\n"
 msgstr "%s: tilvalget '-W %s' tillader ikke argument\n"
 
-#: lib/obstack.c:439 lib/obstack.c:442
+#: lib/obstack.c:427 lib/obstack.c:429
 msgid "memory exhausted"
 msgstr "hukommelsen opbrugt"

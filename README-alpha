@@ -38,16 +38,21 @@ The CVS repository is also available via HTTP from
     
 * Building
 
-In order to build this you will first need to have right versions of
-autotools. At the time of this writing these are:
+If you have taken the sources from CVS you will need the following
+packages to build cflow.  I don't make any extra effort to accommodate
+older versions of these packages, so please make sure that you have the
+latest stable version.
 
-  Package   Version (>=)
-  ========  ============
-  automake  1.8.5
-  autoconf  2.59
+- Automake <http://www.gnu.org/software/automake/>
+- Autoconf <http://www.gnu.org/software/autoconf/>
+- Gettext <http://www.gnu.org/software/gettext/>
+- Gnulib <http://www.gnu.org/software/gnulib/>
+- M4 <http://www.gnu.org/software/m4/>
+- Texinfo <http://www.gnu.org/software/texinfo>
+- Wget <http://www.gnu.org/software/wget/>
 
-To prepare the package for building run build-aux/bootstrap. For
-example:
+To prepare the package for building run `build-aux/bootstrap' utility.
+For example: 
 
  $ cd cflow
  $ build-aux/bootstrap

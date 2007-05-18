@@ -1,9 +1,10 @@
+config.guess
+config.rpath
+config.sub
 depcomp
 install-sh
-missing
-config.rpath
+link-warning.h
 mdate-sh
-texinfo.tex
-config.guess
-config.sub
+missing
 mkinstalldirs
+texinfo.tex

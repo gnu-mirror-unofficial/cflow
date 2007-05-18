@@ -1,3 +1,11 @@
+2007-05-18  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* bootstrap.conf: New file
+	* build-aux/bootstrap: Replaced from the gnulib CVS
+	* configure.ac: Update
+	* po/Makevars: Remove automatically generated file
+	* src/main.c: Remove #include <strndup.h>
+
 2006-09-11  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/main.c (doc): Reformat argp docstring in accordance with the

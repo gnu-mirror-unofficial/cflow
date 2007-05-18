@@ -24,7 +24,7 @@ AC_CONFIG_SRCDIR([src/cflow.h])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE
 AC_CONFIG_HEADER([config.h])
-gl_USE_SYSTEM_EXTENSIONS
+gl_EARLY
 
 # Checks for programs.
 AC_PROG_CC
@@ -39,7 +39,7 @@ AC_CHECK_HEADERS([stdlib.h string.h unistd.h locale.h])
 AC_FUNC_ERROR_AT_LINE
 AC_CHECK_FUNCS([memmove memset strdup strerror strtol setlocale])
 
-cflow_GNULIB
+gl_INIT
 MU_DEBUG_MODE
 
 AH_BOTTOM([
@@ -57,9 +57,8 @@ fi
 AC_SUBST(lisp_LISP)
 
 # Gettext.
-AM_MKINSTALLDIRS
-AM_GNU_GETTEXT([external], [need-ngettext])
-AM_GNU_GETTEXT_VERSION(0.14.1)
+AM_GNU_GETTEXT([external], [need-formatstring-macros])
+AM_GNU_GETTEXT_VERSION(0.16)
 
 # Doc hints.
 # Select a rendition level:
