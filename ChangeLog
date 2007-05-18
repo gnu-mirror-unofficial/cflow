@@ -5,7 +5,12 @@
 	* configure.ac: Update
 	* po/Makevars: Remove automatically generated file
 	* src/main.c: Remove #include <strndup.h>
-
+	* po/da.po, po/pl.po, po/uk.po, po/vi.po: Removed.  Translations
+	will be exported directly from TP.
+	* lib/Makefile.am: New file
+	* lib/Makefile.tmpl: Removed
+	* README-hacking: New file
+	
 2006-09-11  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/main.c (doc): Reformat argp docstring in accordance with the

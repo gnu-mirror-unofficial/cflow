@@ -17,16 +17,7 @@
 ## Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 ## 02110-1301, USA.
 
-noinst_LIBRARIES = libcflow.a
-noinst_HEADERS = argcv.h
-libcflow_a_SOURCES = argcv.c
-libcflow_a_LIBADD = $(LIBOBJS) $(ALLOCA)
-libcflow_a_DEPENDENCIES = $(libcflow_a_LIBADD)
-AM_CPPFLAGS=
-BUILT_SOURCES =
-EXTRA_DIST = Makefile.tmpl 
-MAINTAINERCLEANFILES =
-MOSTLYCLEANFILES =
-lib_OBJECTS = $(libcflow_a_OBJECTS)
+include gnulib.mk
 
-# gnulib modules
+noinst_HEADERS += argcv.h
+libcflow_a_SOURCES += argcv.c

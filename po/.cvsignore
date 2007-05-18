@@ -1,5 +1,6 @@
 *.gmo
 *.mo
+*.po
 Makefile
 Makefile.in
 Makefile.in.in

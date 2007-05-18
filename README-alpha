@@ -13,7 +13,7 @@ installation instructions are set forth in the file README.
 
 Please, note that the accompanying documentation may be inaccurate or
 incomplete (well, to say the truth it is absent. See TODO for more info).
-The ChangeLog file is the authoritative documentation of all recent changes.
+The ChangeLog file is the authoritative documentation for all recent changes.
 
 Report bugs to <bug-cflow@gnu.org>
 
@@ -25,7 +25,7 @@ the CVS repository:
 To checkout the source tree from CVS issue the following command:
 
 CVS_RSH=ssh \
- cvs -d :ext:anoncvs@savannah.gnu.org:/cvsroot/cflow checkout cflow
+ cvs -d :ext:anoncvs@cvs.savannah.gnu.org:/cvsroot/cflow checkout cflow
 
 Make sure SSHv2 is used.
 
@@ -34,7 +34,7 @@ contact the mailing list.
 
 The CVS repository is also available via HTTP from
 
-    http://savannah.gnu.org/cgi-bin/viewcvs/cflow/cflow/
+    http://cvs.savannah.gnu.org/cgi-bin/viewcvs/cflow/cflow/
     
 * Building
 
@@ -88,7 +88,7 @@ Now set your breakpoints and proceed as usual.
 
 * Copyright information:
 
-Copyright (C) 2005 Sergey Poznyakoff
+Copyright (C) 2005, 2007 Sergey Poznyakoff
 
    Permission is granted to anyone to make or distribute verbatim copies
    of this document as received, in any medium, provided that the

@@ -1,0 +1,83 @@
+These notes intend to help people working on the CVS version of
+this package.
+
+* Requirements
+
+Only the sources are installed in the CVS repository (to ease the
+maintenance, merges etc.), therefore you will have to get the latest
+stable versions of the maintainer tools we depend upon, including:
+
+- Automake <http://www.gnu.org/software/automake/>
+- Autoconf <http://www.gnu.org/software/autoconf/>
+- Gettext <http://www.gnu.org/software/gettext/>
+- Gnulib <http://www.gnu.org/software/gnulib/>
+- M4 <http://www.gnu.org/software/m4/>
+- Texinfo <http://www.gnu.org/software/texinfo>
+- Wget <http://www.gnu.org/software/wget/>
+
+Only building the initial full source tree will be a bit painful,
+later, a plain `cvs update -P && make' should be sufficient.
+
+* First CVS checkout
+
+Obviously, if you are reading these notes, you did manage to check out
+this package from CVS.  The next step is to get other files needed to
+build, which are extracted from other source packages:
+
+	$ build-aux/bootstrap
+
+If you already have checked out the gnulib sources, you can speed up
+the process by specifying their location using --gnulib-srcdir command
+line option:
+
+        $ build-aux/bootstrap --gnulib-srcdir=$HOME/gnu/gnulib
+
+If you plan to be hacking on cflow, it is probably that you will need
+to re-run bootstrap from time to time, for example after updating your
+gnulib copy in order to propagate the changes into cflow tree.  In
+these case we recommend to store bootstrap options in a file named
+.bootstrap, in the cflow root directory.  The format of this file is
+very simple: it contains bootstrap command line options separated by
+any amount of whitespace characters (i.e. spaces, tabs and newlines).
+Any line starting with a comment character `#' is ignored as well as
+are empty lines.  For example, if you plan to always use the same gnulib
+directory and to copy gnulib files instead of creating symbolic links
+to them, then your .bootstrap file would contain:
+
+       # Sample .bootstrap file
+       --gnulib-srcdir=$HOME/gnu/gnulib
+       --copy
+
+Once you have bootstrapped the source tree, run:
+
+	$ ./configure
+	$ make
+	$ make check
+
+Enjoy!
+
+-----
+
+Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation,
+Inc.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301, USA.
+
+
+Local variables:
+mode: outline
+paragraph-separate: "[ 	]*$"
+end:
