@@ -9,6 +9,7 @@ stable versions of the maintainer tools we depend upon, including:
 
 - Automake <http://www.gnu.org/software/automake/>
 - Autoconf <http://www.gnu.org/software/autoconf/>
+- Flex <http://flex.sourceforge.net/>
 - Gettext <http://www.gnu.org/software/gettext/>
 - Gnulib <http://www.gnu.org/software/gnulib/>
 - M4 <http://www.gnu.org/software/m4/>

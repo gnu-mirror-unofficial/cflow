@@ -65,4 +65,8 @@ Copyright (C) 2005, 2006 Sergey Poznyakoff
 Local variables:
 mode: outline
 paragraph-separate: "[ 	]*$"
+eval: (add-hook 'write-file-hooks 'time-stamp)
+time-stamp-start: "changes. "
+time-stamp-format: "%:y-%02m-%02d"
+time-stamp-end: "\n"
 end:
