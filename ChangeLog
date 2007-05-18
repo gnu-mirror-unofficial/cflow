@@ -1,5 +1,7 @@
 2007-05-18  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* src/main.c: Remove --license option
+
 	* build-aux/gnulib.modules: Add version-etc
 	* src/main.c, doc/cflow.texi: Remove --license option
 	* tests/version.at: Update
