@@ -155,31 +155,11 @@ static struct argp_option options[] = {
        N_("* Verbose error diagnostics"), GROUP_ID+1 },
      { "no-verbose", OPT_NO_VERBOSE, NULL, OPTION_HIDDEN,
        "", GROUP_ID+1 },
-     { "license", 'L', 0, 0,
-       N_("Print license and exit"), GROUP_ID+1 },
      { "debug", OPT_DEBUG, "NUMBER", OPTION_ARG_OPTIONAL,
        N_("Set debugging level"), GROUP_ID+1 },
 #undef GROUP_ID     
      { 0, }
 };
-
-char *cflow_license_text = N_(
-"   GNU cflow is free software; you can redistribute it and/or modify\n"
-"   it under the terms of the GNU General Public License as published by\n"
-"   the Free Software Foundation; either version 2 of the License, or\n"
-"   (at your option) any later version.\n"
-"\n"
-"   GNU cflow is distributed in the hope that it will be useful,\n"
-"   but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
-"   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
-"   GNU General Public License for more details.\n"
-"\n"
-"   You should have received a copy of the GNU General Public License\n"
-"   along with GNU cflow; if not, write to the Free Software Foundation,\n"
-"   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA\n"
-"\n"
-"\n"
-);
 
 /* Structure representing various arguments of command line options */
 struct option_type {
@@ -527,10 +507,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
      case OPT_DEBUG:
 	  debug = arg ? atoi(arg) : 1;
 	  break;
-     case 'L':
-	  printf(_("License for %s:\n\n"), argp_program_version);
-	  printf("%s", cflow_license_text);
-	  exit(0);
      case 'P':
 	  set_print_option(arg);
 	  break;
