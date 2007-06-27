@@ -1,7 +1,7 @@
-LINGUAS
 *.gmo
 *.mo
 *.po
+LINGUAS
 Makefile
 Makefile.in
 Makefile.in.in

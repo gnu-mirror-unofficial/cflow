@@ -28,6 +28,9 @@ error.c
 error.h
 exitfail.c
 exitfail.h
+float+.h
+float.h
+float_.h
 getopt.c
 getopt.h
 getopt1.c
