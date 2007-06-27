@@ -1,3 +1,7 @@
+2007-06-27  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+        Relicense under GPLv3
+
 2007-05-18  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/main.c: Remove --license option
