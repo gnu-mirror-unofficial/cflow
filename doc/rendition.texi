@@ -39,10 +39,19 @@
 
 @c Output marks for nodes needing revision, but not in PUBLISH rendition.
 
+@macro WRITEME
+@ifclear PUBLISH
+@quotation
+@emph{This node is to be written.}
+@end quotation
+@end ifclear
+@end macro
+
 @macro UNREVISED
 @ifclear PUBLISH
 @quotation
-@emph{(This message will disappear, once this node revised.)}
+(@emph{The information in this node may be obsolete or otherwise inaccurate.}
+This message will disappear, once this node revised.)
 @end quotation
 @end ifclear
 @end macro
@@ -50,28 +59,27 @@
 @c Output various FIXME information only in PROOF rendition.
 
 @macro FIXME{string}
-@allow-recursion
-@quote-arg
 @ifset PROOF
 @ifset PROOF_FOOTNOTED
 @footnote{@strong{FIXME:} \string\}
 @end ifset
 @ifclear PROOF_FOOTNOTED
+@cartouche
 @strong{<FIXME>} \string\ @strong{</>}
+@end cartouche
 @end ifclear
 @end ifset
 
 @end macro
 
 @macro FIXME-ref{string}
-@quote-arg
 @ifset PROOF
 @strong{<REF>} \string\ @strong{</>}
 @end ifset
+
 @end macro
 
 @macro FIXME-pxref{string}
-@quote-arg
 @ifset PROOF
 @strong{<PXREF>} \string\ @strong{</>}
 @end ifset
@@ -79,8 +87,8 @@
 @end macro
 
 @macro FIXME-xref{string}
-@quote-arg
 @ifset PROOF
 @strong{<XREF>} \string\ @strong{</>}
 @end ifset
+
 @end macro

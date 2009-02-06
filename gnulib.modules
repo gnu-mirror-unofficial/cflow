@@ -1,4 +1,4 @@
-# List of gnulib modules needed for GNU mailutils.
+# List of gnulib modules needed for GNU cflow.
 # A module name per line. Empty lines and comments are ignored.
 
 argp
@@ -8,5 +8,6 @@ malloc
 error
 hash
 gettext
+gitlog-to-changelog
 snprintf
 version-etc
