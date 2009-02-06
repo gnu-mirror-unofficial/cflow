@@ -1,5 +1,5 @@
 # This file is part of GNU cflow
-# Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+# Copyright (C) 2005, 2007, 2009 Free Software Foundation, Inc.
 #
 # Written by Sergey Poznyakoff
 #
@@ -35,7 +35,7 @@ cflow_SOURCES = \
 
 localedir = $(datadir)/locale
 
-cflow_LDADD=../lib/libcflow.a $(LIBINTL)
+cflow_LDADD=../lib/libcflow.a @LIBINTL@
 AM_CPPFLAGS=-DLOCALEDIR=\"$(localedir)\"
 AM_LFLAGS=-dvp
 EXTRA_DIST=cflow.rc

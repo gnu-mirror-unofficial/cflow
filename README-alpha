@@ -1,69 +1,51 @@
 This is the GNU cflow package.
 This document describes the actions needed to build the pre-release
-or CVS version of the package. See end of file for copying conditions.
+or GIT version of the package. See end of file for copying conditions.
 
 * Introduction
 
-This is a *pre-release* version, and not ready for production use yet. If you
-are taking source from CVS, you will need to have automake, and
-autoconf installed to bootstrap the package. See the chapter `Building' for
-the detailed instructions. After bootstrapping, there should be a file
-'INSTALL' with generic installation instructions. Package-specific
-installation instructions are set forth in the file README.
+This is a *pre-release* version, and not ready for production use yet.
+If you are taking source from Git, you will need to have several
+special tools to help contribute.  See the file README-hacking for more
+information.  See chapter `Building' for the detailed instructions on
+how to build the package.
 
-Please, note that the accompanying documentation may be inaccurate or
-incomplete (well, to say the truth it is absent. See TODO for more info).
-The ChangeLog file is the authoritative documentation for all recent changes.
+Please, note that the accompanying documentation may be inaccurate
+or incomplete. The git lot is the authoritative documentation of
+all recent changes. You may convert it to a traditional ChangeLog by
+running `make ChangeLog'.
 
 Report bugs to <bug-cflow@gnu.org>
 
 * Checking Out the Sources
 
 The following instructions apply if you wish to obtain sources from
-the CVS repository:
+the GIT repository:
 
-To checkout the source tree from CVS issue the following command:
+To clone the GNU cflow repository, issue the following command:
 
-CVS_RSH=ssh \
- cvs -d :ext:anoncvs@cvs.savannah.gnu.org:/cvsroot/cflow checkout cflow
+  git clone git://git.savannah.gnu.org/cflow.git
 
-Make sure SSHv2 is used.
+or
+
+  git clone http://git.sv.gnu.org/r/cflow.git
 
 This will give you read-only access.  If you think you need write access,
 contact the mailing list.
 
-The CVS repository is also available via HTTP from
+For more information about Git access, visit
+http://savannah.gnu.org/git/?group=cflow
 
-    http://cvs.savannah.gnu.org/cgi-bin/viewcvs/cflow/cflow/
-    
 * Building
 
-If you have taken the sources from CVS you will need the following
-packages to build cflow.  I don't make any extra effort to accommodate
-older versions of these packages, so please make sure that you have the
-latest stable version.
+Usual procedures apply:
 
-- Automake <http://www.gnu.org/software/automake/>
-- Autoconf <http://www.gnu.org/software/autoconf/>
-- Flex <http://flex.sourceforge.net/>
-- Gettext <http://www.gnu.org/software/gettext/>
-- Gnulib <http://www.gnu.org/software/gnulib/>
-- M4 <http://www.gnu.org/software/m4/>
-- Texinfo <http://www.gnu.org/software/texinfo>
-- Wget <http://www.gnu.org/software/wget/>
+ ./configure
+ make
+ make install
 
-To prepare the package for building run `build-aux/bootstrap' utility.
-For example: 
+See INSTALL and README for the detailed instructions.
 
- $ cd cflow
- $ build-aux/bootstrap
-
-If you have already checked out gnulib sources, use --gnulib-srcdir
-to specify their location, this will spare you time and bandwidth:
-
- $ cd cflow
- $ build-aux/bootstrap --gnulib-srcdir=$HOME/gnu/gnulib
- 
 * Debugging
 
 To enable additional debugging information, configure the package with
@@ -89,7 +71,7 @@ Now set your breakpoints and proceed as usual.
 
 * Copyright information:
 
-Copyright (C) 2005, 2007 Sergey Poznyakoff
+Copyright (C) 2005, 2007, 2009 Sergey Poznyakoff
 
    Permission is granted to anyone to make or distribute verbatim copies
    of this document as received, in any medium, provided that the

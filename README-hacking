@@ -1,11 +1,13 @@
-These notes intend to help people working on the CVS version of
-this package.
+These notes intend to help people working on the GIT version of
+GNU cflow.
 
 * Requirements
 
-Only the sources are installed in the CVS repository (to ease the
-maintenance, merges etc.), therefore you will have to get the latest
-stable versions of the maintainer tools we depend upon, including:
+Only the sources are installed in the GIT repository (to ease the
+maintenance, merges etc.), therefore you will need the following
+packages to build GNU cflow.  I don't make any extra effort to
+accommodate older versions of these packages, so please make sure that
+you have the latest stable version.
 
 - Automake <http://www.gnu.org/software/automake/>
 - Autoconf <http://www.gnu.org/software/autoconf/>
@@ -16,51 +18,43 @@ stable versions of the maintainer tools we depend upon, including:
 - Texinfo <http://www.gnu.org/software/texinfo>
 - Wget <http://www.gnu.org/software/wget/>
 
-Only building the initial full source tree will be a bit painful,
-later, a plain `cvs update -P && make' should be sufficient.
-
-* First CVS checkout
+* Bootstrapping
 
 Obviously, if you are reading these notes, you did manage to check out
-this package from CVS.  The next step is to get other files needed to
-build, which are extracted from other source packages:
+the project from GIT. The next step is to get other files needed to build,
+which are extracted from other source packages: 
 
-	$ build-aux/bootstrap
+1. Change to the source tree directory
 
-If you already have checked out the gnulib sources, you can speed up
-the process by specifying their location using --gnulib-srcdir command
-line option:
+   cd cflow
 
-        $ build-aux/bootstrap --gnulib-srcdir=$HOME/gnu/gnulib
+2. Run
 
-If you plan to be hacking on cflow, it is probably that you will need
-to re-run bootstrap from time to time, for example after updating your
-gnulib copy in order to propagate the changes into cflow tree.  In
-these case we recommend to store bootstrap options in a file named
-.bootstrap, in the cflow root directory.  The format of this file is
-very simple: it contains bootstrap command line options separated by
-any amount of whitespace characters (i.e. spaces, tabs and newlines).
-Any line starting with a comment character `#' is ignored as well as
-are empty lines.  For example, if you plan to always use the same gnulib
-directory and to copy gnulib files instead of creating symbolic links
-to them, then your .bootstrap file would contain:
+   ./bootstrap 
 
-       # Sample .bootstrap file
-       --gnulib-srcdir=$HOME/gnu/gnulib
-       --copy
+Once done, proceed as described in the file README (section
+INSTALLATION).
 
-Once you have bootstrapped the source tree, run:
+Normally you will have to run bootstrap only once. However, if you
+intend to hack on GNU cflow, you might need to run it again later. In
+this case, you will probably want to save some time and bandwidth by
+avoiding downloading the same files again. If so, create in the project's
+root directory a file named `.bootstrap' with the following
+contents:
 
-	$ ./configure
-	$ make
-	$ make check
+   --gnulib-srcdir=$HOME/gnulib
+
+Replace `$HOME/gnulib' with the actual directory where the Gnulib
+sources reside.
+
+For more information about `bootstrap', run `bootstrap --help'.
 
 Enjoy!
 
 -----
 
-Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation,
-Inc.
+Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007,
+2009 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

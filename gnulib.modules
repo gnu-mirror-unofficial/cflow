@@ -7,7 +7,7 @@ lstat
 malloc
 error
 hash
-gettext
+gettext-h
 gitlog-to-changelog
 snprintf
 version-etc

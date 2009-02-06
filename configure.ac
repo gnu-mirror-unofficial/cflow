@@ -1,5 +1,5 @@
 # This file is part of GNU cflow
-# Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+# Copyright (C) 2005, 2007, 2009 Free Software Foundation, Inc.
 #
 # Written by Sergey Poznyakoff
 #
@@ -18,11 +18,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA.
 
-AC_PREREQ(2.59)
-AC_INIT([GNU cflow], [1.2], [bug-cflow@gnu.org])
+AC_PREREQ(2.61)
+AC_INIT([GNU cflow], [1.2.90], [bug-cflow@gnu.org])
 AC_CONFIG_SRCDIR([src/cflow.h])
 AC_CONFIG_AUX_DIR([build-aux])
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([1.9 gnits tar-ustar dist-bzip2 std-options])
 AC_CONFIG_HEADER([config.h])
 gl_EARLY
 
@@ -57,17 +57,23 @@ fi
 AC_SUBST(lisp_LISP)
 
 # Gettext.
+AM_ICONV
 AM_GNU_GETTEXT([external], [need-formatstring-macros])
-AM_GNU_GETTEXT_VERSION(0.16)
+AM_GNU_GETTEXT_VERSION(0.17)
 
-# Doc hints.
 # Select a rendition level:
 #  DISTRIB for stable releases (at most one dot in the version number)
+#  and maintenance releases (two dots, patchlevel < 50)
 #  PROOF for alpha releases.
 #  PUBLISH can only be required manually when running make in doc/
 AC_SUBST(RENDITION)
 case `echo $VERSION|sed  's/[[^.]]//g'` in
 ""|".")  RENDITION=DISTRIB;;
+"..")  if test `echo $VERSION | sed  's/.*\.//'` -lt 50; then
+	 RENDITION=DISTRIB
+       else
+         RENDITION=PROOF
+       fi;;
 *)     RENDITION=PROOF;;
 esac
 
