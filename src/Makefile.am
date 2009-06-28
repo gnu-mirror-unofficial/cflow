@@ -22,16 +22,17 @@ INCLUDES = -I$(top_srcdir)/lib -I../ -I../lib
 
 bin_PROGRAMS = cflow
 cflow_SOURCES = \
- main.c\
- rc.c\
- parser.c\
  c.l\
- output.c\
- symbol.c\
  cflow.h\
- parser.h\
  gnu.c\
- posix.c
+ linked-list.c\
+ main.c\
+ output.c\
+ parser.c\
+ parser.h\
+ posix.c\
+ rc.c\
+ symbol.c
 
 localedir = $(datadir)/locale
 

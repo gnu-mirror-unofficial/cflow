@@ -46,7 +46,8 @@
 #define NUMITEMS(a) sizeof(a)/sizeof((a)[0])
 
 struct linked_list_entry {
-     struct linked_list_entry *next;
+     struct linked_list_entry *next, *prev;
+     struct linked_list *list;
      void *data;
 };
 
@@ -88,7 +89,10 @@ enum symbol_flag {
 typedef struct symbol Symbol;
 
 struct symbol {
+     struct table_entry *owner;
      Symbol *next;                 /* Next symbol with the same hash */
+     struct linked_list_entry *entry;
+     
      enum symtype type;            /* Type of the symbol */
      char *name;                   /* Identifier */
      enum symbol_flag flag;        /* Specific flag */
@@ -162,6 +166,8 @@ extern unsigned input_file_count;
 
 Symbol *lookup(char*);
 Symbol *install(char*);
+Symbol *install_ident(char *name, enum storage storage);
+void ident_change_storage(Symbol *sp, enum storage storage);
 void delete_autos(int level);
 void delete_statics(void);
 void delete_parms(int level);
@@ -171,7 +177,12 @@ struct linked_list *linked_list_create(linked_list_free_data_fp fun);
 void linked_list_destroy(struct linked_list **plist);
 void linked_list_append(struct linked_list **plist, void *data);
 void linked_list_prepend(struct linked_list **plist, void *data);
-int symbol_in_list(Symbol *sym, struct linked_list *list);
+void linked_list_iterate(struct linked_list **plist, 
+			 int (*itr) (void *, void *), void *data);
+void linked_list_unlink(struct linked_list *list,
+			struct linked_list_entry *ent);
+
+int data_in_list(void *data, struct linked_list *list);
 
 int get_token(void);
 int source(char *name);

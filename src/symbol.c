@@ -22,6 +22,22 @@
 
 static Hash_table *symbol_table;
 
+static struct linked_list *static_symbol_list;
+static struct linked_list *auto_symbol_list;
+
+static void
+append_symbol(struct linked_list **plist, Symbol *sp)
+{
+     if (sp->entry) {
+	  linked_list_unlink(sp->entry->list, sp->entry);
+	  sp->entry = NULL;
+     }
+     if (!data_in_list(sp, *plist)) {
+	  linked_list_append(plist, sp);
+	  sp->entry = (*plist)->tail;
+     }
+}
+
 struct table_entry {
      Symbol *sym;
 };
@@ -89,32 +105,88 @@ install(char *name)
 	  if (ret->sym->type != SymUndefined) 
 	       sym->next = ret->sym;
 	  ret->sym = sym;
+	  free(tp);
      }
+     sym->owner = ret;
+     if (sym->flag == symbol_temp)
+	  append_symbol(&static_symbol_list, sym);
      return sym;
 }
 
-/* Unlink the first symbol from the table entry */
-static Symbol *
-unlink_symbol(struct table_entry *tp)
+void
+ident_change_storage(Symbol *sp, enum storage storage)
 {
-     Symbol *s = tp->sym;
-     if (s) 
-	  tp->sym = s->next;
-     return s;
+     if (sp->storage == storage)
+	  return;
+     if (sp->storage == StaticStorage)
+	  /* FIXME */;
+
+     switch (storage) {
+     case StaticStorage:
+	  append_symbol(&static_symbol_list, sp);
+	  break;
+     case AutoStorage:
+	  append_symbol(&auto_symbol_list, sp);
+	  break;
+     default:
+	  break;
+     }
+     sp->storage = storage;
+}
+
+Symbol *
+install_ident(char *name, enum storage storage)
+{
+     Symbol *sp;
+
+     sp = install(name);
+     sp->type = SymIdentifier;
+     sp->arity = -1;
+     sp->storage = ExternStorage;
+     sp->decl = NULL;
+     sp->source = NULL;
+     sp->def_line = -1;
+     sp->ref_line = NULL;
+     sp->caller = sp->callee = NULL;
+     sp->level = -1;
+     ident_change_storage(sp, storage);
+     return sp;
+}
+
+/* Unlink the symbol from the table entry */
+static void
+unlink_symbol(Symbol *sym)
+{
+     Symbol *s, *prev = NULL;
+     struct table_entry *tp = sym->owner;
+     for (s = tp->sym; s; ) {
+	  Symbol *next = s->next;
+	  if (s == sym) {
+	       if (prev)
+		    prev->next = next;
+	       else
+		    tp->sym = next;
+	       break;
+	  } else
+	       prev = s;
+	  s = next;
+     }
+	       
+     sym->owner = NULL;
 }     
 
 /* Unlink and free the first symbol from the table entry */
 static void
-delete_symbol(struct table_entry *tp)
+delete_symbol(Symbol *sym)
 {
-     Symbol *s = unlink_symbol(tp);
+     unlink_symbol(sym);
      /* The symbol could have been referenced even if it is static
 	in -i^s mode. See tests/static.at for details. */
-     if (s->ref_line == NULL) {
-	  linked_list_destroy(&s->ref_line);
-	  linked_list_destroy(&s->caller);
-	  linked_list_destroy(&s->callee);
-	  free(s);
+     if (sym->ref_line == NULL) {
+	  linked_list_destroy(&sym->ref_line);
+	  linked_list_destroy(&sym->caller);
+	  linked_list_destroy(&sym->callee);
+	  free(sym);
      }
 }     
 
@@ -127,71 +199,63 @@ delete_symbol(struct table_entry *tp)
    so we don't have to check the name of the source where the symbol was
    defined. */
 
-static bool
-static_processor(void *data, void *proc_data)
+static void
+static_free(void *data)
 {
-     struct table_entry *t = data;
+     Symbol *sym = data;
+     struct table_entry *t = sym->owner;
 
-     if (t->sym
-	 && t->sym->type == SymIdentifier
-	 && t->sym->storage == StaticStorage) {
-	  if (globals_only()) 
-	       delete_symbol(t);
-	  else
-	       unlink_symbol(t);
-     }
-     return true;
-}
-
-static bool
-temp_processor(void *data, void *proc_data)
-{
-     struct table_entry *t = data;
-     
-     if (t->sym && t->sym->flag == symbol_temp) 
-	  delete_symbol(t);
-     return true;
+     if (!t)
+	  return;
+     if (sym->flag == symbol_temp
+	 || globals_only()) 
+	  delete_symbol(sym);
+     else
+	  unlink_symbol(sym);
 }
 
 void
 delete_statics()
 {
-     hash_do_for_each (symbol_table, static_processor, NULL);
-     hash_do_for_each (symbol_table, temp_processor, NULL);
+     if (static_symbol_list) {
+	  static_symbol_list->free_data = static_free;
+	  linked_list_destroy(&static_symbol_list);
+     }
 }
 
 /* See NOTE above */
-bool
-auto_processor(void *data, void *proc_data)
-{
-     struct table_entry *t = data;
-     Symbol *s = t->sym;
-     if (s) {
-	  int *level = proc_data;
-	  if (s->type == SymIdentifier && s->level == *level) {
-	       switch (s->storage) {
-	       case AutoStorage:
-		    delete_symbol(t);
-		    break;
-		    
-	       case StaticStorage:
-		    unlink_symbol(t);
-		    break;
-		    
-	       default:
-		    break;
-	       }
-	  }
-     }
-     return true;
-}
 
 /* Delete from the symbol table all auto variables with given nesting
    level. */
+int
+delete_level_autos(void *data, void *call_data)
+{
+     int level = *(int*)call_data;
+     Symbol *s = data;
+     if (s->level == level) {
+	  delete_symbol(s);
+	  return 1;
+     }
+     return 0;
+}
+
+int
+delete_level_statics(void *data, void *call_data)
+{
+     int level = *(int*)call_data;
+     Symbol *s = data;
+     if (s->level == level) {
+	  unlink_symbol(s);
+	  return 1;
+     }
+     return 0;
+}
+
 void
 delete_autos(int level)
 {
-     hash_do_for_each (symbol_table, auto_processor, &level);
+     linked_list_iterate(&auto_symbol_list, delete_level_autos, &level);
+     linked_list_iterate(&static_symbol_list, delete_level_statics, &level);
 }
 
 struct collect_data {
@@ -237,41 +301,28 @@ collect_symbols(Symbol ***return_sym, int (*sel)(Symbol *p))
 
 /* Special handling for function parameters */
 
-static bool
-delete_parm_processor(void *data, void *proc_data)
+int
+delete_parms_itr(void *data, void *call_data)
 {
-     struct table_entry *t = data;
-     Symbol *s = t->sym;
-     if (s) {
-	  int *level = proc_data;
-	  if (s->type == SymIdentifier && s->storage == AutoStorage
-	      && s->flag == symbol_parm && s->level > *level)
-	       delete_symbol(t);
+     int level = *(int*)call_data;
+     Symbol *s = data;
+     struct table_entry *t = s->owner;
+	  
+     if (!t)
+	  return 1;
+     if (s->type == SymIdentifier && s->storage == AutoStorage
+	 && s->flag == symbol_parm && s->level > level) {
+	  delete_symbol(s);
+	  return 1;
      }
-     return true;
+     return 0;
 }
 
 /* Delete all parameters with parameter nesting level greater than LEVEL */
 void
 delete_parms(int level)
 {
-     hash_do_for_each (symbol_table, delete_parm_processor, &level);
-}
-
-static bool
-move_parm_processor(void *data, void *proc_data)
-{
-     struct table_entry *t = data;
-     Symbol *s = t->sym;
-     if (s) {
-	  int level = *(int*)proc_data;
-	  if (s->type == SymIdentifier && s->storage == AutoStorage
-	      && s->flag == symbol_parm) {
-	       s->level = level;
-	       s->flag = symbol_none;
-	  }
-     }
-     return true;
+     linked_list_iterate(&auto_symbol_list, delete_parms_itr, &level);
 }
 
 /* Redeclare all saved parameters as automatic variables with the
@@ -279,83 +330,16 @@ move_parm_processor(void *data, void *proc_data)
 void
 move_parms(int level)
 {
-     hash_do_for_each (symbol_table, move_parm_processor, &level);
-}
-
-
-
-static struct linked_list *
-deref_linked_list (struct linked_list **plist)
-{
-     if (!*plist) {
-	  struct linked_list *list = xmalloc(sizeof(*list));
-	  list->free_data = NULL;
-	  list->head = list->tail = NULL;
-	  *plist = list;
-     }
-     return *plist;
-}
-
-
-struct linked_list *
-linked_list_create(linked_list_free_data_fp fun)
-{
-     struct linked_list *list = xmalloc(sizeof(*list));
-     list->free_data = fun;
-     list->head = list->tail = NULL;
-     return list;
-}
-
-void
-linked_list_append(struct linked_list **plist, void *data)
-{
-     struct linked_list *list = deref_linked_list (plist);
-     struct linked_list_entry *entry = xmalloc(sizeof(*entry));
-     entry->next = NULL;
-     entry->data = data;
-     if (list->tail)
-	  list->tail->next = entry;
-     else
-	  list->head = entry;
-     list->tail = entry;
-}
-
-void
-linked_list_prepend(struct linked_list **plist, void *data)
-{
-     struct linked_list *list = deref_linked_list (plist);
-     struct linked_list_entry *entry = xmalloc(sizeof(*entry));
-     entry->next = list->head;
-     entry->data = data;
-     list->head = entry;
-     if (!list->tail)
-	  list->tail = entry;
-}
-
-void
-linked_list_destroy(struct linked_list **plist)
-{
-     if (plist && *plist) {
-	  struct linked_list *list = *plist;
-	  struct linked_list_entry *p;
-
-	  for (p = list->head; p; p = p->next) {
-	       if (list->free_data)
-		    list->free_data(p->data);
-	       free(p);
-	  }
-	  free(list);
-	  *plist = NULL;
-     }
-}
-
-int
-symbol_in_list(Symbol *sym, struct linked_list *list)
-{
      struct linked_list_entry *p;
-     
-     for (p = linked_list_head(list); p; p = p->next)
-	  if ((Symbol*)p->data == sym)
-	       return 1;
-     return 0;
+
+     for (p = linked_list_head(auto_symbol_list); p; p = p->next) {
+	  Symbol *s = p->data;
+
+	  if (s->type == SymIdentifier && s->storage == AutoStorage
+	      && s->flag == symbol_parm) {
+	       s->level = level;
+	       s->flag = symbol_none;
+	  }
+     }
 }
+

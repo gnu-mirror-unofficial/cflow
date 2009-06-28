@@ -43,7 +43,6 @@ int parmdcl(Ident*);
 int dirdcl(Ident*);
 void skip_struct();
 Symbol *get_symbol(char *name);
-Symbol *install_ident(char *name);
 void maybe_parm_list(int *parm_cnt_return);
     
 void call(char*, int);
@@ -956,9 +955,7 @@ declare(Ident *ident, int maybe_knr)
      
      if (ident->storage == AutoStorage) {
 	  undo_save_stack();
-	  sp = install(ident->name);
-	  sp->type = SymIdentifier;
-	  sp->storage = ident->storage;
+	  sp = install_ident(ident->name, ident->storage);
 	  if (parm_level) {
 	       sp->level = parm_level;
 	       sp->flag = symbol_parm;
@@ -981,7 +978,7 @@ declare(Ident *ident, int maybe_knr)
      if (sp->source) {
 	  if (ident->storage == StaticStorage
 	      && (sp->storage != StaticStorage || level > 0)) {
-	       sp = install_ident(ident->name);
+	       sp = install_ident(ident->name, ident->storage);
 	  } else {
 	       error_at_line(0, 0, filename, ident->line, 
 			     _("%s/%d redefined"),
@@ -993,8 +990,9 @@ declare(Ident *ident, int maybe_knr)
 
      sp->type = SymIdentifier;
      sp->arity = ident->parmcnt;
-     sp->storage = (ident->storage == ExplicitExternStorage) ?
-	  ExternStorage : ident->storage;
+     ident_change_storage(sp, 
+			  (ident->storage == ExplicitExternStorage) ?
+			  ExternStorage : ident->storage);
      sp->decl = finish_save_stack(ident->name);
      sp->source = filename;
      sp->def_line = ident->line;
@@ -1032,29 +1030,11 @@ declare_type(Ident *ident)
 }
 
 Symbol *
-install_ident(char *name)
-{
-     Symbol *sp;
-
-     sp = install(name);
-     sp->type = SymIdentifier;
-     sp->arity = -1;
-     sp->storage = ExternStorage;
-     sp->decl = NULL;
-     sp->source = NULL;
-     sp->def_line = -1;
-     sp->ref_line = NULL;
-     sp->caller = sp->callee = NULL;
-     sp->level = -1;
-     return sp;
-}
-
-Symbol *
 get_symbol(char *name)
 {
-     Symbol *sp;
+     Symbol *sp = lookup(name) ;
      
-     if (sp = lookup(name)) {
+     if (sp) {
 	  for (; sp; sp = sp->next) {
 	       if (sp->type == SymIdentifier && strcmp(sp->name, name) == 0)
 		    break;
@@ -1062,7 +1042,7 @@ get_symbol(char *name)
 	  if (sp)
 	       return sp;
      }
-     return install_ident(name);
+     return install_ident(name, ExternStorage);
 }
 
 Symbol *
@@ -1095,9 +1075,9 @@ call(char *name, int line)
      if (sp->arity < 0)
 	  sp->arity = 0;
      if (caller) {
-	  if (!symbol_in_list(caller, sp->caller))
+	  if (!data_in_list(caller, sp->caller))
 	       linked_list_append(&sp->caller, caller);
-	  if (!symbol_in_list(sp, caller->callee))
+	  if (!data_in_list(sp, caller->callee))
 	       linked_list_append(&caller->callee, sp);
      }
 }
@@ -1109,9 +1089,9 @@ reference(char *name, int line)
      if (!sp)
 	  return;
      if (caller) {
-	  if (!symbol_in_list(caller, sp->caller))
+	  if (!data_in_list(caller, sp->caller))
 	       linked_list_append(&sp->caller, caller);
-	  if (!symbol_in_list(sp, caller->callee))
+	  if (!data_in_list(sp, caller->callee))
 	       linked_list_append(&caller->callee, sp);
      }
 }
