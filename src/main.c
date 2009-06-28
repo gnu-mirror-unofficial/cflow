@@ -18,15 +18,20 @@
 
 #include <cflow.h>
 #include <argp.h>
+#include <argp-version-etc.h>
+#include <progname.h>
 #include <stdarg.h>
 #include <parser.h>
 #include <version-etc.h>
 
-const char *argp_program_version = "cflow (" PACKAGE_NAME ") " VERSION;
 const char *argp_program_bug_address = "<" PACKAGE_BUGREPORT ">";
 static char doc[] = N_("generate a program flowgraph")
 "\v"
 N_("* The effect of each option marked with an asterisk is reversed if the option's long name is prefixed with `no-'. For example, --no-cpp cancels --cpp.");
+const char *program_authors[] = {
+     "Sergey Poznyakoff",
+     NULL
+};
 
 enum option_code {
      OPT_DEFINES = 256,
@@ -732,20 +737,13 @@ const char version_etc_copyright[] =
      year.  */
   "Copyright %s 2005, 2006, %d Sergey Poznyakoff";
 
-static void
-cflow_version(FILE *stream, struct argp_state *state)
-{
-     	version_etc(stream, "cflow", PACKAGE_NAME, PACKAGE_VERSION,
-		    "Sergey Poznyakoff", NULL);
-}
-
 int
 main(int argc, char **argv)
 {
      int index;
 
-     program_name = argv[0]; /* Until gnulib provides a better way */
-     argp_program_version_hook = cflow_version;
+     set_program_name(argv[0]);
+     argp_version_setup("cflow", program_authors);
      
      setlocale(LC_ALL, "");
      bindtextdomain(PACKAGE, LOCALEDIR);

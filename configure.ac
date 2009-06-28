@@ -42,12 +42,6 @@ AC_CHECK_FUNCS([memmove memset strdup strerror strtol setlocale])
 gl_INIT
 MU_DEBUG_MODE
 
-AH_BOTTOM([
-/* program_name is used by lib/error.c */
-#define program_name program_invocation_name
-#include <errno.h>
-])
-
 ### Check for Emacs site-lisp directory
 AM_PATH_LISPDIR
 

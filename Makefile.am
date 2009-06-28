@@ -24,36 +24,34 @@ SUBDIRS = lib src elisp po doc tests
 
 EXTRA_DIST = ChangeLog.2007
 
+# Define the following variables in order to use the ChangeLog rule below:
+#  prev_change_log  [optional]  Name of the previous ChangeLog file.
+#  gen_start_date   [optional]  Start ChangeLog from this date. 
+#  changelog_dir    [mandatory] Directory where to create ChangeLog
 gen_start_date = 2007-06-29
-.PHONY: make-ChangeLog
-make-ChangeLog: 
-	if test -d .git; then                                           \
-	  $(top_srcdir)/build-aux/gitlog-to-changelog                   \
-	    --since=$(gen_start_date) |                                 \
-            sed '/<unknown>$$/d' | fmt -s > $(distdir)/cl-t;            \
-	  echo "" >> $(distdir)/cl-t;                                 \
-	  echo "Local Variables:" >> $(distdir)/cl-t;                   \
-	  echo "mode: change-log" >> $(distdir)/cl-t;                   \
-	  echo "version-control: never"  >> $(distdir)/cl-t;            \
-	  echo "buffer-read-only: t" >> $(distdir)/cl-t;                \
-	  echo "End:" >> $(distdir)/cl-t;                               \
-	  rm -f $(distdir)/ChangeLog;                                   \
-	  mv $(distdir)/cl-t $(distdir)/ChangeLog;                      \
-	fi
-
-dist-hook: make-ChangeLog
+prev_change_log = ChangeLog.2007
+changelog_dir = .
 
 .PHONY: ChangeLog
 ChangeLog: 
-	if test -d .git; then                                           \
-	  $(top_srcdir)/build-aux/gitlog-to-changelog                   \
-	    --since=$(gen_start_date) |                                 \
-            sed '/<unknown>$$/d' | fmt -s > ChangeLog;                  \
-	  echo "" >> ChangeLog;                                       \
-	  echo "Local Variables:" >> ChangeLog;                         \
-	  echo "mode: change-log" >> ChangeLog;                         \
-	  echo "version-control: never"  >> ChangeLog;                  \
-	  echo "buffer-read-only: t" >> ChangeLog;                      \
-	  echo "End:" >> ChangeLog;                                     \
-        fi
-
+	if test -d .git; then                                              \
+	  cmd=$(top_srcdir)/build-aux/gitlog-to-changelog;                 \
+	  if test -n "$(gen_start_date)"; then                             \
+	    cmd="$$cmd --since=\"$(gen_start_date)\"";                     \
+	  fi;                                                              \
+	  $$cmd |                                                          \
+            sed '/<unknown>$$/d' | fmt -s > $(changelog_dir)/cl-t;         \
+          if test -n "$(prev_change_log)" && test -f "$(prev_change_log)"; \
+	  then                                                             \
+	    echo "" >> $(changelog_dir)/cl-t;                              \
+	    cat "$(prev_change_log)" |                                     \
+	      sed '/^Local Variables:/,/^End:/d' >> $(changelog_dir)/cl-t; \
+	  fi;                                                              \
+	  echo "Local Variables:" >> $(changelog_dir)/cl-t;                \
+	  echo "mode: change-log" >> $(changelog_dir)/cl-t;                \
+	  echo "version-control: never"  >> $(changelog_dir)/cl-t;         \
+	  echo "buffer-read-only: t" >> $(changelog_dir)/cl-t;             \
+	  echo "End:" >> $(changelog_dir)/cl-t;                            \
+	  rm -f $(changelog_dir)/ChangeLog;                                \
+	  mv $(changelog_dir)/cl-t $(changelog_dir)/ChangeLog;             \
+	fi
