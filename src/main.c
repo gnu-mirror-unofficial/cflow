@@ -1,5 +1,5 @@
 /* This file is part of GNU cflow
-   Copyright (C) 1997,2005,2007 Sergey Poznyakoff
+   Copyright (C) 1997,2005,2007,2009 Sergey Poznyakoff
  
    GNU cflow is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -257,14 +257,16 @@ symbol_override(const char *str)
      Symbol *sp;
      
      ptr = strchr(str, ':');
-     if (*ptr == ':') {
+     if (!ptr) {
+	  error(0, 0, _("%s: no symbol type supplied"), str);
+	  return;
+     } else {
 	  type = find_option_type(symbol_optype, ptr+1, 0);
 	  if (type == 0) {
 	       error(0, 0, _("unknown symbol type: %s"), ptr+1);
 	       return;
 	  }
-     } else
-	  type = IDENTIFIER;
+     } 
      name = strndup(str, ptr - str);
      sp = install(name);
      sp->type = SymToken;
