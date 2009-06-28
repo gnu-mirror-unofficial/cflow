@@ -1,5 +1,5 @@
 /* This file is part of GNU cflow
-   Copyright (C) 1997,2005,2007 Sergey Poznyakoff
+   Copyright (C) 1997,2005,2007,2009 Sergey Poznyakoff
  
    GNU cflow is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -200,12 +200,13 @@ clear_active(Symbol *sym)
 
 /* Cross-reference output */
 void
-print_refs(char *name, Consptr cons)
+print_refs(char *name, struct linked_list *reflist)
 {
      Ref *refptr;
-    
-     for ( ; cons; cons = CDR(cons)) {
-	  refptr = (Ref*)CAR(cons);
+     struct linked_list_entry *p;
+
+     for (p = linked_list_head(reflist); p; p = p->next) {
+	  refptr = (Ref*)p->data;
 	  fprintf(outfile, "%s   %s:%d\n",
 		  name,
 		  refptr->source,
@@ -271,7 +272,7 @@ xref_output()
 static void
 scan_tree(int lev, Symbol *sym)
 {
-     Consptr cons;
+     struct linked_list_entry *p;
 
      if (sym->type == SymUndefined)
 	  return;
@@ -280,8 +281,8 @@ scan_tree(int lev, Symbol *sym)
 	  return;
      }
      sym->active = 1;
-     for (cons = sym->callee; cons; cons = CDR(cons)) {
-	  scan_tree(lev+1, (Symbol*)CAR(cons));
+     for (p = linked_list_head(sym->callee); p; p = p->next) {
+	  scan_tree(lev+1, (Symbol*)p->data);
      }
      sym->active = 0;
 }
@@ -293,16 +294,16 @@ set_active(Symbol *sym)
 }
 
 static int
-is_printable(Consptr cons)
+is_printable(struct linked_list_entry *p)
 {
-     return cons != NULL && include_symbol((Symbol*)CAR(cons));
+     return p != NULL && include_symbol((Symbol*)p->data);
 }
 
 static int
-is_last(Consptr cons)
+is_last(struct linked_list_entry *p)
 {
-     while (cons = CDR(cons)) 
-	  if (is_printable(cons))
+     while (p = p->next) 
+	  if (is_printable(p))
 	       return 0;
      return 1;
 }
@@ -312,7 +313,7 @@ is_last(Consptr cons)
 static void
 direct_tree(int lev, int last, Symbol *sym)
 {
-     Consptr cons;
+     struct linked_list_entry *p;
      int rc;
      
      if (sym->type == SymUndefined
@@ -325,9 +326,9 @@ direct_tree(int lev, int last, Symbol *sym)
      if (rc || sym->active)
 	  return;
      set_active(sym);
-     for (cons = sym->callee; cons; cons = CDR(cons)) {
-	  set_level_mark(lev+1, is_printable(CDR(cons)));
-	  direct_tree(lev+1, is_last(cons), (Symbol*)CAR(cons));
+     for (p = linked_list_head(sym->callee); p; p = p->next) {
+	  set_level_mark(lev+1, is_printable(p->next));
+	  direct_tree(lev+1, is_last(p), (Symbol*)p->data);
      }
      clear_active(sym);
 }
@@ -337,7 +338,7 @@ direct_tree(int lev, int last, Symbol *sym)
 static void
 inverted_tree(int lev, int last, Symbol *sym)
 {
-     Consptr cons;
+     struct linked_list_entry *p;
      int rc;
      
      if (sym->type == SymUndefined
@@ -349,9 +350,9 @@ inverted_tree(int lev, int last, Symbol *sym)
      if (rc || sym->active)
 	  return;
      set_active(sym);
-     for (cons = sym->caller; cons; cons = CDR(cons)) {
-	  set_level_mark(lev+1, is_printable(CDR(cons)));
-	  inverted_tree(lev+1, is_last(cons), (Symbol*)CAR(cons));
+     for (p = linked_list_head(sym->caller); p; p = p->next) {
+	  set_level_mark(lev+1, is_printable(p->next));
+	  inverted_tree(lev+1, is_last(p), (Symbol*)p->data);
      }
      clear_active(sym);
 }

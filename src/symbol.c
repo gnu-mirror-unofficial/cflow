@@ -1,5 +1,5 @@
 /* This file is part of GNU cflow
-   Copyright (C) 1997, 2005, 2006, 2007 Sergey Poznyakoff
+   Copyright (C) 1997, 2005, 2006, 2007, 2009 Sergey Poznyakoff
 
    GNU cflow is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -110,18 +110,19 @@ delete_symbol(struct table_entry *tp)
      Symbol *s = unlink_symbol(tp);
      /* The symbol could have been referenced even if it is static
 	in -i^s mode. See tests/static.at for details. */
-     if (s->ref_line == NULL) 
+     if (s->ref_line == NULL) {
+	  linked_list_destroy(&s->ref_line);
+	  linked_list_destroy(&s->caller);
+	  linked_list_destroy(&s->callee);
 	  free(s);
+     }
 }     
-
-static void cleanup_symbol_refs(Symbol *sym);
 
 /* Delete from the symbol table all static symbols defined in the current
    source.
    If the user requested static symbols in the listing, the symbol is
    not deleted, as it may have been referenced by other symbols. Instead,
-   it is unlinked from its table entry and cleanup_symbol_refs() is
-   called, so that its reference tables become usable.
+   it is unlinked from its table entry.
    NOTE: This takes advantage of the fact that install() uses LIFO strategy,
    so we don't have to check the name of the source where the symbol was
    defined. */
@@ -137,7 +138,7 @@ static_processor(void *data, void *proc_data)
 	  if (globals_only()) 
 	       delete_symbol(t);
 	  else
-	       cleanup_symbol_refs(unlink_symbol(t));
+	       unlink_symbol(t);
      }
      return true;
 }
@@ -174,7 +175,7 @@ auto_processor(void *data, void *proc_data)
 		    break;
 		    
 	       case StaticStorage:
-		    cleanup_symbol_refs(unlink_symbol(t));
+		    unlink_symbol(t);
 		    break;
 		    
 	       default:
@@ -191,48 +192,6 @@ void
 delete_autos(int level)
 {
      hash_do_for_each (symbol_table, auto_processor, &level);
-}
-
-
-/* Make all list pointers of the SYM ready for final processing.
- * This means for each list replace its entry point with its CAR
- * and throw away the first cons. The first cons holds pointers
- * to the head and tail of the list and is used to speed up appends.
- *  
- * TODO: The memory is not reclaimed
- */
-static void
-cleanup_symbol_refs(Symbol *sym)
-{
-     if (sym && sym->type == SymIdentifier) {
-	  if (sym->ref_line)
-	       sym->ref_line = CAR(sym->ref_line);
-	  if (sym->caller)
-	       sym->caller = CAR(sym->caller);
-	  if (sym->callee)
-	       sym->callee = CAR(sym->callee);
-     }
-}
-
-static bool
-cleanup_processor(void *data, void *proc_data)
-{
-     struct table_entry *t = data;
-     Symbol *sym;
-     for (sym = t->sym; sym; sym = sym->next) {
-	  cleanup_symbol_refs(sym);
-     }
-     return true;
-}
-
-
-/* Clean up all symbols from the auxiliary information.
- * See the comment for cleanup_symbol() above
- */
-void
-cleanup()
-{
-     hash_do_for_each (symbol_table, cleanup_processor, NULL);
 }
 
 struct collect_data {
@@ -324,97 +283,79 @@ move_parms(int level)
 }
 
 
-typedef struct bucket Bucket;
-struct bucket {
-     Bucket *next; /* Next bucket */
-     int free;
-     Cons cons[1];
-};
 
-static int bucket_nodes = 512;
-static Bucket *root_bucket, *last_bucket;
+static struct linked_list *
+deref_linked_list (struct linked_list **plist)
+{
+     if (!*plist) {
+	  struct linked_list *list = xmalloc(sizeof(*list));
+	  list->free_data = NULL;
+	  list->head = list->tail = NULL;
+	  *plist = list;
+     }
+     return *plist;
+}
+
+
+struct linked_list *
+linked_list_create(linked_list_free_data_fp fun)
+{
+     struct linked_list *list = xmalloc(sizeof(*list));
+     list->free_data = fun;
+     list->head = list->tail = NULL;
+     return list;
+}
 
 void
-alloc_new_bucket()
+linked_list_append(struct linked_list **plist, void *data)
 {
-     Bucket *bp;
-     
-     bp = malloc(sizeof(*bp) + sizeof(Cons)*(bucket_nodes-1));
-     if (!bp)
-	  return;
-     bp->next = NULL;
-     bp->free = 0;
-     if (!root_bucket) 
-	  root_bucket = last_bucket = bp;
-     else {
-	  last_bucket->next = bp;
-	  last_bucket = bp;
-     }
+     struct linked_list *list = deref_linked_list (plist);
+     struct linked_list_entry *entry = xmalloc(sizeof(*entry));
+     entry->next = NULL;
+     entry->data = data;
+     if (list->tail)
+	  list->tail->next = entry;
+     else
+	  list->head = entry;
+     list->tail = entry;
 }
 
-Consptr
-alloc_cons_from_bucket()
+void
+linked_list_prepend(struct linked_list **plist, void *data)
 {
-     if (!last_bucket || last_bucket->free == bucket_nodes)
-	  return NULL;
-     return &last_bucket->cons[last_bucket->free++];
+     struct linked_list *list = deref_linked_list (plist);
+     struct linked_list_entry *entry = xmalloc(sizeof(*entry));
+     entry->next = list->head;
+     entry->data = data;
+     list->head = entry;
+     if (!list->tail)
+	  list->tail = entry;
 }
 
-Consptr
-alloc_cons()
+void
+linked_list_destroy(struct linked_list **plist)
 {
-     Consptr cp;
-     
-     cp = alloc_cons_from_bucket();
-     if (!cp) {
-	  alloc_new_bucket();
-	  if ((cp = alloc_cons_from_bucket()) == NULL) {
-	       error(2, 0, _("not enough core"));
+     if (plist && *plist) {
+	  struct linked_list *list = *plist;
+	  struct linked_list_entry *p;
+
+	  for (p = list->head; p; p = p->next) {
+	       if (list->free_data)
+		    list->free_data(p->data);
+	       free(p);
 	  }
+	  free(list);
+	  *plist = NULL;
      }
-     CAR(cp) = CDR(cp) = NULL;
-     return cp;
-}
-
-/* Append a new cons to the tail of the list
- * ROOT_PTR points to a `root cons'. 
- * CAR is the car value of the cons to be created.
- *  
- * Note: Car of the root cons points to the head of the list,
- * cdr of root cons points to  the tail of the list.
- */
-Consptr
-append_to_list(Consptr *root_ptr, void *car)
-{
-     Consptr root, cons;
-     
-     if (!*root_ptr) {
-	  *root_ptr = alloc_cons();
-	  /* both car and cdr are guaranteed to be NULL */ 
-     }
-     root = *root_ptr;
-     
-     cons = alloc_cons();
-     if (!CAR(root))
-	  CAR(root) = cons;
-     
-     /* Maintain linked list */
-     if (CDR(root))
-	  CDR(CDR(root)) = cons;
-     CDR(root) = cons;
-     CAR(cons) = car;
-     return cons;
 }
 
 int
-symbol_in_list(Symbol *sym, Consptr list)
+symbol_in_list(Symbol *sym, struct linked_list *list)
 {
-     Consptr cons;
+     struct linked_list_entry *p;
      
-     if (!list)
-	  return 0;
-     for (cons = CAR(list); cons; cons = CDR(cons))
-	  if ((Symbol*)CAR(cons) == sym)
+     for (p = linked_list_head(list); p; p = p->next)
+	  if ((Symbol*)p->data == sym)
 	       return 1;
      return 0;
 }

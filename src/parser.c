@@ -1,5 +1,5 @@
 /* This file is part of GNU cflow
-   Copyright (C) 1997, 2005, 2006, 2007 Sergey Poznyakoff
+   Copyright (C) 1997, 2005, 2006, 2007, 2009 Sergey Poznyakoff
  
    GNU cflow is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -1077,7 +1077,9 @@ add_reference(char *name, int line)
      refptr = xmalloc(sizeof(*refptr));
      refptr->source = filename;
      refptr->line = line;
-     append_to_list(&sp->ref_line, refptr);
+     if (!sp->ref_line)
+	  sp->ref_line = linked_list_create(free);
+     linked_list_append(&sp->ref_line, refptr);
      return sp;
 }
 
@@ -1094,9 +1096,9 @@ call(char *name, int line)
 	  sp->arity = 0;
      if (caller) {
 	  if (!symbol_in_list(caller, sp->caller))
-	       append_to_list(&sp->caller, caller);
+	       linked_list_append(&sp->caller, caller);
 	  if (!symbol_in_list(sp, caller->callee))
-	       append_to_list(&caller->callee, sp);
+	       linked_list_append(&caller->callee, sp);
      }
 }
 
@@ -1108,9 +1110,9 @@ reference(char *name, int line)
 	  return;
      if (caller) {
 	  if (!symbol_in_list(caller, sp->caller))
-	       append_to_list(&sp->caller, caller);
+	       linked_list_append(&sp->caller, caller);
 	  if (!symbol_in_list(sp, caller->callee))
-	       append_to_list(&caller->callee, sp);
+	       linked_list_append(&caller->callee, sp);
      }
 }
 

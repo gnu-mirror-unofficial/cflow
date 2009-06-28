@@ -218,7 +218,7 @@ int preprocess_option = 0; /* Do they want to preprocess sources? */
 
 char *start_name = "main"; /* Name of start symbol */
 
-Consptr arglist;        /* List of command line arguments */
+struct linked_list *arglist;        /* List of command line arguments */
 
 /* Given the option_type array and (possibly abbreviated) option argument
  * find the type corresponding to that argument.
@@ -487,7 +487,7 @@ set_level_indent(const char *str)
 static void
 add_name(const char *name)
 {
-     append_to_list(&arglist, (void*) name);
+     linked_list_append(&arglist, (void*) name);
 }
 
 static void
@@ -769,16 +769,18 @@ main(int argc, char **argv)
 
      init();
 
-     if (arglist) 
-	  /* See comment to cleanup_processor */
-	  for (arglist = CAR(arglist); arglist; arglist = CDR(arglist)) {
-	       char *s = (char*)CAR(arglist);
+     if (arglist) {
+	  struct linked_list_entry *p;
+
+	  for (p = arglist->head; p; p = p->next) {
+	       char *s = (char*)p->data;
 	       if (s[0] == '-')
 		    pp_option(s);
 	       else if (source(s) == 0)
 		    yyparse();
 	  }
-
+     }
+     
      argc -= index;
      argv += index;
 
@@ -789,8 +791,6 @@ main(int argc, char **argv)
 
      if (input_file_count == 0)
 	     error(1, 0, _("no input files"));
-
-     cleanup();
 
      output();
      return 0;

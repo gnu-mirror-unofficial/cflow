@@ -1,5 +1,5 @@
 /* This file is part of GNU cflow
-   Copyright (C) 1997,2005,2007 Sergey Poznyakoff
+   Copyright (C) 1997,2005,2007,2009 Sergey Poznyakoff
  
    GNU cflow is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -45,15 +45,19 @@
 
 #define NUMITEMS(a) sizeof(a)/sizeof((a)[0])
 
-typedef struct cons *Consptr;
-typedef struct cons Cons;
-struct cons {
-     Consptr car;
-     Consptr cdr;
+struct linked_list_entry {
+     struct linked_list_entry *next;
+     void *data;
 };
 
-#define CAR(a) (a)->car
-#define CDR(a) (a)->cdr
+typedef void (*linked_list_free_data_fp) (void*);
+
+struct linked_list {
+     linked_list_free_data_fp free_data;
+     struct linked_list_entry *head, *tail;
+};
+
+#define linked_list_head(list) ((list) ? (list)->head : NULL)
 
 enum symtype {
      SymUndefined,  /* Undefined or deleted symbol */
@@ -97,7 +101,7 @@ struct symbol {
      int token_type;               /* Type of the token */
      char *source;                 /* Source file */
      int def_line;                 /* Source line */
-     Consptr ref_line;             /* Referenced in */
+     struct linked_list *ref_line; /* Referenced in */
      
      int level;                    /* Block nesting level (for local vars),
 				      Parameter nesting level (for params) */
@@ -109,8 +113,8 @@ struct symbol {
 				      variables */  
      
      int recursive;                /* Is the function recursive */
-     Consptr caller;               /* List of callers */
-     Consptr callee;               /* List of callees */
+     struct linked_list *caller;   /* List of callers */
+     struct linked_list *callee;   /* List of callees */
 };
 
 /* Output flags */
@@ -162,10 +166,12 @@ void delete_autos(int level);
 void delete_statics(void);
 void delete_parms(int level);
 void move_parms(int level);
-void cleanup(void);
 int collect_symbols(Symbol ***, int (*sel)());
-Consptr append_to_list(Consptr *, void *);
-int symbol_in_list(Symbol *sym, Consptr list);
+struct linked_list *linked_list_create(linked_list_free_data_fp fun);
+void linked_list_destroy(struct linked_list **plist);
+void linked_list_append(struct linked_list **plist, void *data);
+void linked_list_prepend(struct linked_list **plist, void *data);
+int symbol_in_list(Symbol *sym, struct linked_list *list);
 
 int get_token(void);
 int source(char *name);
