@@ -519,6 +519,8 @@ parse_variable_declaration(Ident *ident, int parm)
 	  }
 	  putback();
 	  skip_struct();
+	  while (tok.type == MODIFIER)
+	       nexttoken();
 	  if (tok.type == IDENTIFIER) {
 	       TOKSTK hold = tok;
 	       restore(sp);
