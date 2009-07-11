@@ -19,7 +19,7 @@
 # 02110-1301 USA.
 
 AC_PREREQ(2.61)
-AC_INIT([GNU cflow], [1.2.90], [bug-cflow@gnu.org])
+AC_INIT([GNU cflow], [1.3], [bug-cflow@gnu.org])
 AC_CONFIG_SRCDIR([src/cflow.h])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([1.9 gnits tar-ustar dist-bzip2 std-options])

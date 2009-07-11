@@ -1,18 +1,25 @@
-GNU cflow NEWS -- history of user-visible changes. 2009-02-06
+GNU cflow NEWS -- history of user-visible changes. 2009-07-11
 Copyright (C) 2005, 2006, 2007, 2009 Sergey Poznyakoff
 See the end of file for copying conditions.
 
 Please send cflow bug reports to <bug-cflow@gnu.org>.
 
 
-Version 1.2.90 (Git)
+Version 1.3, 2009-07-11
+
+* Optimize symbol tables.
+
+New symbol tables considerably improve the program performance.
+
+* Bugfixes.
+
 
-Version 1.2:
+Version 1.2, 2007-06-29
 
 * Licensed under the GPLv3
 
 
-Version 1.1:
+Version 1.1, 2006-07-09
 
 * Bugfixes:
 ** Fix stack overflow on erroneous nameless function arguments.
@@ -22,7 +29,7 @@ Version 1.1:
 * New localization: Danish and Vietnamese
 
 
-Version 1.0:
+Version 1.0, 2005-10-15
 
 * First official release.
 
