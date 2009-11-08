@@ -117,6 +117,7 @@ struct symbol {
 				      variables */  
      
      int recursive;                /* Is the function recursive */
+     size_t ord;                   /* ordinal number */
      struct linked_list *caller;   /* List of callers */
      struct linked_list *callee;   /* List of callees */
 };
@@ -172,7 +173,8 @@ void delete_autos(int level);
 void delete_statics(void);
 void delete_parms(int level);
 void move_parms(int level);
-int collect_symbols(Symbol ***, int (*sel)());
+size_t collect_symbols(Symbol ***, int (*sel)(), size_t rescnt);
+size_t collect_functions(Symbol ***return_sym);
 struct linked_list *linked_list_create(linked_list_free_data_fp fun);
 void linked_list_destroy(struct linked_list **plist);
 void linked_list_append(struct linked_list **plist, void *data);
@@ -198,6 +200,7 @@ void newline(void);
 void print_level(int lev, int last);
 int globals_only(void);
 int include_symbol(Symbol *sym);
+int symbol_is_function(Symbol *sym);
 
 void sourcerc(int *, char ***);
 
@@ -233,3 +236,9 @@ int posix_output_handler(cflow_output_command cmd,
 			 FILE *outfile, int line,
 			 void *data, void *handler_data);
 
+
+typedef struct cflow_depmap *cflow_depmap_t;
+cflow_depmap_t depmap_alloc(size_t count);
+void depmap_set(cflow_depmap_t dmap, size_t row, size_t col);
+int depmap_isset(cflow_depmap_t dmap, size_t row, size_t col);
+void depmap_tc(cflow_depmap_t dmap);

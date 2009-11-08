@@ -191,6 +191,12 @@ is_var(Symbol *symp)
      return 0;
 }
 
+int
+symbol_is_function(Symbol *symp)
+{
+     return symp->type == SymIdentifier && symp->arity >= 0;
+}
+
 static void
 clear_active(Symbol *sym)
 {
@@ -241,9 +247,9 @@ void
 xref_output()
 {
      Symbol **symbols, *symp;
-     int i, num;
+     size_t i, num;
      
-     num = collect_symbols(&symbols, is_var);
+     num = collect_symbols(&symbols, is_var, 0);
      qsort(symbols, num, sizeof(*symbols), compare);
      
      /* produce xref output */
@@ -266,26 +272,6 @@ xref_output()
 
 
 /* Tree output */
-
-/* Scan call tree. Mark the recursive calls
- */
-static void
-scan_tree(int lev, Symbol *sym)
-{
-     struct linked_list_entry *p;
-
-     if (sym->type == SymUndefined)
-	  return;
-     if (sym->active) {
-	  sym->recursive = 1;
-	  return;
-     }
-     sym->active = 1;
-     for (p = linked_list_head(sym->callee); p; p = p->next) {
-	  scan_tree(lev+1, (Symbol*)p->data);
-     }
-     sym->active = 0;
-}
 
 static void
 set_active(Symbol *sym)
@@ -361,43 +347,68 @@ static void
 tree_output()
 {
      Symbol **symbols, *main_sym;
-     int i, num;
+     size_t i, num;
+     cflow_depmap_t depmap;
      
-     /* Collect and sort symbols */
-     num = collect_symbols(&symbols, is_var);
-     qsort(symbols, num, sizeof(*symbols), compare);
-     /* Scan and mark the recursive ones */
+     /* Collect functions and assign them ordinal numbers */
+     num = collect_functions(&symbols);
+     for (i = 0; i < num; i++)
+	  symbols[i]->ord = i;
+     
+     /* Create a dependency matrix */
+     depmap = depmap_alloc(num);
      for (i = 0; i < num; i++) {
-	  if (symbols[i]->callee)
-	       scan_tree(0, symbols[i]);
+	  if (symbols[i]->callee) {
+	       struct linked_list_entry *p;
+	       
+	       for (p = linked_list_head(symbols[i]->callee); p;
+		    p = p->next) {
+		    Symbol *s = (Symbol*) p->data;
+		    if (symbol_is_function(s))
+			 depmap_set(depmap, i, ((Symbol*)p->data)->ord);
+	       }		    
+	  }
      }
      
+     depmap_tc(depmap);
+
+     /* Mark recursive calls */
+     for (i = 0; i < num; i++)
+	  if (depmap_isset(depmap, i, i))
+	       symbols[i]->recursive = 1;
+     free(depmap);
+     free(symbols);
+     
+     /* Collect and sort all symbols */
+     num = collect_symbols(&symbols, is_var, 0);
+     qsort(symbols, num, sizeof(*symbols), compare);
+	       
      /* Produce output */
-    begin();
+     begin();
     
-    if (reverse_tree) {
-	 for (i = 0; i < num; i++) {
-	      inverted_tree(0, 0, symbols[i]);
-	      separator();
-	 }
-    } else {
-	 main_sym = lookup(start_name);
-	 if (main_sym) {
-	      direct_tree(0, 0, main_sym);
-	      separator();
-	 } else {
-	      for (i = 0; i < num; i++) {
-		   if (symbols[i]->callee == NULL)
-			continue;
-		   direct_tree(0, 0, symbols[i]);
-		   separator();
-	      }
-	 }
-    }
-    
-    end();
-    
-    free(symbols);
+     if (reverse_tree) {
+	  for (i = 0; i < num; i++) {
+	       inverted_tree(0, 0, symbols[i]);
+	       separator();
+	  }
+     } else {
+	  main_sym = lookup(start_name);
+	  if (main_sym) {
+	       direct_tree(0, 0, main_sym);
+	       separator();
+	  } else {
+	       for (i = 0; i < num; i++) {
+		    if (symbols[i]->callee == NULL)
+			 continue;
+		    direct_tree(0, 0, symbols[i]);
+		    separator();
+	       }
+	  }
+     }
+     
+     end();
+     
+     free(symbols);
 }
 
 void

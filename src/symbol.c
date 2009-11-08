@@ -24,6 +24,7 @@ static Hash_table *symbol_table;
 
 static struct linked_list *static_symbol_list;
 static struct linked_list *auto_symbol_list;
+static struct linked_list *static_func_list;
 
 static void
 append_symbol(struct linked_list **plist, Symbol *sp)
@@ -207,11 +208,13 @@ static_free(void *data)
 
      if (!t)
 	  return;
-     if (sym->flag == symbol_temp
-	 || globals_only()) 
+     if (sym->flag == symbol_temp) 
 	  delete_symbol(sym);
-     else
+     else {
 	  unlink_symbol(sym);
+	  if (symbol_is_function(sym))
+	       linked_list_append(&static_func_list, sym);
+     }
 }
 
 void
@@ -280,8 +283,9 @@ collect_processor(void *data, void *proc_data)
      return true;
 }
 
-int
-collect_symbols(Symbol ***return_sym, int (*sel)(Symbol *p))
+size_t
+collect_symbols(Symbol ***return_sym, int (*sel)(Symbol *p),
+		size_t reserved_slots)
 {
      struct collect_data cdata;
 
@@ -289,7 +293,7 @@ collect_symbols(Symbol ***return_sym, int (*sel)(Symbol *p))
      cdata.index = 0;
      cdata.sel = sel;
      hash_do_for_each (symbol_table, collect_processor, &cdata);
-     cdata.sym = calloc(cdata.index, sizeof(*cdata.sym));
+     cdata.sym = calloc(cdata.index + reserved_slots, sizeof(*cdata.sym));
      if (!cdata.sym)
 	  xalloc_die();
      cdata.index = 0;
@@ -297,6 +301,31 @@ collect_symbols(Symbol ***return_sym, int (*sel)(Symbol *p))
      *return_sym = cdata.sym;
      return cdata.index;
 }
+
+size_t
+collect_functions(Symbol ***return_sym)
+{
+     Symbol **symbols;
+     size_t num, snum;
+     struct linked_list_entry *p;
+
+     /* Count static functions */
+     snum = 0;
+     if (static_func_list)
+	  for (p = linked_list_head(static_func_list); p; p = p->next)
+	       snum++;
+     
+     /* Collect global functions */
+     num = collect_symbols(&symbols, symbol_is_function, snum);
+
+     /* Collect static functions */
+     if (snum) 
+	  for (p = linked_list_head(static_func_list); p; p = p->next)
+	       symbols[num++] = p->data;
+     *return_sym = symbols;
+     return num;
+}
+
 
 
 /* Special handling for function parameters */
