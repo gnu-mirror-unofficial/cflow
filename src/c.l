@@ -16,14 +16,17 @@
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
    MA 02110-1301 USA */
 
+%top {
+#include <cflow.h>
+#include <ctype.h>
+#include <parser.h>
+}
+
 %x comment
 %x string
 %x stringwait
 %x longline
 %{
-#include <cflow.h>
-#include <ctype.h>
-#include <parser.h>
      
 struct obstack string_stk;
 
@@ -36,6 +39,11 @@ unsigned input_file_count; /* Number of input files, processed by source() */
 int ident();
 void update_loc();
 #define lex_error(msg) error_at_line(0, 0, filename, line_num, "%s", msg)
+
+/* Keep the token returned at the previous call to yylex. This is used
+   as a lexical tie-in to ensure that the next token after STRUCT is
+   IDENTIFIER. See get_token and ident below. */
+static int prev_token;
 
 %}
 FILENAME [^\n*?]*
@@ -221,12 +229,20 @@ init_lex(int debug_level)
 int
 ident()
 {
-     Symbol *sp;
+     /* Do not attempt any symbol table lookup if the previous token was
+	STRUCT.  This helps properly parse constructs like:
 
-     sp = lookup(yytext);
-     if (sp && sp->type == SymToken) {
-	  yylval.str = sp->name;
-	  return sp->token_type;
+	  typedef struct foo foo;
+	  struct foo {
+	    int dummy;
+	  };
+     */
+     if (prev_token != STRUCT) {
+          Symbol *sp = lookup(yytext);
+          if (sp && sp->type == SymToken) {
+	       yylval.str = sp->name;
+	       return sp->token_type;
+          }
      }
      obstack_grow(&string_stk, yytext, yyleng);
      obstack_1grow(&string_stk, 0);
@@ -320,7 +336,7 @@ yywrap()
 	  fclose(yyin);
      yyin = NULL;
 #ifdef FLEX_SCANNER
-     yy_delete_buffer(yy_current_buffer);
+     yy_delete_buffer(YY_CURRENT_BUFFER);
 #endif
      delete_statics();
      return 1;
@@ -329,7 +345,9 @@ yywrap()
 int
 get_token()
 {
-     return yyin ? yylex() : 0;
+     int tok = yylex();
+     prev_token = tok;
+     return tok;
 }
 
 int
