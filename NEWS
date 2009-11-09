@@ -1,8 +1,14 @@
-GNU cflow NEWS -- history of user-visible changes. 2009-07-11
+GNU cflow NEWS -- history of user-visible changes. 2009-11-09
 Copyright (C) 2005, 2006, 2007, 2009 Sergey Poznyakoff
 See the end of file for copying conditions.
 
 Please send cflow bug reports to <bug-cflow@gnu.org>.
+
+
+Version 1.3.1 (Git)
+
+* Speed up recursive call detection.
+* Fix parsing of typedefs after `struct'.
 
 
 Version 1.3, 2009-07-11

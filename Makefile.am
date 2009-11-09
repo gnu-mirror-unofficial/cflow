@@ -55,3 +55,9 @@ ChangeLog:
 	  rm -f $(changelog_dir)/ChangeLog;                                \
 	  mv $(changelog_dir)/cl-t $(changelog_dir)/ChangeLog;             \
 	fi
+
+alpha:
+	$(MAKE) dist distdir=$(PACKAGE)-$(VERSION)-`date +"%Y%m%d"`
+
+alphacheck:
+	$(MAKE) distcheck distdir=$(PACKAGE)-$(VERSION)-`date +"%Y%m%d"`
