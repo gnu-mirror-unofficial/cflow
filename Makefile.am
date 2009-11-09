@@ -20,7 +20,7 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = lib src elisp po doc tests
+SUBDIRS = gnu src elisp po doc tests
 
 EXTRA_DIST = ChangeLog.2007
 

@@ -982,9 +982,14 @@ declare(Ident *ident, int maybe_knr)
 	      && (sp->storage != StaticStorage || level > 0)) {
 	       sp = install_ident(ident->name, ident->storage);
 	  } else {
-	       error_at_line(0, 0, filename, ident->line, 
-			     _("%s/%d redefined"),
-			     ident->name, sp->arity);
+	       if (sp->arity >= 0)
+		    error_at_line(0, 0, filename, ident->line, 
+				  _("%s/%d redefined"),
+				  ident->name, sp->arity);
+	       else
+		    error_at_line(0, 0, filename, ident->line, 
+				  _("%s redefined"),
+				  ident->name);
 	       error_at_line(0, 0, sp->source, sp->def_line,
 			     _("this is the place of previous definition"));
 	  }

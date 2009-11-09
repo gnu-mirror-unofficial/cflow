@@ -22,8 +22,13 @@ AC_PREREQ(2.61)
 AC_INIT([GNU cflow], [1.3.1], [bug-cflow@gnu.org])
 AC_CONFIG_SRCDIR([src/cflow.h])
 AC_CONFIG_AUX_DIR([build-aux])
-AM_INIT_AUTOMAKE([1.9 gnits tar-ustar dist-bzip2 std-options])
+AM_INIT_AUTOMAKE([1.11 gnits tar-ustar dist-bzip2 dist-lzma dist-xz std-options
+silent-rules])
 AC_CONFIG_HEADER([config.h])
+
+# Enable silent rules by default:
+AM_SILENT_RULES([yes])
+
 gl_EARLY
 
 # Checks for programs.
@@ -78,7 +83,7 @@ AM_MISSING_PROG([AUTOM4TE], [autom4te])
 
 AC_CONFIG_FILES([
  Makefile
- lib/Makefile
+ gnu/Makefile
  src/Makefile
  elisp/Makefile
  po/Makefile.in 

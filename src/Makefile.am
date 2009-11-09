@@ -18,10 +18,12 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA.
 
-INCLUDES = -I$(top_srcdir)/lib -I../ -I../lib
+INCLUDES = -I$(top_srcdir)/gnu -I../ -I../gnu
 
 bin_PROGRAMS = cflow
 cflow_SOURCES = \
+ argcv.c\
+ argcv.h\
  c.l\
  cflow.h\
  depmap.c\
@@ -37,7 +39,7 @@ cflow_SOURCES = \
 
 localedir = $(datadir)/locale
 
-cflow_LDADD=../lib/libcflow.a @LIBINTL@
+LDADD=../gnu/libgnu.a @LIBINTL@
 AM_CPPFLAGS=-DLOCALEDIR=\"$(localedir)\"
 AM_LFLAGS=-dvp
 EXTRA_DIST=cflow.rc

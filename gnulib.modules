@@ -5,7 +5,6 @@ argp
 argp-version-etc
 obstack
 lstat
-malloc
 error
 hash
 gettext-h

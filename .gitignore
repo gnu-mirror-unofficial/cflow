@@ -23,5 +23,6 @@ config.h.in
 config.log
 config.status
 configure
+gnu
 m4
 stamp-h1
