@@ -43,6 +43,7 @@ $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 TESTSUITE_AT = \
  attr.at\
  awrapper.at\
+ bartest.at\
  direct.at\
  fdecl.at\
  funcarg.at\

@@ -1,5 +1,5 @@
 /* This file is part of GNU cflow
-   Copyright (C) 1997, 2005, 2007, 2009, 2010 Sergey Poznyakoff
+   Copyright (C) 1997, 2005, 2007, 2009, 2010, 2011 Sergey Poznyakoff
  
    GNU cflow is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -313,7 +313,7 @@ direct_tree(int lev, int last, Symbol *sym)
 	  return;
      set_active(sym);
      for (p = linked_list_head(sym->callee); p; p = p->next) {
-	  set_level_mark(lev+1, is_printable(p->next));
+	  set_level_mark(lev+1, !is_last(p));
 	  direct_tree(lev+1, is_last(p), (Symbol*)p->data);
      }
      clear_active(sym);
@@ -337,7 +337,7 @@ inverted_tree(int lev, int last, Symbol *sym)
 	  return;
      set_active(sym);
      for (p = linked_list_head(sym->caller); p; p = p->next) {
-	  set_level_mark(lev+1, is_printable(p->next));
+	  set_level_mark(lev+1, !is_last(p));
 	  inverted_tree(lev+1, is_last(p), (Symbol*)p->data);
      }
      clear_active(sym);

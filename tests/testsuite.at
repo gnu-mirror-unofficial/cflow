@@ -67,5 +67,6 @@ m4_include([nfparg.at])
 m4_include([nfarg.at])
 m4_include([hiding.at])
 m4_include([multi.at])
+m4_include([bartest.at])
 
 # End of testsuite.at
