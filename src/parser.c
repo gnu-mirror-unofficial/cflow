@@ -892,9 +892,11 @@ func_body()
 	  case 0:
 	       if (verbose)
 		    file_error(_("unexpected end of file in function body"), 0);
+	       caller = NULL;
 	       return;
 	  }
      }
+     caller = NULL;
 }
 
 int
