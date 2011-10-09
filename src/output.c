@@ -144,6 +144,7 @@ separator()
 					 output_driver[driver_index].handler_data);
 }
 
+#if 0
 static void
 print_text(char *buf)
 {
@@ -152,6 +153,7 @@ print_text(char *buf)
 					 buf,
 					 output_driver[driver_index].handler_data);
 }
+#endif
 
 static int
 print_symbol (int direct, int level, int last, Symbol *sym)
@@ -288,7 +290,7 @@ is_printable(struct linked_list_entry *p)
 static int
 is_last(struct linked_list_entry *p)
 {
-     while (p = p->next) 
+     while ((p = p->next))
 	  if (is_printable(p))
 	       return 0;
      return 1;

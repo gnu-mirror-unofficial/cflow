@@ -100,12 +100,12 @@ linked_list_unlink(struct linked_list *list, struct linked_list_entry *ent)
 {
      struct linked_list_entry *p;
 
-     if (p = ent->prev)
+     if ((p = ent->prev))
 	  p->next = ent->next;
      else
 	  list->head = ent->next;
 
-     if (p = ent->next)
+     if ((p = ent->next))
 	  p->prev = ent->prev;
      else
 	  list->tail = ent->prev;

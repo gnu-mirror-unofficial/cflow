@@ -342,11 +342,21 @@ yywrap()
      return 1;
 }
 
+static int hit_eof;
+
 int
 get_token()
 {
-     int tok = yylex();
-     prev_token = tok;
+     int tok;
+
+     if (hit_eof)
+          tok = 0;
+     else {
+          tok = yylex();
+          prev_token = tok;
+          if (!tok)
+               hit_eof = 1;
+     }
      return tok;
 }
 
@@ -371,7 +381,8 @@ source(char *name)
      canonical_filename = filename;
      line_num = 1;
      input_file_count++;
-     
+     hit_eof = 0;
+
      yyrestart(fp);
      return 0;
 }

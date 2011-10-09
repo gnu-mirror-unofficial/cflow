@@ -1,5 +1,5 @@
 /* This file is part of GNU cflow
-   Copyright (C) 1997, 2005, 2006, 2007, 2009, 2010 Sergey Poznyakoff
+   Copyright (C) 1997, 2005, 2006, 2007, 2009, 2010, 2011 Sergey Poznyakoff
  
    GNU cflow is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -302,6 +302,28 @@ skip_to(int c)
 	  if (tok.type == c)
 	       break;
      }
+}
+
+int
+skip_balanced(int open_tok, int close_tok, int level)
+{
+     if (level == 0) {
+	  if (nexttoken() != open_tok) {
+	       putback();
+	       return 1;
+	  }
+     }
+     while (nexttoken()) {
+	  if (tok.type == open_tok) 
+	       level++;
+	  else if (tok.type == close_tok) {
+	       if (level-- == 0) {
+		    nexttoken();
+		    return 0;
+	       }
+	  } 
+     }
+     return -1;
 }
 
 int
@@ -643,6 +665,11 @@ skip_struct()
 	       }
 	       nexttoken();
 	  } while (lev);
+     }
+
+     while (tok.type == PARM_WRAPPER) {
+	  if (skip_balanced('(', ')', 0) == -1)
+	      file_error(_("unexpected end of file in struct"), 0);
      }
 }
 

@@ -1,5 +1,5 @@
 # Makefile for GNU cflow regression tests.
-# Copyright (C) 2005, 2007, 2010 Sergey Poznyakoff
+# Copyright (C) 2005, 2007, 2010, 2011 Sergey Poznyakoff
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -59,6 +59,8 @@ TESTSUITE_AT = \
  reverse.at\
  ssblock.at\
  static.at\
+ struct00.at\
+ struct01.at\
  testsuite.at\
  version.at
 
