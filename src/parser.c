@@ -84,6 +84,7 @@ print_token(TOKSTK *tokptr)
      case WORD:
      case MODIFIER:
      case STRUCT:
+     case PARM_WRAPPER:
 	  fprintf(stderr, "`%s'", tokptr->token);
 	  break;
      case LBRACE0:
@@ -105,6 +106,9 @@ print_token(TOKSTK *tokptr)
 	  break;
      case OP:
 	  fprintf(stderr, "OP"); /* ouch!!! */
+	  break;
+     case STRING:
+	  fprintf(stderr, "\"%s\"", tokptr->token);
 	  break;
      default:
 	  fprintf(stderr, "`%c'", tokptr->type);
@@ -214,6 +218,7 @@ save_token(TOKSTK *tokptr)
      case STRUCT:
      case PARM_WRAPPER:
      case WORD:
+     case QUALIFIER:
 	  if (need_space) 
 	       obstack_1grow(&text_stk, ' ');
 	  len = strlen(tokptr->token);
@@ -233,13 +238,23 @@ save_token(TOKSTK *tokptr)
      case EXTERN: /* storage class specifiers are already taken care of */
      case STATIC:
 	  break;
+     case ',':
+	  obstack_1grow(&text_stk, ',');
+	  need_space = 1;
+	  break;
      case '(':
 	  if (need_space) 
 	       obstack_1grow(&text_stk, ' ');
-	  /*FALLTHRU*/
-     default:
 	  obstack_1grow(&text_stk, tokptr->type);
 	  need_space = 0;
+	  break;
+     case ')':
+	  obstack_1grow(&text_stk, tokptr->type);
+	  need_space = 1;
+	  break;
+     default:
+	  if (verbose)
+	       file_error(_("unrecognized definition"), 1);
      }
 }
 
@@ -339,6 +354,8 @@ yyparse()
 	  switch (tok.type) {
 	  case 0:
 	       return 0;
+	  case QUALIFIER:
+	       continue;
 	  case TYPEDEF:
 	       parse_typedef();
 	       break;
@@ -475,6 +492,12 @@ parse_function_declaration(Ident *ident, int parm)
 		    file_error(_("expected `;'"), 1);
 	       error_recovery = 1;
 	  }
+	  goto restart;
+	  
+
+     case PARM_WRAPPER:
+	  if (skip_balanced('(', ')', 0) == -1)
+	       file_error(_("unexpected end of file in wrapper"), 0);
 	  goto restart;
 	  
      case ';':
@@ -842,7 +865,6 @@ maybe_parm_list(int *parm_cnt_return)
 	  case IDENTIFIER:
 	  case STRUCT:
 	  case UNION:
-	  case ENUM:
 	  case TYPE:
 	       parmcnt++;
 	       ident.storage = AutoStorage;

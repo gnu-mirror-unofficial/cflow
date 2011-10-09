@@ -246,6 +246,7 @@ static struct option_type symbol_optype[] = {
      { "identifier", 1, IDENTIFIER },
      { "type", 1, TYPE },
      { "wrapper", 1, PARM_WRAPPER },
+     { "qualifier", 1, QUALIFIER },
      { 0 },
 };
 

@@ -75,6 +75,7 @@ auto                 /* ignored */;
 extern               return EXTERN; 
 static               return STATIC;
 typedef              return TYPEDEF;
+inline               {yylval.str = "inline"; return QUALIFIER; }
 struct               {yylval.str = "struct"; return STRUCT;}
 union                {yylval.str = "union"; return STRUCT;}
 enum                 {yylval.str = "enum"; return STRUCT;}
