@@ -27,6 +27,6 @@ main(int argc, char **argv)
 {
 }
 ],
-[main() <int main (int argc,char **argv) at prog:6>])
+[main() <int main (int argc, char **argv) at prog:6>])
 
 AT_CLEANUP

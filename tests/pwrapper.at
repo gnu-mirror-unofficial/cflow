@@ -30,7 +30,7 @@ foo(int x, int y)
      bar();
 }
 ],
-[foo() <int foo (int x,int y) at prog:5>:
+[foo() <int foo (int x, int y) at prog:5>:
     bar()])
 
 ])

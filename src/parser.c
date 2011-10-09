@@ -249,8 +249,10 @@ save_token(TOKSTK *tokptr)
 	  need_space = 0;
 	  break;
      case ')':
+     case '[':
+     case ']':
 	  obstack_1grow(&text_stk, tokptr->type);
-	  need_space = 1;
+	  need_space = 0;
 	  break;
      default:
 	  if (verbose)

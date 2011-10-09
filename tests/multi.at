@@ -78,7 +78,7 @@ int foo2(int y)
 
 dnl Expected output
 AT_DATA([expout], 
-[main() <int main (int argc,char **argv) at multi1:7>:
+[main() <int main (int argc, char **argv) at multi1:7>:
     local_stat <int local_stat at multi1:9>
     foo1() <int foo1 (int y) at multi2:13>:
         _bar() <void _bar (int x) at multi2:8>:

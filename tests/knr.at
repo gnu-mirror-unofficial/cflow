@@ -38,7 +38,7 @@ TYPE x;
 	x;
 }
 ],
-[main() <main (argc,argv) at prog:2>:
+[main() <main (argc, argv) at prog:2>:
     foo() <void foo (x) at prog:10>])
 
 AT_CLEANUP
