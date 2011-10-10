@@ -26,6 +26,6 @@ int main(int (*) ())
 {
 }
 ],
-[main() <int main (int (*)()) at prog:2>])
+[main() <int main (int (*) ()) at prog:2>])
 
 AT_CLEANUP

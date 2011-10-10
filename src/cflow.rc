@@ -1,6 +1,14 @@
-# Default configuration file for cflow
---symbol __const:type
---symbol __restrict:type
--D__extension__=
--D__attribute__\\(c\\)=
--D__asm__\\(c\\)=
+# Default configuration file for cflow.
+--symbol __inline:=inline
+--symbol __inline__:=inline
+--symbol __attribute__:wrapper
+--symbol __const__:=const
+--symbol __const:=const
+--symbol __restrict:=restrict
+--symbol __extension__:qualifier
+--symbol __asm__:wrapper
+--symbol __nonnull:wrapper
+--symbol __nothrow__:wrapper
+--symbol __pure__:wrapper
+--symbol __wur:wrapper
+	   

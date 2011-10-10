@@ -1,5 +1,5 @@
 /* This file is part of GNU cflow
-   Copyright (C) 1997, 2005, 2007, 2009, 2010 Sergey Poznyakoff
+   Copyright (C) 1997, 2005, 2007, 2009, 2010, 2011 Sergey Poznyakoff
  
    GNU cflow is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -257,7 +257,6 @@ static struct option_type symbol_optype[] = {
 static void
 symbol_override(const char *str)
 {
-     int type;
      const char *ptr;
      char *name;
      Symbol *sp;
@@ -267,19 +266,35 @@ symbol_override(const char *str)
 	  error(0, 0, _("%s: no symbol type supplied"), str);
 	  return;
      } else {
-	  type = find_option_type(symbol_optype, ptr+1, 0);
-	  if (type == 0) {
-	       error(0, 0, _("unknown symbol type: %s"), ptr+1);
-	       return;
+	  name = strndup(str, ptr - str);
+	  if (ptr[1] == '=') {
+	       Symbol *alias = lookup(ptr+2);
+	       if (!alias) {
+		    alias = install(ptr+2, INSTALL_OVERWRITE);
+		    alias->type = SymToken;
+		    alias->token_type = 0;
+		    alias->source = NULL;
+		    alias->def_line = -1;
+		    alias->ref_line = NULL;
+	       }
+	       sp = install(name, INSTALL_OVERWRITE);
+	       sp->type = SymToken;
+	       sp->alias = alias;
+	       sp->flag = symbol_alias;
+	  } else {
+	       int type = find_option_type(symbol_optype, ptr+1, 0);
+	       if (type == 0) {
+		    error(0, 0, _("unknown symbol type: %s"), ptr+1);
+		    return;
+	       }
+	       sp = install(name, INSTALL_OVERWRITE);
+	       sp->type = SymToken;
+	       sp->token_type = type;
 	  }
-     } 
-     name = strndup(str, ptr - str);
-     sp = install(name, 0);
-     sp->type = SymToken;
-     sp->token_type = type;
-     sp->source = NULL;
-     sp->def_line = -1;
-     sp->ref_line = NULL;
+	  sp->source = NULL;
+	  sp->def_line = -1;
+	  sp->ref_line = NULL;
+     }
 }
 
 /* Args for --print option */
@@ -736,7 +751,7 @@ const char version_etc_copyright[] =
   /* Do *not* mark this string for translation.  %s is a copyright
      symbol suitable for this locale, and %d is the copyright
      year.  */
-  "Copyright %s 2005, 2006, %d Sergey Poznyakoff";
+  "Copyright %s 2005, 2006, 2009, 2010, 2011 %d Sergey Poznyakoff";
 
 int
 main(int argc, char **argv)

@@ -63,23 +63,29 @@ hash_symbol_compare(void const *data1, void const *data2)
 }
 
 Symbol *
-lookup(char *name)
+lookup(const char *name)
 {
-     Symbol s;
+     Symbol s, *sym;
      struct table_entry t, *tp;
      
      if (!symbol_table)
 	  return NULL;
-     s.name = name;
+     s.name = (char*) name;
      t.sym = &s;
      tp = hash_lookup(symbol_table, &t);
-     return tp ? tp->sym : NULL;
+     if (tp) {
+	  sym = tp->sym;
+	  while (sym->type == SymToken && sym->flag == symbol_alias)
+	       sym = sym->alias;
+     } else
+	  sym = NULL;
+     return sym;
 }
 
 /* Install a new symbol `NAME'.  If UNIT_LOCAL is set, this symbol can
    be local to the current compilation unit. */
 Symbol *
-install(char *name, int unit_local)
+install(char *name, int flags)
 {
      Symbol *sym;
      struct table_entry *tp, *ret;
@@ -92,8 +98,9 @@ install(char *name, int unit_local)
      tp = xmalloc(sizeof(*tp));
      tp->sym = sym;
      
-     if (unit_local &&
-	 canonical_filename && strcmp(filename, canonical_filename)) {
+     if (((flags & INSTALL_CHECK_LOCAL) &&
+	  canonical_filename && strcmp(filename, canonical_filename)) ||
+	 (flags & INSTALL_UNIT_LOCAL)) {
 	  sym->flag = symbol_temp;
 	  append_symbol(&static_symbol_list, sym);
      } else
@@ -107,6 +114,11 @@ install(char *name, int unit_local)
 	  xalloc_die ();
 
      if (ret != tp) {
+	  if (flags & INSTALL_OVERWRITE) {
+	       free(sym);
+	       free(tp);
+	       return ret->sym;
+	  }
 	  if (ret->sym->type != SymUndefined) 
 	       sym->next = ret->sym;
 	  ret->sym = sym;
@@ -142,7 +154,9 @@ install_ident(char *name, enum storage storage)
 {
      Symbol *sp;
 
-     sp = install(name, storage != AutoStorage);
+     sp = install(name, 
+                  storage != AutoStorage ? 
+                     INSTALL_CHECK_LOCAL : INSTALL_DEFAULT);
      sp->type = SymIdentifier;
      sp->arity = -1;
      sp->storage = ExternStorage;

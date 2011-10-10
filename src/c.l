@@ -75,7 +75,6 @@ auto                 /* ignored */;
 extern               return EXTERN; 
 static               return STATIC;
 typedef              return TYPEDEF;
-inline               {yylval.str = "inline"; return QUALIFIER; }
 struct               {yylval.str = "struct"; return STRUCT;}
 union                {yylval.str = "union"; return STRUCT;}
 enum                 {yylval.str = "enum"; return STRUCT;}
@@ -85,30 +84,39 @@ enum                 {yylval.str = "enum"; return STRUCT;}
      /* Operators
       *
       */
-"->"   |
-"."                  return MEMBER_OF;
-"*="   |                 
-"/="   |                 
-"%="   |                 
-"+="   |                 
-"-="   |                 
-"<<="  |                 
-">>="  |                 
-"&="   |                 
-"|="   |                 
-"^="   |                 
-"||"   |                 
-"&&"   |                 
-"=="   |                 
-"!="   |                 
-">="   |                 
-">"    |                 
-"<="   |                 
-"<"    |                 
-"<<"   |                 
-">>"   |                 
-"++"   |                 
-"--"                     return OP;
+"->"                 {yylval.str = "->"; return MEMBER_OF;}
+"."                  {yylval.str = "."; return MEMBER_OF;}
+"*="                 {yylval.str = "*="; return OP;}
+"/="                 {yylval.str = "/="; return OP;}
+"/"                  {yylval.str = "/"; return OP;}
+"%="                 {yylval.str = "%="; return OP;}
+"%"                  {yylval.str = "%"; return OP;}
+"+="                 {yylval.str = "+="; return OP;}
+"+"                  {yylval.str = "+"; return OP;}
+"-="                 {yylval.str = "-="; return OP;}
+"-"                  {yylval.str = "-"; return OP;}
+"<<="                {yylval.str = "<<="; return OP;}
+">>="                {yylval.str = ">>="; return OP;}
+"&="                 {yylval.str = "&="; return OP;}
+"|="                 {yylval.str = "|="; return OP;}
+"^="                 {yylval.str = "^="; return OP;}
+"^"                  {yylval.str = "^"; return OP;}
+"||"                 {yylval.str = "||"; return OP;}
+"|"                  {yylval.str = "|"; return OP;}
+"&&"                 {yylval.str = "&&"; return OP;}
+"&"                  {yylval.str = "&"; return OP;}
+"=="                 {yylval.str = "=="; return OP;}
+"="                  {yylval.str = "="; return '=';}
+"!="                 {yylval.str = "!="; return OP;}
+"!"                  {yylval.str = "!"; return OP;}
+">="                 {yylval.str = ">="; return OP;}
+">"                  {yylval.str = ">"; return OP;}
+"<="                 {yylval.str = "<="; return OP;}
+"<"                  {yylval.str = "<"; return OP;}    
+"<<"                 {yylval.str = "<<"; return OP;}
+">>"                 {yylval.str = ">>"; return OP;}
+"++"                 {yylval.str = "++"; return OP;}
+"--"                 {yylval.str = "--"; return OP;}
 '.'  |
 '\\.' |
 '\\[0-7]{2,3}' |
@@ -181,50 +189,67 @@ static char *keywords[] = {
 
 static char *types[] = {
     "char",
-    "const",
     "double",
     "float",
     "int",
+    "void",
+};
+
+static char *qualifiers[] = {
     "long",
+    "const",
     "register",
     "restrict",
     "short",
     "signed",
     "unsigned",
-    "void",
     "volatile",
+    "inline"
 };
 
 void
-init_lex(int debug_level)
+init_tokens()
 {
      int i;
      Symbol *sp;
     
-     yy_flex_debug = debug_level;
-     
-     obstack_init(&string_stk);
-
      for (i = 0; i < NUMITEMS(keywords); i++) {
-	  sp = install(keywords[i], 0);
+	  sp = install(keywords[i], INSTALL_OVERWRITE);
 	  sp->type = SymToken;
 	  sp->token_type = WORD;
      }
      
      for (i = 0; i < NUMITEMS(types); i++) {
-	  sp = install(types[i], 0);
+	  sp = install(types[i], INSTALL_OVERWRITE);
 	  sp->type = SymToken;
 	  sp->token_type = TYPE;
 	  sp->source = NULL;
 	  sp->def_line = -1;
 	  sp->ref_line = NULL;
      }	
-     sp = install("...", 0);
+
+     for (i = 0; i < NUMITEMS(qualifiers); i++) {
+	  sp = install(qualifiers[i], INSTALL_OVERWRITE);
+	  sp->type = SymToken;
+	  sp->token_type = QUALIFIER;
+	  sp->source = NULL;
+	  sp->def_line = -1;
+	  sp->ref_line = NULL;
+     }	
+     sp = install("...", INSTALL_OVERWRITE);
      sp->type = SymToken;
      sp->token_type = IDENTIFIER;
      sp->source = NULL;
      sp->def_line = -1;
      sp->ref_line = NULL;
+}	
+
+void
+init_lex(int debug_level)
+{
+     yy_flex_debug = debug_level;
+     obstack_init(&string_stk);
+     init_tokens();
 }
 
 int

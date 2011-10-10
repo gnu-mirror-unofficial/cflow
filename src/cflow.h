@@ -83,7 +83,8 @@ enum symbol_flag {
      symbol_none,
      symbol_temp,                  /* Temporary symbol. Must be deleted after
 				      processing of the current module */
-     symbol_parm                   /* Parameter */
+     symbol_parm,                  /* Parameter */
+     symbol_alias                  /* Alias to another symbol */
 };
 
 typedef struct symbol Symbol;
@@ -96,7 +97,11 @@ struct symbol {
      enum symtype type;            /* Type of the symbol */
      char *name;                   /* Identifier */
      enum symbol_flag flag;        /* Specific flag */
-     
+     struct symbol *alias;         /* Points to the aliased symbol if
+				      type==SymToken and flag==symbol_alias.
+				      In this case, the rest of the structure
+				      is ignored */
+	
      int active;                   /* Set to 1 when the symbol's subtree is
 				      being processed, prevent recursion */
      int expand_line;              /* Output line when this symbol was first
@@ -165,7 +170,12 @@ extern int token_stack_increase;
 extern int symbol_count;
 extern unsigned input_file_count;
 
-Symbol *lookup(char*);
+#define INSTALL_DEFAULT     0x00
+#define INSTALL_OVERWRITE   0x01
+#define INSTALL_CHECK_LOCAL 0x02
+#define INSTALL_UNIT_LOCAL  0x04
+
+Symbol *lookup(const char*);
 Symbol *install(char*, int);
 Symbol *install_ident(char *name, enum storage storage);
 void ident_change_storage(Symbol *sp, enum storage storage);

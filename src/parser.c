@@ -85,6 +85,8 @@ print_token(TOKSTK *tokptr)
      case MODIFIER:
      case STRUCT:
      case PARM_WRAPPER:
+     case QUALIFIER:
+     case OP:
 	  fprintf(stderr, "`%s'", tokptr->token);
 	  break;
      case LBRACE0:
@@ -104,9 +106,6 @@ print_token(TOKSTK *tokptr)
      case TYPEDEF:
 	  fprintf(stderr, "`typedef'");
 	  break;
-     case OP:
-	  fprintf(stderr, "OP"); /* ouch!!! */
-	  break;
      case STRING:
 	  fprintf(stderr, "\"%s\"", tokptr->token);
 	  break;
@@ -116,12 +115,12 @@ print_token(TOKSTK *tokptr)
 }
 
 static void
-file_error(char *msg, int near)
+file_error(char *msg, TOKSTK *tokptr)
 {
     fprintf(stderr, "%s:%d: %s", filename, tok.line, msg);
-    if (near) {
+    if (tokptr) {
 	fprintf(stderr, _(" near "));
-	print_token(&tok);
+	print_token(tokptr);
     }
     fprintf(stderr, "\n");
 }
@@ -249,18 +248,26 @@ save_token(TOKSTK *tokptr)
 	  need_space = 0;
 	  break;
      case ')':
+	  obstack_1grow(&text_stk, tokptr->type);
+	  need_space = 1;
+	  break;
      case '[':
      case ']':
 	  obstack_1grow(&text_stk, tokptr->type);
 	  need_space = 0;
 	  break;
+     case OP:
+	  obstack_1grow(&text_stk, ' ');
+	  obstack_grow(&text_stk, tokptr->token, strlen(tokptr->token));
+	  need_space = 1;
+	  break;
      default:
 	  if (verbose)
-	       file_error(_("unrecognized definition"), 1);
+	       file_error(_("unrecognized definition"), tokptr);
      }
 }
 
-static Stackpos start_pos; /* Start position in stack for saving tokens */
+static Stackpos start_pos; /* Start position in stack for saving tokens *///FIXME: REMOVE
 static int save_end;       /* Stack position up to which the tokens are saved */
 
 void
@@ -328,12 +335,18 @@ skip_balanced(int open_tok, int close_tok, int level)
 	  if (nexttoken() != open_tok) {
 	       return 1;
 	  }
+	  level++;
      }
      while (nexttoken()) {
+	  if (tok.type == LBRACE0 && open_tok == '{')
+	       tok.type = '{';
+	  else if (tok.type == RBRACE0 && close_tok == '}')
+	       tok.type = '}';
+	  
 	  if (tok.type == open_tok) 
 	       level++;
 	  else if (tok.type == close_tok) {
-	       if (level-- == 0) {
+	       if (--level == 0) {
 		    nexttoken();
 		    return 0;
 	       }
@@ -384,17 +397,29 @@ is_function()
      int res = 0;
 
      mark(sp);
-/*    if (tok.type == STRUCT)
-	nexttoken();*/
-     while (tok.type == TYPE ||
-	    tok.type == IDENTIFIER ||
-	    tok.type == MODIFIER ||
-	    tok.type == STATIC ||
-	    tok.type == EXTERN)
-	  nexttoken();
-     
-     if (tok.type == '(') 
-	  res = nexttoken() != MODIFIER;
+     while (1) {
+	  switch (tok.type) {
+	  case QUALIFIER:
+	  case TYPE:
+	  case IDENTIFIER:
+	  case MODIFIER:
+	  case STATIC:
+	  case EXTERN:
+	       nexttoken();
+	       continue;
+	  case PARM_WRAPPER:
+	       if (skip_balanced('(', ')', 0) == -1)
+		    file_error(_("unexpected end of file in declaration"),
+			       NULL);
+	       continue;
+	  case '(':
+	       res = nexttoken() != MODIFIER;
+	       break;
+	  default:
+	       break;
+	  }
+	  break;
+     }
      
      restore(sp);
      return res;
@@ -435,7 +460,8 @@ expression()
 	       break;
 	  case 0:
 	       if (verbose)
-		    file_error(_("unexpected end of file in expression"), 0);
+		    file_error(_("unexpected end of file in expression"),
+			       NULL);
 	       return;
 	    
 	  case IDENTIFIER:
@@ -490,15 +516,9 @@ parse_function_declaration(Ident *ident, int parm)
 	       nexttoken();
 	  else {
 	       if (verbose) 
-		    file_error(_("expected `;'"), 1);
+		    file_error(_("expected `;'"), &tok);
 	       error_recovery = 1;
 	  }
-	  goto restart;
-	  
-
-     case PARM_WRAPPER:
-	  if (skip_balanced('(', ')', 0) == -1)
-	       file_error(_("unexpected end of file in wrapper"), 0);
 	  goto restart;
 	  
      case ';':
@@ -513,7 +533,7 @@ parse_function_declaration(Ident *ident, int parm)
 	  break;
      case 0:
 	  if (verbose)
-	       file_error(_("unexpected end of file in declaration"), 0);
+	       file_error(_("unexpected end of file in declaration"), NULL);
      }
 }
 
@@ -543,10 +563,10 @@ fake_struct(Ident *ident)
 		    tos = curs + 1;
 	       }
 	       tokpush(hold.type, hold.line, hold.token);
-	  } else {
-	       if (tok.type != ';')
-		    file_error(_("missing `;' after struct declaration"), 0);
-	  }
+	  } else if (tok.type == '(')
+	       return 0;
+	  else if (tok.type != ';')
+	       file_error(_("missing `;' after struct declaration"), &tok);
 	  return 1;
      }
      return 0;
@@ -565,7 +585,7 @@ parse_variable_declaration(Ident *ident, int parm)
 	  }
 	  putback();
 	  skip_struct();
-	  while (tok.type == MODIFIER)
+	  while (tok.type == MODIFIER || tok.type == QUALIFIER)
 	       nexttoken();
 	  if (tok.type == IDENTIFIER) {
 	       TOKSTK hold = tok;
@@ -597,7 +617,7 @@ parse_variable_declaration(Ident *ident, int parm)
 	  /*FALLTHROUGH*/
      default:
 	  if (verbose) 
-	       file_error(_("expected `;'"), 1);
+	       file_error(_("expected `;'"), &tok);
 	  /* FIXME: should putback() here */
 	  /* FALLTHRU */
      case ';':
@@ -622,7 +642,7 @@ parse_variable_declaration(Ident *ident, int parm)
 	  break;
      case 0:
 	  if (verbose)
-	       file_error(_("unexpected end of file in declaration"), 0);
+	       file_error(_("unexpected end of file in declaration"), NULL);
      }
 }
 
@@ -644,7 +664,8 @@ initializer_list()
 	       }
 	       break;
 	  case 0:
-	       file_error(_("unexpected end of file in initializer list"), 0);
+	       file_error(_("unexpected end of file in initializer list"),
+			  NULL);
 	       return;
 	  case ',':
 	       break;
@@ -666,34 +687,21 @@ parse_knr_dcl(Ident *ident)
 void
 skip_struct()
 {
-     int lev = 0;
-     
      if (nexttoken() == IDENTIFIER) {
 	  nexttoken();
      } else if (tok.type == ';')
 	  return;
      
      if (tok.type == LBRACE || tok.type == LBRACE0) {
-	  do {
-	       switch (tok.type) {
-	       case 0:
-		    file_error(_("unexpected end of file in struct"), 0);
-		    return;
-	       case LBRACE:
-	       case LBRACE0:
-		    lev++;
-		    break;
-	       case RBRACE:
-	       case RBRACE0:
-		    lev--;
-	       }
-	       nexttoken();
-	  } while (lev);
+	  if (skip_balanced('{', '}', 1) == -1) {
+	       file_error(_("unexpected end of file in struct"), NULL);
+	       return;
+	  }
      }
 
      while (tok.type == PARM_WRAPPER) {
 	  if (skip_balanced('(', ')', 0) == -1)
-	      file_error(_("unexpected end of file in struct"), 0);
+	      file_error(_("unexpected end of file in struct"), NULL);
      }
 }
 
@@ -734,13 +742,19 @@ parse_dcl(Ident *ident, int maybe_knr)
 int
 dcl(Ident *idptr)
 {
-     int type;
-
      while (nexttoken() != 0 && tok.type != '(') {
 	  if (tok.type == MODIFIER) {
 	       if (idptr && idptr->type_end == -1)
 		    idptr->type_end = curs-1;
+	  } else if (tok.type == PARM_WRAPPER) {
+	       if (skip_balanced('(', ')', 0) == -1) {
+		    file_error(_("unexpected end of file in function declaration"),
+			       NULL);
+		    return 1;
+	       }
 	  } else if (tok.type == IDENTIFIER) {
+	       int type;
+	       
 	       while (tok.type == IDENTIFIER)
 		    nexttoken();
 	       type = tok.type;
@@ -749,7 +763,7 @@ dcl(Ident *idptr)
 		    continue;
 	       else if (type != MODIFIER) 
 		    break;
-	  } else if (tok.type == ')') {
+	  } else if (tok.type == ')' || tok.type == ';') {
 	       return 1;
 	  }
      }
@@ -767,7 +781,7 @@ dirdcl(Ident *idptr)
      if (tok.type == '(') {
 	  dcl(idptr);
 	  if (tok.type != ')' && verbose) {
-	       file_error(_("expected `)'"), 1);
+	       file_error(_("expected `)'"), &tok);
 	       return 1;
 	  }
      } else if (tok.type == IDENTIFIER) {
@@ -790,7 +804,7 @@ dirdcl(Ident *idptr)
 	  else {
 	       maybe_parm_list(parm_ptr);
 	       if (tok.type != ')' && verbose) {
-		    file_error(_("expected `)'"), 1);
+		    file_error(_("expected `)'"), &tok);
 		    return 1;
 	       }
 	  }
@@ -798,26 +812,12 @@ dirdcl(Ident *idptr)
      if (wrapper)
 	  nexttoken(); /* read ')' */
 
-     if (tok.type == PARM_WRAPPER) {
-	  if (nexttoken() == '(') {
-	       int level = 0;
-	       while (nexttoken()) {
-		    if (tok.type == 0) {
-			 file_error(_("unexpected end of file in function declaration"),
-				    0);
-			 return 1;
-		    } else if (tok.type == '(') 
-			 level++;
-		    else if (tok.type == ')') {
-			 if (level-- == 0) {
-			      nexttoken();
-			      break;
-			 }
-		    } 
-	       }
-	  } else
-	       putback();
+     while (tok.type == PARM_WRAPPER) {
+	  if (skip_balanced('(', ')', 0) == -1)
+	       file_error(_("unexpected end of file in function declaration"),
+			  NULL);
      }
+     
      return 0;
 }
 
@@ -863,7 +863,9 @@ maybe_parm_list(int *parm_cnt_return)
 	       return;
 	  case ',':
 	       break;
+	  case QUALIFIER:
 	  case IDENTIFIER:
+	  case MODIFIER: /* unsigned * */
 	  case STRUCT:
 	  case UNION:
 	  case TYPE:
@@ -874,7 +876,8 @@ maybe_parm_list(int *parm_cnt_return)
 	       break;
 	  default:
 	       if (verbose)
-		    file_error(_("unexpected token in parameter list"), 1);
+		    file_error(_("unexpected token in parameter list"),
+			       &tok);
 	       level = 0;
 	       do {
 		    if (tok.type == '(') 
@@ -889,7 +892,7 @@ maybe_parm_list(int *parm_cnt_return)
 	  }
      }
      if (verbose)
-	  file_error(_("unexpected end of file in parameter list"), 0);
+	  file_error(_("unexpected end of file in parameter list"), NULL);
 }
 
 void
@@ -927,7 +930,7 @@ func_body()
 	  case RBRACE0:
 	       if (use_indentation) {
 		    if (verbose && level != 1)
-			 file_error(_("forced function body close"), 0);
+			 file_error(_("forced function body close"), NULL);
 		    for ( ; level; level--) {
 			 delete_autos(level);
 		    }
@@ -941,7 +944,8 @@ func_body()
 	       break;
 	  case 0:
 	       if (verbose)
-		    file_error(_("unexpected end of file in function body"), 0);
+		    file_error(_("unexpected end of file in function body"),
+			       NULL);
 	       caller = NULL;
 	       return;
 	  }
@@ -1021,7 +1025,8 @@ declare(Ident *ident, int maybe_knr)
 
      if ((ident->parmcnt >= 0
 	  && (!maybe_knr || get_knr_args(ident) == 0)
-	  && !(tok.type == LBRACE || tok.type == LBRACE0 || tok.type == TYPE))
+	  && !(tok.type == LBRACE || tok.type == LBRACE0 || tok.type == TYPE
+	       || tok.type == PARM_WRAPPER))
 	 || (ident->parmcnt < 0 && ident->storage == ExplicitExternStorage)) {
 	  undo_save_stack();
 	  /* add_external()?? */
@@ -1075,7 +1080,7 @@ declare_type(Ident *ident)
 	  if (sp->type == SymToken && sp->token_type == TYPE)
 	       break;
      if (!sp)
-	  sp = install(ident->name, 1);
+	  sp = install(ident->name, INSTALL_UNIT_LOCAL);
      sp->type = SymToken;
      sp->token_type = TYPE;
      sp->source = filename;
