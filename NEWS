@@ -1,4 +1,4 @@
-GNU cflow NEWS -- history of user-visible changes. 2011-10-09
+GNU cflow NEWS -- history of user-visible changes. 2011-10-11
 Copyright (C) 2005, 2006, 2007, 2009, 2010, 2011 Sergey Poznyakoff
 See the end of file for copying conditions.
 
@@ -7,7 +7,24 @@ Please send cflow bug reports to <bug-cflow@gnu.org>.
 
 Version 1.4 (Git)
 
+* Symbol aliases
+
+The `--symbol' option has been extended to allow for defining
+symbol aliases.  Aliases are useful for declaring reserved
+words such as `__restrict' or `__inline'.  For example,
+the option `--symbol __restrict:=restrict' instructs cflow
+to treat `__restrict' exactly as `restrict'.
+
+* New syntactic class: qualifiers
+
+Tokens in this class can legitimately appear in place
+of C qualifiers, such as `static' or `inline'.  This class
+is useful for some compiler-depending keywords, such as
+`__extension__' in gcc.  The usual declaration of this symbol
+is `--symbol __extension__:qualifier'.
+
 * Speed up recursive call detection.
+
 * Fix parsing of typedefs after `struct'.
 * Fix the output of branch marks in tree mode.
 * Fix processing of static inline functions (RH bug 650716).
