@@ -166,7 +166,7 @@ extern int symbol_count;
 extern unsigned input_file_count;
 
 Symbol *lookup(char*);
-Symbol *install(char*);
+Symbol *install(char*, int);
 Symbol *install_ident(char *name, enum storage storage);
 void ident_change_storage(Symbol *sp, enum storage storage);
 void delete_autos(int level);

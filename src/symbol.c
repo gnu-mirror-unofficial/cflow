@@ -76,8 +76,10 @@ lookup(char *name)
      return tp ? tp->sym : NULL;
 }
 
+/* Install a new symbol `NAME'.  If UNIT_LOCAL is set, this symbol can
+   be local to the current compilation unit. */
 Symbol *
-install(char *name)
+install(char *name, int unit_local)
 {
      Symbol *sym;
      struct table_entry *tp, *ret;
@@ -90,9 +92,11 @@ install(char *name)
      tp = xmalloc(sizeof(*tp));
      tp->sym = sym;
      
-     if (canonical_filename && strcmp(filename, canonical_filename))
+     if (unit_local &&
+	 canonical_filename && strcmp(filename, canonical_filename)) {
 	  sym->flag = symbol_temp;
-     else
+	  append_symbol(&static_symbol_list, sym);
+     } else
 	  sym->flag = symbol_none;
      
      if (! ((symbol_table
@@ -109,8 +113,6 @@ install(char *name)
 	  free(tp);
      }
      sym->owner = ret;
-     if (sym->flag == symbol_temp)
-	  append_symbol(&static_symbol_list, sym);
      return sym;
 }
 
@@ -140,7 +142,7 @@ install_ident(char *name, enum storage storage)
 {
      Symbol *sp;
 
-     sp = install(name);
+     sp = install(name, storage != AutoStorage);
      sp->type = SymIdentifier;
      sp->arity = -1;
      sp->storage = ExternStorage;
@@ -183,7 +185,7 @@ delete_symbol(Symbol *sym)
      unlink_symbol(sym);
      /* The symbol could have been referenced even if it is static
 	in -i^s mode. See tests/static.at for details. */
-     if (sym->ref_line == NULL) {
+     if (sym->ref_line == NULL && !(reverse_tree && sym->callee)) {
 	  linked_list_destroy(&sym->ref_line);
 	  linked_list_destroy(&sym->caller);
 	  linked_list_destroy(&sym->callee);

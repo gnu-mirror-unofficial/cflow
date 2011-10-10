@@ -274,7 +274,7 @@ symbol_override(const char *str)
 	  }
      } 
      name = strndup(str, ptr - str);
-     sp = install(name);
+     sp = install(name, 0);
      sp->type = SymToken;
      sp->token_type = type;
      sp->source = NULL;

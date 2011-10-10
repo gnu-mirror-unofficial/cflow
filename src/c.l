@@ -206,20 +206,20 @@ init_lex(int debug_level)
      obstack_init(&string_stk);
 
      for (i = 0; i < NUMITEMS(keywords); i++) {
-	  sp = install(keywords[i]);
+	  sp = install(keywords[i], 0);
 	  sp->type = SymToken;
 	  sp->token_type = WORD;
      }
      
      for (i = 0; i < NUMITEMS(types); i++) {
-	  sp = install(types[i]);
+	  sp = install(types[i], 0);
 	  sp->type = SymToken;
 	  sp->token_type = TYPE;
 	  sp->source = NULL;
 	  sp->def_line = -1;
 	  sp->ref_line = NULL;
      }	
-     sp = install("...");
+     sp = install("...", 0);
      sp->type = SymToken;
      sp->token_type = IDENTIFIER;
      sp->source = NULL;

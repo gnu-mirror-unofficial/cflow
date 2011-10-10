@@ -326,7 +326,6 @@ skip_balanced(int open_tok, int close_tok, int level)
 {
      if (level == 0) {
 	  if (nexttoken() != open_tok) {
-	       putback();
 	       return 1;
 	  }
      }
@@ -1076,17 +1075,14 @@ declare_type(Ident *ident)
 	  if (sp->type == SymToken && sp->token_type == TYPE)
 	       break;
      if (!sp)
-	  sp = install(ident->name);
+	  sp = install(ident->name, 1);
      sp->type = SymToken;
      sp->token_type = TYPE;
      sp->source = filename;
      sp->def_line = ident->line;
      sp->ref_line = NULL;
      if (debug)
-	  printf(_("%s:%d: type %s\n"),
-		 filename,
-		 line_num,
-		 ident->name);
+	  printf(_("%s:%d: type %s\n"), filename, line_num, ident->name);
 }
 
 Symbol *
