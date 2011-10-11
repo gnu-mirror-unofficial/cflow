@@ -759,9 +759,8 @@ dcl(Ident *idptr)
 		    nexttoken();
 	       type = tok.type;
 	       putback();
-	       if (type == TYPE)
-		    continue;
-	       else if (type != MODIFIER) 
+	       if (!(type == TYPE ||
+		     type == MODIFIER || type == QUALIFIER))
 		    break;
 	  } else if (tok.type == ')' || tok.type == ';') {
 	       return 1;
