@@ -267,7 +267,7 @@ save_token(TOKSTK *tokptr)
      }
 }
 
-static Stackpos start_pos; /* Start position in stack for saving tokens *///FIXME: REMOVE
+static Stackpos start_pos; /* Start position in stack for saving tokens */
 static int save_end;       /* Stack position up to which the tokens are saved */
 
 void
@@ -387,7 +387,7 @@ yyparse()
 	  }
 	  cleanup_stack();
      }
-     /*NOTREACHED*/
+     return 0;
 }
 
 static int

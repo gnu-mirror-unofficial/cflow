@@ -270,7 +270,7 @@ symbol_override(const char *str)
 	  if (ptr[1] == '=') {
 	       Symbol *alias = lookup(ptr+2);
 	       if (!alias) {
-		    alias = install(ptr+2, INSTALL_OVERWRITE);
+		    alias = install(xstrdup(ptr+2), INSTALL_OVERWRITE);
 		    alias->type = SymToken;
 		    alias->token_type = 0;
 		    alias->source = NULL;

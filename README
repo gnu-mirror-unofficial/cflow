@@ -1,5 +1,5 @@
 GNU cflow README
-Copyright (C) 2005, 2010 Sergey Poznyakoff
+Copyright (C) 2005, 2010, 2011 Sergey Poznyakoff
 See the end of file for copying conditions.
 
 * Introduction
@@ -10,10 +10,8 @@ documentation, instead it is provided as a brief reference only.
 Please be sure to read the accompanuing documentation before using the
 utility. See section `Documentation' below.
 
-Please read *all* sections of this `README' file before starting
-configuration.  Also make sure you read `INSTALL' if you are not
-familiar with them already. Refer to file `ABOUT-NLS' for information
-regarding internationalization.
+For the generic configuration options, see the file `INSTALL'.
+Refer to file `ABOUT-NLS' for information regarding internationalization.
 
 * History
 
@@ -54,6 +52,12 @@ cflow.
 
 After running `./configure' and `make', run `make install'.
 
+* Configuration File
+
+The file src/cflow.rc provides a working configuration file for use
+with gcc.  See the documentation, sections 6.1 "Syntactic classes" and
+6.3 "GCC Initialization", for more information.
+
 * Documentation
 
 Complete user manual in texinfo format is provided. After the
@@ -70,7 +74,7 @@ Send bug reports and suggestions to <bug-cflow@gnu.org>.
 
 * Copyright Information:
 
-Copyright (C) 2005, Sergey Poznyakoff 
+Copyright (C) 2005, 2010, 2011 Sergey Poznyakoff 
 
    Permission is granted to anyone to make or distribute verbatim copies
    of this document as received, in any medium, provided that the

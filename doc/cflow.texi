@@ -1,5 +1,4 @@
 \input texinfo @c -*-texinfo-*-
-@smallbook
 @c %**start of header
 @setfilename cflow.info
 @settitle GNU cflow
@@ -144,14 +143,14 @@ with an example.  Suppose you have a simple implementation of
 @command{whoami} command and you wish to obtain a graph of function
 dependencies.  Here is the program:
 
-@smallexample
+@example
 @verbatiminclude whoami.c
-@end smallexample
+@end example
 
      Running @command{cflow} produces the following output:
 
 @cindex GNU Output Format, an example
-@smallexample
+@example
 @group
 $ @kbd{cflow whoami.c}
 main() <int main (int argc,char **argv) at whoami.c:26>:
@@ -163,7 +162,7 @@ main() <int main (int argc,char **argv) at whoami.c:26>:
         fprintf()
         printf()
 @end group
-@end smallexample
+@end example
 
 @cindex GNU Output Format described
 @anchor{GNU Output Format}
@@ -176,9 +175,9 @@ displaying, within a pair of angle brackets, a function
 calls another functions, the line ends with a colon.  For example, the
 line
 
-@smallexample
+@example
 main() <int main (int argc,char **argv) at whoami.c:25>:
-@end smallexample
+@end example
 
 @noindent
 shows that function @code{main} is defined in file @file{whoami.c}
@@ -186,8 +185,8 @@ at line 25, as @code{int main (int argc, char **argv)}.  Terminating
 colon indicates that @code{main} invokes other functions.
 
      The lines following this one show which functions are called by
-@code{main}.  Each such line is indented by fixed amount of white space
-(by default four spaces) for each nesting level.
+@code{main}.  Each such line is indented by a fixed amount of white space
+(by default, four spaces) for each nesting level.
 
 @cindex @option{--omit-symbol-names} option introduced
 @cindex @option{--omit-arguments} option introduced
@@ -201,9 +200,9 @@ of reasons, one of them being to make the resulting graph more
 compact.  To illustrate their effect, here is how would the first line of the
 above graph look if you had used both @option{--omit-} options:
 
-@smallexample
+@example
 main() <int () at whoami.c:25>:
-@end smallexample
+@end example
 
 @cindex start symbol
 @cindex @option{--main} command line option introduced
@@ -217,14 +216,14 @@ the graph starting on particular function.  @command{Cflow}
 allows to select such function using @option{--main} (@option{-m})
 command line option.  Thus, running
 
-@smallexample
+@example
 cflow --main who_am_i whoami.c
-@end smallexample
+@end example
 
 @noindent
 on the above file will produce following graph:
 
-@smallexample
+@example
 @group
 who_am_i() <int who_am_i (void) at whoami.c:8>:
     getpwuid()
@@ -233,7 +232,7 @@ who_am_i() <int who_am_i (void) at whoami.c:8>:
     fprintf()
     printf()
 @end group
-@end smallexample
+@end example
 
 @node Direct and Reverse
 @chapter Two Types of Flow Graphs.
@@ -248,7 +247,7 @@ option.  For example, using a sample @file{whoami.c}:
 
 @cindex reverse graph, example
 @cindex reverse tree, example
-@smallexample
+@example
 @group
 $ @kbd{cflow --reverse whoami.c}
 fprintf():
@@ -271,7 +270,7 @@ printf():
 who_am_i() <int who_am_i (void) at whoami.c:8>:
     main() <int main (int argc,char **argv) at whoami.c:26>
 @end group    
-@end smallexample
+@end example
 
      This output consists of several subgraphs, each describing callers
 for a particular function.  Thus, the first subgraph tells that the
@@ -284,11 +283,11 @@ and @code{main}.  First of them is, in turn, also called directly by
 @anchor{--brief}
      The first thing that draws attention in the above output is that
 the subgraph starting with @code{who_am_i} function is repeated several
-times.  This is @dfn{verbose} output.  To make it brief, use
+times.  This is a @dfn{verbose} output.  To make it brief, use
 @option{--brief} (@option{-b}) command line option.  For example:
 
 @cindex brief output, an example of
-@smallexample
+@example
 @group
 $ @kbd{cflow --brief --reverse whoami.c}
 fprintf():
@@ -306,7 +305,7 @@ printf():
     who_am_i() <int who_am_i (void) at whoami.c:8>: [see 2]
 who_am_i() <int who_am_i (void) at whoami.c:8>: [see 2]
 @end group
-@end smallexample
+@end example
 
 @cindex brief output described
      In brief output, once a subgraph for a given function is written,
@@ -317,7 +316,7 @@ expanded subgraph can be found.
 @cindex @option{--number} command line option introduced
 @cindex @option{-n} command line option introduced
 @anchor{--number}
-     If the output graph is large it can be tedious to find out the
+     If the output graph is large, it can be tedious to find out the
 required line number (unless you use @dfn{Emacs cflow-mode},
 @pxref{Emacs}).  For such cases a special option
 @option{--number} (@option{-n}) is provided, which makes
@@ -325,7 +324,7 @@ required line number (unless you use @dfn{Emacs cflow-mode},
 number}, that is the ordinal number of this line in the output.  With
 this option, the above output will look like:
 
-@smallexample
+@example
 $ @kbd{cflow --number --brief --reverse whoami.c}
 @group
     1 fprintf():
@@ -343,7 +342,7 @@ $ @kbd{cflow --number --brief --reverse whoami.c}
    13     who_am_i() <int who_am_i (void) at whoami.c:8>: [see 2]
    14 who_am_i() <int who_am_i (void) at whoami.c:8>: [see 2]
 @end group
-@end smallexample
+@end example
 
      Of course, @option{--brief} and @option{--number} options
 take effect for both direct and reverse flow graphs.
@@ -378,7 +377,7 @@ environment variable @env{POSIXLY_CORRECT} was set.
      The output graph in POSIX format for our sample @file{whoami.c}
 file will look as follows:
 
-@smallexample
+@example
 $ @kbd{cflow --format=posix whoami.c}
     1 main: int (int argc,char **argv), <whoami.c 26>
     2     fprintf: <>
@@ -388,7 +387,7 @@ $ @kbd{cflow --format=posix whoami.c}
     6         getenv: <>
     7         fprintf: <>
     8         printf: <>
-@end smallexample
+@end example
 
      It is not clear from the @acronym{POSIX} specification whether
 the output should contain argument lists in function declarations, or
@@ -421,18 +420,18 @@ lists in function declaration.  So, to produce an output suitable for
 follows@footnote{(@xref{ASCII Tree, level-indent}, for the detailed
 description of @option{--level-indent} option}:
 
-@smallexample
+@example
 @group
 @kbd{cflow --format=posix --omit-arguments \
       --level-indent='0=\t' --level-indent='1=\t' \
       --level-indent=start='\t'}
 @end group
-@end smallexample
+@end example
 
      You can use the following script to visualize call graphs using
 the three tools:
 
-@smallexample
+@example
 @group
 #! /bin/sh
 
@@ -441,7 +440,7 @@ cflow --format=posix --omit-arguments \
       --level-indent=start='\t' $* |
   cflow2vcg | xvcg -
 @end group
-@end smallexample
+@end example
 
 @node Recursive Calls
 @chapter Handling Recursive Calls.
@@ -459,14 +458,14 @@ displayed.
 recursive listing of a directory, allowing to cut off at the arbitrary
 nesting level:
 
-@smallexample
+@example
 @verbatiminclude d.c
-@end smallexample
+@end example
 
      Running @command{cflow} on this program produces the following graph:
 
 @anchor{sample flowchart}     
-@smallexample
+@example
 $ @kbd{cflow --number d.c}
     1 main() <int main (int argc,char **argv) at d.c:85>:
     2     fprintf()
@@ -489,7 +488,7 @@ $ @kbd{cflow --number d.c}
                 <void printdir (int level,char *name) at d.c:42>
                 (recursive: see 4)
    19         closedir()
-@end smallexample
+@end example
 
      The @code{printdir} description in line 4 shows that the function
 is recursive.  The recursion call is shown in line 18. 
@@ -505,7 +504,7 @@ beginning with underscore character.  To include these symbols as well,
 specify @option{-i _} (or @option{--include _}) command line option.
 Continuing our example:
 
-@smallexample
+@example
 $ @kbd{cflow --number -i _ d.c}
     1 main() <int main (int argc,char **argv) at d.c:85>:
     2     fprintf()
@@ -529,7 +528,7 @@ $ @kbd{cflow --number -i _ d.c}
                 <void printdir (int level,char *name) at d.c:42>
                 (recursive: see 4)
    20         closedir()
-@end smallexample
+@end example
 
 @cindex @option{-i} introduced
 @cindex @option{--include} introduced
@@ -555,7 +554,7 @@ command line option.  Our sample program @file{d.c} defines static
 function @code{isdir}, running @command{cflow -i ^s}, completely omits
 this function and its callees from the resulting graph:
 
-@smallexample
+@example
 $ @kbd{cflow --number -i ^s d.c}
     1 main() <int main (int argc,char **argv) at d.c:85>:
     2     fprintf()
@@ -574,7 +573,7 @@ $ @kbd{cflow --number -i ^s d.c}
                 <void printdir (int level,char *name) at d.c:42>
                 (recursive: see 4)
    15         closedir()
-@end smallexample
+@end example
 
      Actually, the exclusion sign (@samp{^} or @samp{-}) can be used
 any place in @option{-i} argument, not only at the beginning.  Thus,
@@ -590,7 +589,7 @@ symbols}, both global and static, so to include these in the output,
 use option @option{-i x}.  For example:
 
 @anchor{x flowchart}
-@smallexample
+@example
 $ @kbd{cflow --number -i x d.c}
     1 main() <int main (int argc,char **argv) at d.c:85>:
     2     fprintf()
@@ -620,7 +619,7 @@ $ @kbd{cflow --number -i x d.c}
                 <void printdir (int level,char *name) at d.c:42>
                 (recursive: see 6)
    26         closedir()
-@end smallexample
+@end example
 
      Now, lines 3, 4, 16 and 23 show data symbols, with their
 definitions when available.  Notice, however, lines 7 and 8.  Why both
@@ -638,9 +637,9 @@ encountering a @code{typedef}, it registers the defined symbol as a
 has no way of knowing it is a data type.  So, it supposes it is a
 variable.  But then the input: 
 
-@smallexample
+@example
   DIR *dir;
-@end smallexample
+@end example
 
 @noindent
 is parsed as an @emph{expression}, meaning ``multiply @code{DIR} by
@@ -661,9 +660,9 @@ concentrate on the first method.
 @dfn{syntactic class} of the symbol.  Its argument consists of two
 strings separated by a colon:
 
-@smallexample
+@example
   --symbol @var{sym}:@var{class}
-@end smallexample
+@end example
 
 @noindent
 The first string, @var{sym} is a @code{C} identifier to be recorded in
@@ -672,9 +671,9 @@ be associated with this symbol.  In particular, if @var{class} is
 @samp{type}, the symbol @var{sym} will be recorded as a @code{C} type
 definition.  Thus, to fix the above output, run:
 
-@smallexample
+@example
 $ @kbd{cflow --number -i x --symbol DIR:type d.c}
-@end smallexample
+@end example
 
 @cindex Parameter wrapper defined
 @cindex @code{__P}, special handling using @option{--symbol}
@@ -685,22 +684,22 @@ declarations in function prototypes.  For example, in the declaration
 below, taken from @file{/usr/include/resolv.h}, @code{__P} is a
 parameter wrapper: 
 
-@smallexample
+@example
 void res_npquery __P((const res_state, const u_char *, int, FILE *));
-@end smallexample
+@end example
 
      For @command{cflow} to be able to process such declarations,
 declare @code{__P} as a wrapper, for example:
 
-@smallexample
+@example
 cflow --symbol __P:wrapper *.c
-@end smallexample
+@end example
 
      In both examples above the reason for using the
 @option{--symbol} option was that @command{cflow} was unable to
-determine what the given symbol was either because it did not
+determine what the given symbol was, either because it did not
 see the type definition, as it was in case with @samp{DIR}, or
-the macro definition was not expanded.  Both cases are better
+because the macro definition was not expanded.  Both cases are better
 solved by using @dfn{preprocess mode}, described in the next
 chapter.  Nevertheless, even with preprocessor, the
 @option{--symbol} option remains useful, as shown in the following
@@ -726,7 +725,7 @@ following classes:
 A keyword, like @samp{if}, @samp{when} etc.
 
 @item modifier
-Type modifier, i.e. a symbol appearing after data type to modify its
+Type modifier, i.e. the symbol appearing after a data type to modify its
 meaning, like @samp{*}.
 
 @item qualifier
@@ -734,6 +733,7 @@ Declaration qualifier.  Can appear both before C declaration (much like
 @samp{static} or @samp{extern}) and after a data type (like
 modifiers).
 
+@cindex __extension__
 You would usually declare a @command{gcc} keyword @samp{__extension__}
 as a qualifier:
 
@@ -748,6 +748,7 @@ A C identifier.
 A C data type, like @samp{int}, @samp{char}, etc.
 
 @item wrapper
+@cindex __attribute__
 That has two meanings.  First, it can be used to declare parameter
 wrappers when running @command{cflow} without preprocessor.  This
 usage was described above.  Second, it indicates any symbol that
@@ -774,6 +775,7 @@ construct:
 As a result of this option, the symbol @var{newsym} is declared to be
 the equivalent of @var{oldsym}.
 
+@cindex __restrict
 Symbol aliasing can be regarded as defining the symbol class by
 example of another symbol.  It is useful for some special keywords,
 such as @samp{__restrict}:
@@ -784,6 +786,17 @@ such as @samp{__restrict}:
 
 @node GCC Initialization
 @section GCC Initialization
+@cindex gcc
+@cindex __inline
+@cindex __inline__
+@cindex __const__
+@cindex __const
+@cindex __restrict
+@cindex __extension__
+@cindex __attribute__
+@cindex __asm__
+@cindex __nonnull
+@cindex __wur
      The following is a recommended set of @command{cflow} initialization
 options for use with @command{gcc}.  We suggest you to put them in your
 @file{cflow.rc} file (@pxref{Configuration}).
@@ -818,7 +831,7 @@ preprocessing, run the utility with @option{--cpp}
 
 @cindex @option{--cpp} option, an example
 @cindex @option{--preprocess} option, an example
-@smallexample
+@example
 $ @kbd{cflow --cpp -n d.c}
     1 main() <int main (int argc,char **argv) at d.c:85>:
     2     fprintf()
@@ -840,7 +853,7 @@ $ @kbd{cflow --cpp -n d.c}
                 <void printdir (int level,char *name) at d.c:42>
                 (recursive: see 4)
    18         closedir()
-@end smallexample
+@end example
 
      Compare this graph with the one obtained without @option{--cpp}
 option (@pxref{sample flowchart}).  As you see, the reference to
@@ -873,9 +886,9 @@ number of columns to indent for each nesting level.  For example, the
 following command sets the indentation level to 2, which is half of
 the default:
 
-@smallexample
+@example
 cflow --level-indent 2 d.c
-@end smallexample
+@end example
 
 @noindent
 It can be used, for instance, to keep the graph within the page
@@ -919,11 +932,11 @@ aligned.
 
      To demonstrate this, let's consider following sample program:
 
-@smallexample
+@example
 @group
 @verbatiminclude foo.c
 @end group
-@end smallexample
+@end example
 
 @noindent
 Now, let's represent line elements by the following strings:
@@ -951,14 +964,14 @@ used at the beginning of the string.
 
      This command will produce the following output:
 
-@smallexample
+@example
 @group
 ::+-main() <int main () at foo.c:3>:
 ::  +-f() <int f () at foo.c:11>:
 ::  | \-h()
 ::  \-g()
 @end group
-@end smallexample
+@end example
 
 @cindex @option{--tree} introduced
 @cindex @option{-T} introduced
@@ -971,7 +984,7 @@ example of flow graph produced with this option.  The source file
 @xref{Source of wc command}.  
 
 @anchor{ascii tree}
-@smallexample
+@example
 @group
 $ @kbd{cflow --tree --brief --cpp wc.c}
 +-main() <int main (int argc,char **argv) at wc.c:127>
@@ -1001,7 +1014,7 @@ $ @kbd{cflow --tree --brief --cpp wc.c}
        <void report (char *file,count_t ccount,
          count_t wcount,count_t lcount) at wc.c:57> [see 17]
 @end group
-@end smallexample
+@end example
  
 
 @node Cross-References
@@ -1015,14 +1028,14 @@ command line option.  Cross-reference output lists each symbol
 occurrence on a separate line.  Each line shows the identifier and the
 source location where it appears.  If this location is where the symbol
 is defined, it is additionally marked with an asterisk and followed by
-the definition.  For example, here is a fragment of cross-reference
+the definition.  For example, here is a fragment of a cross-reference
 output for @file{d.c} program:
 
-@smallexample
+@example
 printdir * d.c:42 void printdir (int level,char *name)
 printdir   d.c:74
 printdir   d.c:102
-@end smallexample
+@end example
 
      It shows that the function @code{printdir} is defined in line 42
 and referenced twice, in lines 74 and 102.
@@ -1080,19 +1093,24 @@ be careful to properly quote its argument.  The rule of thumb is:
 For example, to run @command{cc -E} as a preprocessor, you can use the
 following configuration file:
 
-@smallexample
+@example
 @group
 --cpp='cc -E'
 -DHAVE_CONFIG_H
--DSQUARE\\\(x\\\)=x*x
+-D__extension__\\\(c\\\)=
 @end group
-@end smallexample
+@end example
+
+@cindex __extension__()
+     By the way, the above example shows a way of coping
+with the @samp{__extension__()} construct used by @command{gcc}, i.e. by
+defining it to an empty string.
 
 @cindex Option cancellation
      It may sometimes be necessary to cancel the effect of a command
 line option.  For example, you might specify @option{--brief} in your
 configuration file, but then occasionally need to obtain verbose
-graph.  To cancel effect of any GNU @command{cflow} option that does
+graph.  To cancel the effect of any GNU @command{cflow} option that does
 not take arguments, prepend @samp{no-} to the corresponding long
 option name.  Thus, specifying @option{--no-brief} cancels the effect
 of the previous @option{--brief} option.
@@ -1121,7 +1139,7 @@ is making it possible to override @command{cflow} options by running
 @item For each @var{program} from your @code{@var{dir}_PROGRAMS} list,
 for which you want to generate a flow chart, add the following statements:
 
-@smallexample
+@example
 @group
 @var{program}_CFLOW_INPUT=$(@var{program}_OBJECTS:.$(OBJEXT)=.c)
 @var{program}.cflow: @var{program}_CFLOW_INPUT cflow.rc Makefile
@@ -1131,7 +1149,7 @@ for which you want to generate a flow chart, add the following statements:
 	            $(CPPFLAGS) \
          $(@var{program}_CFLOW_INPUT)
 @end group
-@end smallexample
+@end example
 
 @noindent
 Replace @var{program} with program name and
@@ -1144,15 +1162,15 @@ variables, except @code{CFLOW_FLAGS}.
 you may wish to add a special rule, allowing to create all flow charts
 with a single command, for example:
 
-@smallexample
+@example
 flowcharts: @var{prog1}.cflow @var{prog2}.cflow ...
-@end smallexample
+@end example
 @end itemize
 
      As an example, here are the relevant statements which we use in
 @command{cflow} @file{src/Makefile.am}:
 
-@smallexample
+@example
 @group
 EXTRA_DIST=cflow.rc
 
@@ -1165,7 +1183,7 @@ cflow.cflow: $(cflow_CFLOW_INPUT) cflow.rc Makefile
 	            $(CPPFLAGS) \
          $(cflow_CFLOW_INPUT)
 @end group
-@end smallexample
+@end example
 
 @node Options
 @chapter Complete Listing of @command{cflow} Options.
@@ -1211,7 +1229,7 @@ declarations}.  This might speed up the processing in some cases.
 @cindex @option{--define}          
 @item -D @var{name}[=@var{defn}]
 @itemx --define=@var{name}[=@var{defn}]
-     Predefine @var{name} as a macro.  Implies @option{-cpp}
+     Predefine @var{name} as a macro.  Implies @option{--cpp}
 (@pxref{Preprocessing}). 
 
 @cindex @option{-d}
@@ -1224,7 +1242,7 @@ the 5th nesting level.
 
 @cindex @option{--debug}
 @item --debug[=@var{number}]
-     Set debugging level.  Default @var{number} is 1.  Use this option
+     Set debugging level.  The default @var{number} is 1.  Use this option
 if you are developing and/or debugging @command{cflow}.
 
 @cindex @option{--emacs}
@@ -1295,7 +1313,7 @@ For more information, @xref{Symbols}.
 @cindex @option{-m}
 @cindex @option{--main}     
 @item -m @var{name}
-@item --main=@var{name}
+@itemx --main=@var{name}
      Assume main function to be called @var{name}.  @xref{start symbol}.
 
 @cindex @option{-n}
@@ -1367,7 +1385,7 @@ use this option.
 @itemx --symbol=@var{sym}:@var{class}
 @itemx --symbol=@var{newsym}:=@var{oldsym}
 @anchor{symbol types}
-     In first form, registers symbol @var{sym} in the syntactic class
+     In the first form, registers symbol @var{sym} in the syntactic class
 @var{class}.  Valid class names are: @samp{keyword} (or @samp{kw}),
 @samp{modifier}, @samp{qualifier}, @samp{identifier}, @samp{type},
 @samp{wrapper}.  Any unambiguous abbreviation of the above is also
@@ -1446,13 +1464,13 @@ installed somewhere in your Emacs @code{load-path}.  To load the module
 at startup, add the following lines to your @file{.emacs} or
 @file{site-start.el} file:
 
-@smalllisp
+@lisp
 @group
 (autoload 'cflow-mode "cflow-mode")
 (setq auto-mode-alist (append auto-mode-alist
                               '(("\\.cflow$" . cflow-mode))))
 @end group
-@end smalllisp
+@end lisp
 
 @noindent
 @cindex @option{--emacs} introduced
@@ -1519,9 +1537,9 @@ input file contents, etc.)
      The source file @file{wc.c}, used to produce sample ASCII tree
 graph (@pxref{ascii tree}).
 
-@smallexample
+@example
 @verbatiminclude wc.c
-@end smallexample
+@end example
 
 @node Copying This Manual
 @appendix GNU Free Documentation License
