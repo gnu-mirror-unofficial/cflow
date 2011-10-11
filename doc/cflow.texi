@@ -59,13 +59,13 @@ Software Foundation raise funds for GNU development.''
 @page
 @contents
 
-@node Top, Intro, (dir), (dir)
+@ifnottex
+@node Top
+@top GNU cflow
 
-@ifinfo
-@chapter GNU cflow
 This edition of the @cite{GNU Cflow Manual}, last updated @value{UPDATED},
 documents GNU cflow Version @value{VERSION}.
-@end ifinfo
+@end ifnottex
 
 @menu
 * Intro::               Introduction to @command{cflow}.
@@ -90,9 +90,10 @@ Appendices
 * Copying This Manual:: The GNU Free Documentation License.
 * Concept Index::       Index of Concepts.
 
+
 @end menu
 
-@node Intro, Quick Start, Top, Top
+@node Intro
 @chapter Introduction to cflow
 @pindex cflow
 @cindex cflow, a description of
@@ -127,7 +128,7 @@ example, to get a quick acquaintance with the program, etc.}
 formats: @command{yacc} and @command{lex} sources, and object
 files. It is a good idea to add a node @samp{POSIX} discussing this.}
 
-@node Quick Start, Direct and Reverse, Intro, Top
+@node Quick Start
 @chapter Simple Ways to Analyze Programs with @command{cflow}.
      Let's begin our acquaintance with the GNU @command{cflow} utility
 with an example. Suppose you have a simple implementation of
@@ -225,7 +226,7 @@ who_am_i() <int who_am_i (void) at whoami.c:8>:
 @end group
 @end smallexample
 
-@node Direct and Reverse, Output Formats, Quick Start, Top
+@node Direct and Reverse
 @chapter Two Types of Flow Graphs.
 @cindex @option{--reverse}
 @cindex @option{-r}
@@ -338,7 +339,7 @@ $ @kbd{cflow --number --brief --reverse whoami.c}
      Of course, @option{--brief} and @option{--number} options
 take effect for both direct and reverse flow graphs.
 
-@node Output Formats, Recursive Calls, Direct and Reverse, Top
+@node Output Formats
 @chapter Various Output Formats.
 @cindex POSIX Output described
 @anchor{POSIX Output Format}
@@ -433,7 +434,7 @@ cflow --format=posix --omit-arguments \
 @end group
 @end smallexample
 
-@node Recursive Calls, Symbols, Output Formats, Top
+@node Recursive Calls
 @chapter Handling Recursive Calls.
 @cindex Recursive functions
      Sometimes programs contain functions that recursively call
@@ -484,7 +485,7 @@ $ @kbd{cflow --number d.c}
      The @code{printdir} description in line 4 shows that the function
 is recursive. The recursion call is shown in line 18. 
      
-@node Symbols, Preprocessing, Recursive Calls, Top
+@node Symbols
 @chapter Controlling Symbol Types
 
      An alert reader has already noticed something strange in the
@@ -647,19 +648,19 @@ concentrate on the first method.
 @cindex @option{-s} introduced
 @cindex @option{--symbol} introduced
 @anchor{--symbol}
-     Command line option @option{--symbol} (@option{-s}) declares a
-type of the symbol. Its argument consists of two strings separated by
-a colon:
+     The command line option @option{--symbol} (@option{-s}) declares a
+@dfn{syntactic class} of the symbol. Its argument consists of two
+strings separated by a colon:
 
 @smallexample
-  --symbol @var{sym}:@var{t}
+  --symbol @var{sym}:@var{class}
 @end smallexample
 
 @noindent
 The first string, @var{sym} is a @code{C} identifier to be recorded in
-the symbol table. The second string, @var{t}, specifies a type to
-be associated with this symbol. If @var{t} is a string @samp{type},
-the symbol @var{sym} will be recorded as a @code{C} type
+the symbol table. The second string, @var{class}, specifies a class to
+be associated with this symbol. In particular, if @var{class} is
+@samp{type}, the symbol @var{sym} will be recorded as a @code{C} type
 definition. Thus, to fix the above output, run:
 
 @smallexample
@@ -686,27 +687,112 @@ declare @code{__P} as a wrapper, for example:
 cflow --symbol __P:wrapper *.c
 @end smallexample
 
-@cindex @code{__attribute__}, special handling using @option{--symbol}
-     Another usage for @code{wrapper} symbol type is to declare
-special @dfn{attributes} often used with @command{gcc}. For example,
-the following declaration:
+     In both examples above the reason for using the
+@option{--symbol} option was that @command{cflow} was unable to
+determine what the given symbol was either because it did not
+see the type definition, as it was in case with @samp{DIR}, or
+the macro definition was not expanded.  Both cases are better
+solved by using @dfn{preprocess mode}, described in the next
+chapter.  Nevertheless, even with preprocessor, the
+@option{--symbol} option remains useful, as shown in the following
+sections.
 
-@smallexample
-void fatal_exit (void) __attribute__ ((noreturn));
-@end smallexample
+@menu
+* Syntactic classes::
+* Symbol aliases::
+* GCC Initialization::
+@end menu
 
-@noindent
-will confuse @command{cflow}. To correctly process it, use option
-@option{--symbol __attribute__:wrapper}.
+@node Syntactic classes
+@section Syntactic classes
+@cindex syntactic class
+@cindex class, syntactic
+     Generally speaking, the @dfn{syntactic class} of a symbol defines where
+in the C code this symbol can legitimately appear.  There are
+following classes:
 
-     For the complete list of @option{--symbol} supported types,
-@xref{symbol types}.
+@table @asis
+@item keyword
+@itemx kw
+A keyword, like @samp{if}, @samp{when} etc.
 
-     Notice, finally, that when using @dfn{preprocess mode}, there is
-no need to use @option{--symbol}, since in this mode @command{cflow}
-is able to correctly determine all symbol types by itself.
+@item modifier
+Type modifier, i.e. a symbol appearing after data type to modify its
+meaning, like @samp{*}.
 
-@node Preprocessing, ASCII Tree, Symbols, Top
+@item qualifier
+Declaration qualifier.  Can appear both before C declaration (much like
+@samp{static} or @samp{extern}) and after a data type (like
+modifiers).
+
+You would usually declare a @command{gcc} keyword @samp{__extension__}
+as a qualifier:
+
+@example
+--symbol __extension__:qualifier
+@end example
+
+@item identifier
+A C identifier.
+
+@item type
+A C data type, like @samp{int}, @samp{char}, etc.
+
+@item wrapper
+That has two meanings.  First, it can be used to declare parameter
+wrappers when running @command{cflow} without preprocessor.  This
+usage was described above.  Second, it indicates any symbol that
+can appear in a declaration either before an identifier or before
+a terminating semicolon and optionally followed by a parenthesized
+expression list.
+
+We recommended to use this class for the @command{gcc}
+@samp{__attribute__} keyword.
+@end table
+
+@node Symbol aliases
+@section Symbol aliases
+@cindex alias
+     Yet another use for the @option{--symbol} option is to define
+@dfn{symbol aliases}.  An alias is a token that behaves exactly as
+the symbol it refers to.  Alias is declared using the following
+construct:
+
+@example
+--symbol @var{newsym}:=@var{oldsym}
+@end example
+
+As a result of this option, the symbol @var{newsym} is declared to be
+the equivalent of @var{oldsym}.
+
+Symbol aliasing can be regarded as defining the symbol class by
+example of another symbol.  It is useful for some special keywords,
+such as @samp{__restrict}:
+
+@example
+--symbol __restrict:=restrict
+@end example
+
+@node GCC Initialization
+@section GCC Initialization
+     The following is a recommended set of @command{cflow} initialization
+options for use with @command{gcc}.  We suggest you to put them in your
+@file{cflow.rc} file (@pxref{Configuration}).
+
+@example
+--symbol __inline:=inline
+--symbol __inline__:=inline
+--symbol __const__:=const
+--symbol __const:=const
+--symbol __restrict:=restrict
+--symbol __extension__:qualifier
+--symbol __attribute__:wrapper
+--symbol __asm__:wrapper
+--symbol __nonnull:wrapper
+--symbol __wur:wrapper
+@end example	   
+
+@node Preprocessing
 @chapter Running Preprocessor
 @cindex Preprocess mode introduced
 @cindex Running preprocessor
@@ -764,7 +850,7 @@ to run another preprocessor command, specify it as an argument to the
 option, after an equal sign. For example, @command{cflow --cpp='cc
 -E'} will run the @code{C} compiler as a preprocessor.
 
-@node ASCII Tree, Cross-References, Preprocessing, Top
+@node ASCII Tree
 @chapter Using ASCII Art to Produce Flow Graphs.
 @cindex @option{--level-indent} option introduced.
 @cindex output indentation level, configuring
@@ -909,7 +995,7 @@ $ @kbd{cflow --tree --brief --cpp wc.c}
 @end smallexample
  
 
-@node Cross-References, Configuration, ASCII Tree, Top
+@node Cross-References
 @chapter Cross-Reference Output.
 @cindex Cross-References introduced
 @cindex @option{--xref} option introduced
@@ -938,7 +1024,7 @@ character classes discussed in chapter ``Controlling Symbol Types''
 (@pxref{Symbols}), an additional symbol class @code{t} controls
 listing of type names defined by @code{typedef} keyword.
 
-@node Configuration, Makefiles, Cross-References, Top
+@node Configuration
 @chapter Configuration Files and Variables.
      As shown in the previous chapters, GNU @command{cflow} is highly
 configurable. Different command line options have different effects,
@@ -978,7 +1064,7 @@ placed in the command line after any options taken from
 @env{CFLOW_OPTIONS} variable, but before any explicit options.
 
      Pay attention when using such options as @option{-D} in the
-configuration file. The value of @option{-D} option will be added to
+configuration file. The value of the @option{-D} option will be added to
 the preprocessor command line and will be processed by the shell, so
 be careful to properly quote its argument. The rule of thumb is:
 ``@i{use the same quoting you would have used in the shell command line}''.
@@ -987,12 +1073,9 @@ following configuration file:
 
 @smallexample
 @group
---symbol __const:type
---symbol __restrict:type
 --cpp='cc -E'
--D__extension__=
--D__attribute__\\\(c\\\)=
--D__asm__\\\(c\\\)=
+-DHAVE_CONFIG_H
+-DSQUARE\\\(x\\\)=x*x
 @end group
 @end smallexample
 
@@ -1005,7 +1088,7 @@ not take arguments, prepend @samp{no-} to the corresponding long
 option name. Thus, specifying @option{--no-brief} cancels the effect
 of the previous @option{--brief} option.
 
-@node Makefiles, Options, Configuration, Top
+@node Makefiles
 @chapter Using @command{cflow} in Makefiles.
 @cindex @file{Makefile.am}
      If you wish to use @command{cflow} to analyze your project
@@ -1075,7 +1158,7 @@ cflow.cflow: $(cflow_CFLOW_INPUT) cflow.rc Makefile
 @end group
 @end smallexample
 
-@node Options, Emacs, Makefiles, Top
+@node Options
 @chapter Complete Listing of @command{cflow} Options.
      This chapter contains an alphabetical listing of all
 @command{cflow} command line options, with brief descriptions and cross
@@ -1271,13 +1354,21 @@ use this option.
 
 @cindex @option{-s}
 @cindex @option{--symbol}     
-@item -s @var{sym}:@var{type}
-@itemx --symbol=@var{sym}:@var{type}
+@item -s @var{sym}:@var{class}
+@itemx --symbol=@var{sym}:@var{class}
+@itemx --symbol=@var{newsym}:=@var{oldsym}
 @anchor{symbol types}
-     Define symbol @var{sym} as having type @var{type}. Valid types
-are: @samp{keyword} (or @samp{kw}), @samp{modifier},
-@samp{identifier}, @samp{type}, @samp{wrapper}. Any unambiguous
-abbreviation of the above is also accepted. @xref{--symbol}.
+     In first form, registers symbol @var{sym} in the syntactic class
+@var{class}. Valid class names are: @samp{keyword} (or @samp{kw}),
+@samp{modifier}, @samp{qualifier}, @samp{identifier}, @samp{type},
+@samp{wrapper}. Any unambiguous abbreviation of the above is also
+accepted.  @xref{Syntactic classes}.
+
+     In the second form (with the @samp{:=} separator), defines
+@var{newsym} as an alias to @var{oldsym}.  @xref{Symbol aliases}.
+
+     @xref{GCC Initialization}, for a practical example of using
+this option.     
 
 @cindex @option{-S}
 @cindex @option{--use-indentation}
@@ -1335,7 +1426,7 @@ sources.
      Print program version.
 @end table
 
-@node Emacs, Reporting Bugs, Options, Top
+@node Emacs
 @chapter Using @command{cflow} with GNU Emacs.
 @cindex cflow-mode introduced
 @cindex Emacs
@@ -1396,7 +1487,7 @@ definition (a @dfn{recursion root}). Sets mark.
      Visit the referenced source file and find the function definition.
 @end table
 
-@node Reporting Bugs, Source of wc command, Emacs, Top
+@node Reporting Bugs
 @chapter How to Report a Bug
 
 Send bug reports via electronic mail to @email{bug-cflow@@gnu.org}.
@@ -1413,8 +1504,8 @@ information needed is:
 input file contents, etc.)
 @end itemize
 
-@node Source of wc command, Copying This Manual, Reporting Bugs, Top
-@appendix Source of @command{wc} command
+@node Source of wc command
+@appendix Source of the @command{wc} command
 
      The source file @file{wc.c}, used to produce sample ASCII tree
 graph (@pxref{ascii tree}).
@@ -1423,10 +1514,11 @@ graph (@pxref{ascii tree}).
 @verbatiminclude wc.c
 @end smallexample
 
-@node Copying This Manual, Concept Index, Source of wc command, Top
+@node Copying This Manual
+@appendix GNU Free Documentation License
 @include fdl.texi
 
-@node Concept Index,  , Copying This Manual, Top
+@node Concept Index
 @comment node-name,  next,  previous,  up
 @unnumbered Concept Index
 
