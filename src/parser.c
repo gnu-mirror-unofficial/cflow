@@ -1,5 +1,5 @@
 /* This file is part of GNU cflow
-   Copyright (C) 1997, 2005, 2006, 2007, 2009, 2010, 2011 Sergey Poznyakoff
+   Copyright (C) 1997, 2005, 2006, 2007, 2009, 2010, 2011, 2014 Sergey Poznyakoff
  
    GNU cflow is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -114,6 +114,94 @@ print_token(TOKSTK *tokptr)
      }
 }
 
+static char *
+token_type_str(int t)
+{
+     static char buf[80];
+     switch (t) {
+     case 0:
+	  return "EOF";
+     case WORD:
+	  return "WORD";
+     case LBRACE0:
+	  return "'{'";
+     case RBRACE0:
+	  return "'}'";
+     case IDENTIFIER:
+	  return "IDENTIFIER";
+     case EXTERN:
+	  return "EXTERN";
+     case STATIC:
+	  return "STATIC";
+     case TYPEDEF:
+	  return "TYPEDEF";
+     case STRUCT:
+	  return "STRUCT";
+     case MODIFIER:
+	  return "MODIFIER";
+     case OP:
+	  return "OP";
+     case UNION:
+	  return "UNION";
+     case ENUM:
+	  return "ENUM";
+     case LBRACE:
+	  return "' {'";
+     case RBRACE:
+	  return "' }'";
+     case MEMBER_OF:
+	  return "MEMBER_OF";
+     case TYPE:
+	  return "TYPE";
+     case STRING:
+	  return "STRING";
+     case PARM_WRAPPER:
+	  return "PARM_WRAPPER";
+     case QUALIFIER:
+	  return "QUALIFIER";
+     }	  
+     if (isprint(t))
+	  snprintf(buf, sizeof(buf), "'%c'(%d)", t, t);
+     else
+	  snprintf(buf, sizeof(buf), "%d", t);
+     return buf;
+}
+
+static void
+dbgtok(TOKSTK *t, int delim)
+{
+     if (delim)
+	  putchar(delim);
+     printf("{ %s ", token_type_str(t->type));
+     if (t->type)
+	  printf(", %s, %d ", t->token ? t->token : "NULL", t->line);
+     putchar('}');
+}
+
+static void
+debugtoken(TOKSTK *t, char *fmt, ...)
+{
+     if (debug > 1) {
+	  va_list ap;
+	  int i;
+	  
+	  if (fmt) {
+	       va_start(ap, fmt);
+	       vprintf(fmt, ap);
+	       va_end(ap);
+	       printf(": ");
+	  }
+	  if (t) {
+	       dbgtok(t, 0);
+	       printf("; ");
+	  }
+	  printf("%d: {", curs);
+	  for (i = curs; i < tos; i++)
+	       dbgtok(token_stack + i, i == curs ? 0 : ',');
+	  printf("}\n");
+     }
+}
+
 static void
 file_error(char *msg, TOKSTK *tokptr)
 {
@@ -129,14 +217,45 @@ void
 mark(Stackpos pos)
 {
      pos[0] = curs;
+     if (debug > 2)
+	  printf("marking stack at %d\n", curs);
 }
 
 void
 restore(Stackpos pos)
 {
      curs = pos[0];
-     if (curs)
+     if (curs) {
 	  tok = token_stack[curs-1];
+	  debugtoken(&tok, "restored stack");
+     }
+}
+
+void
+tokdel(int beg, int end)
+{
+     if (end >= beg) {
+	  if (end < tos)
+	       memmove(token_stack + beg, token_stack + end + 1,
+		       (end - beg + 1) * sizeof(token_stack[0]));
+	  tos -= (end - beg + 1);
+     }
+}
+
+void
+tokins(int pos, int type, int line, char *token)
+{
+     if (++tos == token_stack_length) {
+	  token_stack_length += token_stack_increase;
+	  token_stack = xrealloc(token_stack,
+				 token_stack_length*sizeof(*token_stack));
+     }
+     memmove(token_stack + pos + 1, token_stack + pos,
+	     (tos - pos - 1) * sizeof(token_stack[0]));
+     token_stack[pos].type = type;
+     token_stack[pos].token = token;
+     token_stack[pos].line = line;
+     debugtoken(&token_stack[pos], "insert at %d", pos);
 }
 
 void
@@ -178,9 +297,11 @@ nexttoken()
      if (curs == tos) {
 	  type = get_token();
 	  tokpush(type, line_num, yylval.str);
+	  yylval.str = NULL;
      }
      tok = token_stack[curs];
      curs++;
+     debugtoken(&tok, "next token");
      return tok.type;
 }
 
@@ -191,10 +312,10 @@ putback()
 	  error(10, 0, _("INTERNAL ERROR: cannot return token to stream"));
      curs--;
      if (curs > 0) {
-	  tok.type = token_stack[curs-1].type;
-	  tok.token = token_stack[curs-1].token;
+	  tok = token_stack[curs-1];
      } else
 	  tok.type = 0;
+     debugtoken(&tok, "putback");
      return tok.type;
 }
 
@@ -405,6 +526,9 @@ is_function()
 	  case MODIFIER:
 	  case STATIC:
 	  case EXTERN:
+	  case STRUCT:
+	  case UNION:
+	  case ENUM:
 	       nexttoken();
 	       continue;
 	  case PARM_WRAPPER:
@@ -551,18 +675,14 @@ fake_struct(Ident *ident)
 	  putback();
 	  skip_struct();
 	  if (tok.type == IDENTIFIER || tok.type == MODIFIER) {
-	       TOKSTK hold = tok;
+	       int pos = curs-1;
 	       restore(sp);
 	       if (ident->type_end == -1) {
 		    /* there was no tag. Insert { ... } */
-		    tos = curs;
-		    token_stack[curs].type = IDENTIFIER;
-		    token_stack[curs].token = "{ ... }";
-		    tos++;
-	       } else {
-		    tos = curs + 1;
+		    tokdel(curs, pos - 1);
+		    tokins(curs, IDENTIFIER, tok.line, "{ ... }");
+		    debugtoken(&tok, "modified stack");
 	       }
-	       tokpush(hold.type, hold.line, hold.token);
 	  } else if (tok.type == '(')
 	       return 0;
 	  else if (tok.type != ';')
@@ -579,7 +699,7 @@ parse_variable_declaration(Ident *ident, int parm)
      
      mark(sp);
      ident->type_end = -1;
-     if (tok.type == STRUCT) {
+     if (tok.type == STRUCT || tok.type == UNION) {
 	  if (nexttoken() == IDENTIFIER) {
 	       ident->type_end = tos;
 	  }
@@ -588,18 +708,14 @@ parse_variable_declaration(Ident *ident, int parm)
 	  while (tok.type == MODIFIER || tok.type == QUALIFIER)
 	       nexttoken();
 	  if (tok.type == IDENTIFIER) {
-	       TOKSTK hold = tok;
+	       int pos = curs-1;
 	       restore(sp);
 	       if (ident->type_end == -1) {
 		    /* there was no tag. Insert { ... } */
-		    tos = curs;
-		    token_stack[curs].type = IDENTIFIER;
-		    token_stack[curs].token = "{ ... }";
-		    tos++;
-	       } else {
-		    tos = curs + 1;
+		    tokdel(curs, pos - 1);
+		    tokins(curs, IDENTIFIER, tok.line, "{ ... }");
+		    debugtoken(&tok, "modified stack");
 	       }
-	       tokpush(hold.type, hold.line, hold.token);
 	  } else {
 	       if (tok.type == ';')
 		    return;

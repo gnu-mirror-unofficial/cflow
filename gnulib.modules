@@ -11,3 +11,4 @@ gettext-h
 gitlog-to-changelog
 progname
 snprintf
+xalloc

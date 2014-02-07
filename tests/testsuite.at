@@ -1,5 +1,5 @@
 # Process this file with autom4te to create testsuite. -*- Autotest -*-
-# Copyright (C) 2005, 2007, 2010, 2011 Sergey Poznyakoff
+# Copyright (C) 2005, 2007, 2010, 2011, 2014 Sergey Poznyakoff
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -70,5 +70,8 @@ m4_include([multi.at])
 m4_include([bartest.at])
 m4_include([struct00.at])
 m4_include([struct01.at])
+m4_include([struct02.at])
+m4_include([struct03.at])
+m4_include([struct04.at])
 
 # End of testsuite.at
