@@ -18,7 +18,7 @@
 #include <parser.h>
 #include <sys/stat.h>
 #include <ctype.h>
-#include <argcv.h>
+#include <wordsplit.h>
 
 #ifndef LOCAL_RC
 # define LOCAL_RC ".cflowrc"
@@ -31,8 +31,9 @@ expand_argcv(int *argc_ptr, char ***argv_ptr, int argc, char **argv)
      
      *argv_ptr = xrealloc(*argv_ptr,
 			  (*argc_ptr + argc + 1) * sizeof **argv_ptr);
-     for (i = 0; i <= argc; i++)
-	  (*argv_ptr)[*argc_ptr + i] = argv[i];
+     for (i = 0; i < argc; i++)
+	  (*argv_ptr)[*argc_ptr + i] = xstrdup(argv[i]);
+     (*argv_ptr)[*argc_ptr + i] = NULL;
      *argc_ptr += argc;
 }
 
@@ -45,6 +46,9 @@ parse_rc(int *argc_ptr, char ***argv_ptr, char *name)
      FILE *rcfile;
      int size;
      char *buf, *p;
+     struct wordsplit ws;
+     int wsflags;
+     int line;
      
      if (stat(name, &st))
 	  return;
@@ -62,14 +66,19 @@ parse_rc(int *argc_ptr, char ***argv_ptr, char *name)
      buf[size] = 0;
      fclose(rcfile);
 
+     ws.ws_comment = "#";
+     wsflags = WRDSF_DEFFLAGS | WRDSF_COMMENT;
+     line = 0;
      for (p = strtok(buf, "\n"); p; p = strtok(NULL, "\n")) {
-	  int argc;
-	  char **argv;
-	  
-	  argcv_get(p, "", "#", &argc, &argv);
-	  expand_argcv(argc_ptr, argv_ptr, argc, argv);
-	  free(argv);
+	  ++line;
+	  if (wordsplit(p, &ws, wsflags))
+	       error(1, 0, "%s:%d: %s", name, line, wordsplit_strerror(&ws));
+	  wsflags |= WRDSF_REUSE;
+	  if (ws.ws_wordc)
+	       expand_argcv(argc_ptr, argv_ptr, ws.ws_wordc, ws.ws_wordv);
      }
+     if (wsflags & WRDSF_REUSE)
+	  wordsplit_free(&ws);
      free(buf);
 }
 
@@ -94,12 +103,15 @@ sourcerc(int *argc_ptr, char ***argv_ptr)
      
      env = getenv("CFLOW_OPTIONS");
      if (env) {
-	  int argc;
-	  char **argv;
-	  
-	  argcv_get(env, "", "#", &argc, &argv);
-	  expand_argcv(&xargc, &xargv, argc, argv);
-	  free(argv);
+	  struct wordsplit ws;
+
+	  ws.ws_comment = "#";
+	  if (wordsplit(env, &ws, WRDSF_DEFFLAGS | WRDSF_COMMENT))
+	       error(1, 0, "failed to parse CFLOW_OPTIONS: %s",
+		     wordsplit_strerror(&ws));
+	  if (ws.ws_wordc)
+	       expand_argcv(&xargc, &xargv, ws.ws_wordc, ws.ws_wordv);
+	  wordsplit_free(&ws);
      }
 
      env = getenv("CFLOWRC");

@@ -18,8 +18,6 @@
 
 bin_PROGRAMS = cflow
 cflow_SOURCES = \
- argcv.c\
- argcv.h\
  c.l\
  cflow.h\
  depmap.c\
@@ -31,7 +29,9 @@ cflow_SOURCES = \
  parser.h\
  posix.c\
  rc.c\
- symbol.c
+ symbol.c\
+ wordsplit.c\
+ wordsplit.h
 
 localedir = $(datadir)/locale
 
