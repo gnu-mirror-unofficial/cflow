@@ -788,36 +788,7 @@ find "$m4_base" "$source_base" \
   -type l -xtype l -delete > /dev/null 2>&1
 
 # Reconfigure, getting other files.
-
-# Skip autoheader if it's not needed.
-grep '^[	 ]*AC_CONFIG_HEADERS\>' configure.ac >/dev/null ||
-  AUTOHEADER=true
-
-aclocal_flags=`sed -n 's/ACLOCAL_AMFLAGS *=//p' Makefile.am`
-for command in \
-  libtool \
-  "${ACLOCAL-aclocal} --force $aclocal_flags" \
-  "${AUTOCONF-autoconf} --force" \
-  "${AUTOHEADER-autoheader} --force" \
-  "${AUTOMAKE-automake} --add-missing --copy --force-missing"
-do
-  if test "$command" = libtool; then
-    use_libtool=0
-    # We'd like to use grep -E, to see if any of LT_INIT,
-    # AC_PROG_LIBTOOL, AM_PROG_LIBTOOL is used in configure.ac,
-    # but that's not portable enough (e.g., for Solaris).
-    grep '^[	 ]*A[CM]_PROG_LIBTOOL' configure.ac >/dev/null \
-      && use_libtool=1
-    grep '^[	 ]*LT_INIT' configure.ac >/dev/null \
-      && use_libtool=1
-    test $use_libtool = 0 \
-      && continue
-    command="${LIBTOOLIZE-libtoolize} -c -f"
-  fi
-  echo "$0: $command ..."
-  $command || exit
-done
-
+autoreconf -f -i -s
 
 # Get some extra files from gnulib, overriding existing files.
 for file in $gnulib_extra_files; do
