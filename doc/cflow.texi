@@ -75,6 +75,7 @@ documents GNU cflow Version @value{VERSION}.
 * Configuration::       Configuration Files and Variables.
 * Makefiles::           Using @command{cflow} in Makefiles.
 * Options::             Complete Listing of @command{cflow} Options.
+* Exit Codes::          Exit Codes,
 * Emacs::               Using @command{cflow} with GNU Emacs.
 
 * Reporting Bugs::      How to Report a Bug.
@@ -1447,6 +1448,21 @@ sources.
 @item -V
 @itemx --version
      Print program version.
+@end table
+
+@node Exit Codes
+@chapter Exit Codes
+@cindex exit codes
+
+@table @asis
+@item 0
+Successful completion.
+@item 1
+Fatal error occurred.
+@item 2
+Some input files cannot be read or parsed.
+@item 3
+Command line usage error.
 @end table
 
 @node Emacs

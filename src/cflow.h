@@ -41,6 +41,12 @@
 # define setlocale(category, locale) /* empty */
 #endif
 
+/* Exit codes */
+#define EX_OK    0  /* Success */
+#define EX_FATAL 1  /* Fatal error */
+#define EX_SOFT  2  /* Some input files cannot be read or parsed */
+#define EX_USAGE 3  /* Command line usage error */
+
 #define NUMITEMS(a) sizeof(a)/sizeof((a)[0])
 
 struct linked_list_entry {

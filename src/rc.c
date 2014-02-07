@@ -52,14 +52,10 @@ parse_rc(int *argc_ptr, char ***argv_ptr, char *name)
      
      if (stat(name, &st))
 	  return;
-     buf = malloc(st.st_size+1);
-     if (!buf) {
-	  error(0, 0, _("not enough memory to process rc file"));
-	  return;
-     }
+     buf = xmalloc(st.st_size+1);
      rcfile = fopen(name, "r");
      if (!rcfile) {
-	  error(0, errno, _("cannot open `%s'"), name);
+	  error(EX_FATAL, errno, _("cannot open `%s'"), name);
 	  return;
      }
      size = fread(buf, 1, st.st_size, rcfile);
@@ -72,7 +68,8 @@ parse_rc(int *argc_ptr, char ***argv_ptr, char *name)
      for (p = strtok(buf, "\n"); p; p = strtok(NULL, "\n")) {
 	  ++line;
 	  if (wordsplit(p, &ws, wsflags))
-	       error(1, 0, "%s:%d: %s", name, line, wordsplit_strerror(&ws));
+	       error(EX_FATAL, 0, "%s:%d: %s",
+		     name, line, wordsplit_strerror(&ws));
 	  wsflags |= WRDSF_REUSE;
 	  if (ws.ws_wordc)
 	       expand_argcv(argc_ptr, argv_ptr, ws.ws_wordc, ws.ws_wordv);
@@ -107,7 +104,7 @@ sourcerc(int *argc_ptr, char ***argv_ptr)
 
 	  ws.ws_comment = "#";
 	  if (wordsplit(env, &ws, WRDSF_DEFFLAGS | WRDSF_COMMENT))
-	       error(1, 0, "failed to parse CFLOW_OPTIONS: %s",
+	       error(EX_FATAL, 0, "failed to parse CFLOW_OPTIONS: %s",
 		     wordsplit_strerror(&ws));
 	  if (ws.ws_wordc)
 	       expand_argcv(&xargc, &xargv, ws.ws_wordc, ws.ws_wordv);

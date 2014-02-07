@@ -260,10 +260,9 @@ symbol_override(const char *str)
      Symbol *sp;
      
      ptr = strchr(str, ':');
-     if (!ptr) {
-	  error(0, 0, _("%s: no symbol type supplied"), str);
-	  return;
-     } else {
+     if (!ptr)
+	  error(EX_USAGE, 0, _("%s: no symbol type supplied"), str);
+     else {
 	  name = strndup(str, ptr - str);
 	  if (ptr[1] == '=') {
 	       Symbol *alias = lookup(ptr+2);
@@ -281,10 +280,8 @@ symbol_override(const char *str)
 	       sp->flag = symbol_alias;
 	  } else {
 	       int type = find_option_type(symbol_optype, ptr+1, 0);
-	       if (type == 0) {
-		    error(0, 0, _("unknown symbol type: %s"), ptr+1);
-		    return;
-	       }
+	       if (type == 0)
+		    error(EX_USAGE, 0, _("unknown symbol type: %s"), ptr+1);
 	       sp = install(name, INSTALL_OVERWRITE);
 	       sp->type = SymToken;
 	       sp->token_type = type;
@@ -310,7 +307,7 @@ set_print_option(char *str)
      
      opt = find_option_type(print_optype, str, 0);
      if (opt == 0) {
-	  error(0, 0, _("unknown print option: %s"), str);
+	  error(EX_USAGE, 0, _("unknown print option: %s"), str);
 	  return;
      }
      print_option |= opt;
@@ -432,19 +429,16 @@ parse_level_string(const char *str, char **return_ptr)
 	       c = p[-1];
 	       for (i = 1; i < num; i++) {
 		    *p++ = c;
-		    if (*p == 0) {
-			 error(1, 0, _("level indent string is too long"));
-			 return;
-		    }
+		    if (*p == 0)
+			 error(EX_USAGE, 0,
+			       _("level indent string is too long"));
 	       }
 	       break;
 	  default:
 	  copy:
 	       *p++ = *str++;
-	       if (*p == 0) {
-		    error(1, 0, _("level indent string is too long"));
-		    return;
-	       }
+	       if (*p == 0)
+		    error(EX_USAGE, 0, _("level indent string is too long"));
 	  }
      }
      *p = 0;
@@ -469,10 +463,8 @@ set_level_indent(const char *str)
      
      p = str;
      while (*p != '=') {
-	  if (*p == 0) {
-	       error(1, 0, _("level-indent syntax"));
-	       return;
-	  }
+	  if (*p == 0)
+	       error(EX_USAGE, 0, _("level-indent syntax"));
 	  p++;
      }
      ++p;
@@ -494,7 +486,7 @@ set_level_indent(const char *str)
 	  parse_level_string(p, &level_end[1]);
 	  break;
      default:
-	  error(1, 0, _("unknown level indent option: %s"), str);
+	  error(EX_USAGE, 0, _("unknown level indent option: %s"), str);
      }
 }
 
@@ -571,7 +563,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	  break;
      case 'f':
 	  if (select_output_driver(arg))
-	       argp_error(state, _("%s: No such output driver"), optarg);
+	       error(EX_USAGE, 0, _("%s: No such output driver"), optarg);
 	  output_init();
 	  break;
      case OPT_LEVEL_INDENT:
@@ -599,7 +591,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 			 SYMBOL_EXCLUDE(*arg);
 		    break;
 	       default:
-		    argp_error(state, _("Unknown symbol class: %c"), *arg);
+		    error(EX_USAGE, 0, _("Unknown symbol class: %c"), *arg);
 	       }
 	  break;
      case OPT_OMIT_ARGUMENTS:
@@ -726,7 +718,7 @@ include_symbol(Symbol *sym)
 void
 xalloc_die(void)
 {
-     error(1, ENOMEM, _("Exiting"));
+     error(EX_FATAL, ENOMEM, _("Exiting"));
 }
 
 void
@@ -755,7 +747,8 @@ int
 main(int argc, char **argv)
 {
      int index;
-
+     int status = EX_OK;
+     
      set_program_name(argv[0]);
      argp_version_setup("cflow", program_authors);
      
@@ -769,14 +762,17 @@ main(int argc, char **argv)
      symbol_map = SM_FUNCTIONS|SM_STATIC|SM_UNDEFINED;
 
      if (getenv("POSIXLY_CORRECT")) {
-	  if (select_output_driver("posix"))
-	       error(1, 0, _("%s: No such output driver"), "posix");
+	  if (select_output_driver("posix")) {
+	       error(0, 0, _("INTERNAL ERROR: %s: No such output driver"),
+		     "posix");
+	       abort();
+	  }
 	  output_init();
      }
      
      sourcerc(&argc, &argv);
      if (argp_parse(&argp, argc, argv, ARGP_IN_ORDER, &index, NULL))
-	  exit(1);
+	  exit(EX_USAGE);
 
      if (print_option == 0)
 	  print_option = PRINT_TREE;
@@ -801,13 +797,15 @@ main(int argc, char **argv)
      while (argc--) {
 	  if (source(*argv++) == 0)
 	       yyparse();
+	  else
+	       status = EX_SOFT;
      }
 
      if (input_file_count == 0)
-	     error(1, 0, _("no input files"));
+	     error(EX_USAGE, 0, _("no input files"));
 
      output();
-     return 0;
+     return status;
 }
 
 

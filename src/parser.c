@@ -307,8 +307,10 @@ nexttoken()
 int
 putback()
 {
-     if (curs == 0)
-	  error(10, 0, _("INTERNAL ERROR: cannot return token to stream"));
+     if (curs == 0) {
+	  error(0, 0, _("INTERNAL ERROR: cannot return token to stream"));
+	  abort();
+     }
      curs--;
      if (curs > 0) {
 	  tok = token_stack[curs-1];

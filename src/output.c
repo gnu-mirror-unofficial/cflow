@@ -419,7 +419,7 @@ output()
      } else {
 	  outfile = fopen(outname, "w");
 	  if (!outfile)
-	       error(2, errno, _("cannot open file `%s'"), outname);
+	       error(EX_FATAL, errno, _("cannot open file `%s'"), outname);
      } 
      
      set_level_mark(0, 0);
