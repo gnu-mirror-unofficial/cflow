@@ -1,5 +1,5 @@
 # Makefile for GNU cflow regression tests.
-# Copyright (C) 2005, 2007, 2010, 2011 Sergey Poznyakoff
+# Copyright (C) 2005, 2007, 2010-2011, 2014 Sergey Poznyakoff
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -12,9 +12,7 @@
 # General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-# 02110-1301 USA.
+# along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 
 EXTRA_DIST = $(TESTSUITE_AT) testsuite package.m4
 DISTCLEANFILES       = atconfig $(check_SCRIPTS)
