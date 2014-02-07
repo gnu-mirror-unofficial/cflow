@@ -1,5 +1,5 @@
 GNU cflow README
-Copyright (C) 2005, 2010, 2011 Sergey Poznyakoff
+Copyright (C) 2005, 2010, 2011, 2014 Sergey Poznyakoff
 See the end of file for copying conditions.
 
 * Introduction
@@ -17,13 +17,13 @@ Refer to file `ABOUT-NLS' for information regarding internationalization.
 
 The GNU cflow was initially written in 1997, when I needed a utility
 that could display the control flow in a C program. The latest updates
-date back to 1999. Then, as I no longer needed the package, it fell into
-oblivion.
+in its old repo date back to 1999. Then, as I no longer needed the
+package, it fell into oblivion.
 
-A recent thread in gnu-devel mailing list has shown that there is a
-kind of demand for that sort of utility, so I decided to resurrect
-it and make a full-fledged package of it. On 2005-04-12 it was dubbed
-a GNU package.
+Six years later a thread in gnu-devel mailing list had shown that
+there is a kind of demand for that sort of utility, so I decided to
+resurrect it and make a full-fledged package of it. On 2005-04-12 it
+was dubbed a GNU package.
 
 * Current Status
 
@@ -74,7 +74,7 @@ Send bug reports and suggestions to <bug-cflow@gnu.org>.
 
 * Copyright Information:
 
-Copyright (C) 2005, 2010, 2011 Sergey Poznyakoff 
+Copyright (C) 2005, 2010, 2011, 2014 Sergey Poznyakoff 
 
    Permission is granted to anyone to make or distribute verbatim copies
    of this document as received, in any medium, provided that the

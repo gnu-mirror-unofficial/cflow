@@ -1,5 +1,5 @@
 # This file is part of GNU cflow
-# Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+# Copyright (C) 2005, 2007, 2014 Free Software Foundation, Inc.
 #
 # Written by Sergey Poznyakoff
 #
@@ -20,6 +20,7 @@
 
 info_TEXINFOS=cflow.texi
 cflow_TEXINFOS=fdl.texi rendition.texi
+dist_man_MANS=cflow.1
 
 EXTRA_DIST = gendocs_template ack.c d.c wc.c whoami.c foo.c
 
