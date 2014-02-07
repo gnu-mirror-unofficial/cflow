@@ -1,5 +1,6 @@
 /* This file is part of GNU cflow
-   Copyright (C) 1997, 2005, 2006, 2007, 2009, 2010, 2011, 2014 Sergey Poznyakoff
+   Copyright (C) 1997, 2005, 2006, 2007, 2009, 2010, 2011,
+   2014 Sergey Poznyakoff
  
    GNU cflow is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -171,11 +172,11 @@ static void
 dbgtok(TOKSTK *t, int delim)
 {
      if (delim)
-	  putchar(delim);
-     printf("{ %s ", token_type_str(t->type));
+	  fputc(delim, stderr);
+     fprintf(stderr, "{ %s ", token_type_str(t->type));
      if (t->type)
-	  printf(", %s, %d ", t->token ? t->token : "NULL", t->line);
-     putchar('}');
+	  fprintf(stderr, ", %s, %d ", t->token ? t->token : "NULL", t->line);
+     fputc('}', stderr);
 }
 
 static void
@@ -187,18 +188,18 @@ debugtoken(TOKSTK *t, char *fmt, ...)
 	  
 	  if (fmt) {
 	       va_start(ap, fmt);
-	       vprintf(fmt, ap);
+	       vfprintf(stderr, fmt, ap);
 	       va_end(ap);
-	       printf(": ");
+	       fprintf(stderr, ": ");
 	  }
 	  if (t) {
 	       dbgtok(t, 0);
-	       printf("; ");
+	       fprintf(stderr, "; ");
 	  }
-	  printf("%d: {", curs);
+	  fprintf(stderr, "%d: {", curs);
 	  for (i = curs; i < tos; i++)
 	       dbgtok(token_stack + i, i == curs ? 0 : ',');
-	  printf("}\n");
+	  fprintf(stderr, "}\n");
      }
 }
 
@@ -217,8 +218,8 @@ void
 mark(Stackpos pos)
 {
      pos[0] = curs;
-     if (debug > 2)
-	  printf("marking stack at %d\n", curs);
+     if (debug > 1)
+	  fprintf(stderr, "marking stack at %d\n", curs);
 }
 
 void
@@ -1177,7 +1178,7 @@ declare(Ident *ident, int maybe_knr)
      sp->def_line = ident->line;
      sp->level = level;
      if (debug)
-	  printf(_("%s:%d: %s/%d defined to %s\n"),
+	  fprintf(stderr, _("%s:%d: %s/%d defined to %s\n"),
 		 filename,
 		 line_num,
 		 ident->name, ident->parmcnt,
@@ -1202,7 +1203,8 @@ declare_type(Ident *ident)
      sp->def_line = ident->line;
      sp->ref_line = NULL;
      if (debug)
-	  printf(_("%s:%d: type %s\n"), filename, line_num, ident->name);
+	  fprintf(stderr, _("%s:%d: type %s\n"), filename, line_num,
+		  ident->name);
 }
 
 Symbol *

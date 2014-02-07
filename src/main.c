@@ -743,7 +743,7 @@ init()
      if (level_end[1] == NULL)
 	  level_end[1] = "";
      
-     init_lex(debug > 1);
+     init_lex(debug > 2);
      init_parse();
 }
 
@@ -751,7 +751,7 @@ const char version_etc_copyright[] =
   /* Do *not* mark this string for translation.  %s is a copyright
      symbol suitable for this locale, and %d is the copyright
      year.  */
-  "Copyright %s 2005, 2006, 2009, 2010, 2011 %d Sergey Poznyakoff";
+  "Copyright %s 2005, 2006, 2009, 2010, 2011, 2014 %d Sergey Poznyakoff";
 
 int
 main(int argc, char **argv)

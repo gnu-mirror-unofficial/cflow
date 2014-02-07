@@ -1,5 +1,5 @@
 /* This file is part of GNU cflow
-   Copyright (C) 1997, 2005, 2007, 2010 Sergey Poznyakoff
+   Copyright (C) 1997, 2005, 2007, 2010, 2014 Sergey Poznyakoff
 
    GNU cflow is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -335,7 +335,7 @@ pp_open(const char *name)
      strcat(s, " ");
      strcat(s, name);
      if (debug)
-	  printf(_("Command line: %s\n"), s);
+	  fprintf(stderr, _("Command line: %s\n"), s);
      fp = popen(s, "r");
      if (!fp)
 	  error(0, errno, _("cannot execute `%s'"), s);
@@ -474,6 +474,6 @@ update_loc()
 	  filename = obstack_finish(&string_stk);
      }
      if (debug > 1)
-	  printf(_("New location: %s:%d\n"), filename, line_num);
+	  fprintf(stderr, _("New location: %s:%d\n"), filename, line_num);
 }
           
