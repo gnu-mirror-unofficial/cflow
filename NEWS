@@ -1,8 +1,16 @@
-GNU cflow NEWS -- history of user-visible changes. 2011-10-11
+GNU cflow NEWS -- history of user-visible changes. 2014-02-27
 Copyright (C) 2005-2007, 2009-2011, 2014 Sergey Poznyakoff
 See the end of file for copying conditions.
 
 Please send cflow bug reports to <bug-cflow@gnu.org>.
+
+
+Version 1.4.90 (Git)
+
+* Correctly handle functions returning struct/union (fixes bug #31792)
+* Debugging output goes to stderr
+* Add a manpage
+* Consistent use of exit codes
 
 
 Version 1.4, 2011-10-11
