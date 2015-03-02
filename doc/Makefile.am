@@ -1,5 +1,5 @@
 # This file is part of GNU cflow
-# Copyright (C) 2005, 2007, 2014 Free Software Foundation, Inc.
+# Copyright (C) 2005, 2007, 2014, 2015 Free Software Foundation, Inc.
 #
 # Written by Sergey Poznyakoff
 #
@@ -16,29 +16,31 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+SUBDIRS = . imprimatur
+
 info_TEXINFOS=cflow.texi
-cflow_TEXINFOS=fdl.texi rendition.texi
+cflow_TEXINFOS=fdl.texi
 dist_man_MANS=cflow.1
 
-EXTRA_DIST = gendocs_template ack.c d.c wc.c whoami.c foo.c
+EXTRA_DIST = gendocs.sh gendocs_template ack.c d.c wc.c whoami.c foo.c
 
 clean-local:
 	rm -rf manual
 
-# The rendering level is one of PUBLISH, DISTRIB or PROOF.
-# Just call `make RENDITION=PROOF [target]' if you want PROOF rendition.
+AM_MAKEINFOFLAGS=@IMPRIMATUR_MAKEINFOFLAGS@
+imprimatur_INPUT=$(info_TEXINFOS) $(cflow_TEXINFOS)
+# CHECK_DOCS=$(top_srcdir)/@IMPRIMATUR_MODULE_DIR@/check-docs.sh
 
-MAKEINFOFLAGS=-D$(RENDITION)
-
-GENDOCS=gendocs.sh
+GENDOCS=$(srcdir)/gendocs.sh
 
 TEXI2DVI=texi2dvi -t '@set $(RENDITION)' -E
 
 # Make sure you set TEXINPUTS.
 # TEXINPUTS=/usr/share/texmf/pdftex/plain/misc/ is ok for most distributions
+.PHONY: manual
 manual:
 	TEXINPUTS=$(srcdir):$(top_srcdir)/build-aux:$(TEXINPUTS) \
-	 MAKEINFO="$(MAKEINFO) $(MAKEINFOFLAGS)" \
+	 MAKEINFO="$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS)" \
 	 TEXI2DVI="$(TEXI2DVI) -t @finalout" \
 	 $(GENDOCS) $(PACKAGE) '$(PACKAGE_NAME) manual'
 

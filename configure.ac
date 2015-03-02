@@ -1,5 +1,5 @@
 # This file is part of GNU cflow
-# Copyright (C) 2005, 2007, 2009, 2011, 2014 Free Software Foundation, Inc.
+# Copyright (C) 2005, 2007, 2009, 2011, 2014, 2015 Free Software Foundation, Inc.
 #
 # Written by Sergey Poznyakoff
 #
@@ -58,21 +58,7 @@ AM_ICONV
 AM_GNU_GETTEXT([external], [need-formatstring-macros])
 AM_GNU_GETTEXT_VERSION(0.17)
 
-# Select a rendition level:
-#  DISTRIB for stable releases (at most one dot in the version number)
-#  and maintenance releases (two dots, patchlevel < 50)
-#  PROOF for alpha releases.
-#  PUBLISH can only be required manually when running make in doc/
-AC_SUBST(RENDITION)
-case `echo $VERSION|sed  's/[[^.]]//g'` in
-""|".")  RENDITION=DISTRIB;;
-"..")  if test `echo $VERSION | sed  's/.*\.//'` -lt 50; then
-	 RENDITION=DISTRIB
-       else
-         RENDITION=PROOF
-       fi;;
-*)     RENDITION=PROOF;;
-esac
+IMPRIMATUR_INIT(doc/imprimatur)
 
 ### Initialize the test suite.
 AC_CONFIG_TESTDIR(tests)

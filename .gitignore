@@ -4,11 +4,12 @@
 *.o
 *.so
 *.tar.bz2
-*.tar.gz
+*.tar.[gx]z
 *~
 .bootstrap
 .deps
 .emacs.desktop
+.gdbinit
 ABOUT-NLS
 ChangeLog
 INSTALL

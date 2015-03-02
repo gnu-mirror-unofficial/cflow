@@ -1,5 +1,5 @@
 # This file is part of GNU cflow
-# Copyright (C) 2005, 2007, 2009 Free Software Foundation, Inc.
+# Copyright (C) 2005, 2007, 2009, 2015 Free Software Foundation, Inc.
 #
 # Written by Sergey Poznyakoff
 #
@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-ACLOCAL_AMFLAGS = -I m4
+ACLOCAL_AMFLAGS = -I m4 -I doc/imprimatur
 
 SUBDIRS = gnu src elisp po doc tests
 
