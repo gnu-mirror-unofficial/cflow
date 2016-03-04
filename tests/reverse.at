@@ -1,5 +1,5 @@
 # This file is part of GNU cflow testsuite. -*- Autotest -*-
-# Copyright (C) 2005, 2007, 2010, 2014-2015 Sergey Poznyakoff
+# Copyright (C) 2005, 2007, 2010, 2014-2016 Sergey Poznyakoff
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -41,8 +41,8 @@ foo() <foo () at prog:2>:
     bar() <bar () at prog:6>:
         main() <main () at prog:11>
     main() <main () at prog:11>
-main() <main () at prog:11>])
-])
+main() <main () at prog:11>
+])])
 
 AT_CLEANUP
 

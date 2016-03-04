@@ -1,5 +1,5 @@
 /* This file is part of GNU cflow
-   Copyright (C) 1997, 2005-2007, 2009-2011, 2014-2015 Sergey Poznyakoff
+   Copyright (C) 1997, 2005-2007, 2009-2011, 2014-2016 Sergey Poznyakoff
  
    GNU cflow is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -670,7 +670,7 @@ fake_struct(Ident *ident)
      ident->type_end = -1;
      if (tok.type == STRUCT) {
 	  if (nexttoken() == IDENTIFIER) {
-	       ident->type_end = tos;
+	       ident->type_end = curs;
 	  }
 	  putback();
 	  skip_struct();
@@ -701,7 +701,7 @@ parse_variable_declaration(Ident *ident, int parm)
      ident->type_end = -1;
      if (tok.type == STRUCT || tok.type == UNION) {
 	  if (nexttoken() == IDENTIFIER) {
-	       ident->type_end = tos;
+	       ident->type_end = curs;
 	  }
 	  putback();
 	  skip_struct();

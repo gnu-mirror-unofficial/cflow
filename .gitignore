@@ -3,8 +3,8 @@
 *.lo
 *.o
 *.so
-*.tar.bz2
 *.tar.[gx]z
+*.tar.bz2
 *~
 .bootstrap
 .deps

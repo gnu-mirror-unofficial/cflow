@@ -57,7 +57,8 @@ int main()
         foo <int foo at prog:15>
         g <int g at prog:3>
     baz() <int baz () at prog:19>:
-        s <int s at prog:2>])
+        s <int s at prog:2>
+])
 ])
 
 AT_CLEANUP

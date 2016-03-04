@@ -14,24 +14,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-AT_SETUP([ANSI C function returning a struct])
-AT_KEYWORDS([struct struct02 ret-struct])
+AT_SETUP([same type declaration])
+AT_KEYWORDS([decl decl01])
 
-CFLOW_CHECK(
-struct s *
-foo(int arg)
-{
-	bar();
-} 
-int
-main(int argc, char **argv)
-{
-	foo();
-}
-],
-[main() <int main (int argc, char **argv) at prog:7>:
-    foo() <struct s *foo (int arg) at prog:2>:
-        bar()
-])
+CFLOW_OPT([--debug],[
+CFLOW_CHECK([static struct X *a, *b, *c;],
+[],
+[prog:1: a/-1 defined to struct X *a
+prog:1: b/-1 defined to struct X *b
+prog:1: c/-1 defined to struct X *c
+])])
 
 AT_CLEANUP
+
+

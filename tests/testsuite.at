@@ -1,5 +1,5 @@
 # Process this file with autom4te to create testsuite. -*- Autotest -*-
-# Copyright (C) 2005, 2007, 2010-2011, 2014-2015 Sergey Poznyakoff
+# Copyright (C) 2005, 2007, 2010-2011, 2014-2016 Sergey Poznyakoff
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -22,8 +22,7 @@ m4_define([TEST_CFLOW_OPTIONS],[])
 dnl CFLOW_CHECK_PROG(PROGNAME,OUTPUT,[STDERR],[RUN-IF-FAIL], [RUN-IF-PASS])
 m4_define([CFLOW_CHECK_PROG],[
 dnl Save sample output
-AT_DATA([expout],[$2
-])
+AT_DATA([expout],[$2])
 AT_CHECK([cflow ]TEST_CFLOW_OPTIONS[ $1],
 [0],
 [expout],
@@ -71,5 +70,6 @@ m4_include([struct01.at])
 m4_include([struct02.at])
 m4_include([struct03.at])
 m4_include([struct04.at])
+m4_include([decl01.at])
 
 # End of testsuite.at
