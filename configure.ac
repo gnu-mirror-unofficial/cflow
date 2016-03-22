@@ -1,5 +1,6 @@
 # This file is part of GNU cflow
-# Copyright (C) 2005, 2007, 2009, 2011, 2014, 2015 Free Software Foundation, Inc.
+# Copyright (C) 2005, 2007, 2009, 2011, 2014-2016 Free Software
+# Foundation, Inc.
 #
 # Written by Sergey Poznyakoff
 #
