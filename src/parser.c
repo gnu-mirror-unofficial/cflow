@@ -274,9 +274,10 @@ cleanup_stack()
 {
      int delta = tos - curs;
 
-     if (delta) 
+     if (delta > 0) 
 	  memmove(token_stack, token_stack+curs, delta*sizeof(token_stack[0]));
-
+     else if (delta < 0) /* Invalid input */
+	  delta = 0;
      tos = delta;
      curs = 0;
 }
@@ -652,6 +653,8 @@ parse_function_declaration(Ident *ident, int parm)
      case LBRACE:
 	  if (ident->name) {
 	       caller = lookup(ident->name);
+	       if (caller && caller->storage == AutoStorage)
+		    caller = NULL;
 	       func_body();
 	  }
 	  break;

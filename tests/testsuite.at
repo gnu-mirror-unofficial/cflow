@@ -71,5 +71,6 @@ m4_include([struct02.at])
 m4_include([struct03.at])
 m4_include([struct04.at])
 m4_include([decl01.at])
+m4_include([invalid.at])
 
 # End of testsuite.at
