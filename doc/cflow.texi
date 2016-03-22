@@ -1141,7 +1141,7 @@ for which you want to generate a flow chart, add the following statements:
 @var{program}_CFLOW_INPUT=$(@var{program}_OBJECTS:.$(OBJEXT)=.c)
 @var{program}.cflow: @var{program}_CFLOW_INPUT cflow.rc Makefile
 	CFLOWRC=@var{path-to-your-cflow.rc} \
-	 cflow -o$@@ $(CFLOW_FLAGS) $(DEFS) \
+	 cflow -o@var{program}.cflow $(CFLOW_FLAGS) $(DEFS) \
                     $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	            $(CPPFLAGS) \
          $(@var{program}_CFLOW_INPUT)
@@ -1175,7 +1175,7 @@ CFLOW_FLAGS=-i^s
 cflow_CFLOW_INPUT=$(cflow_OBJECTS:.$(OBJEXT)=.c)
 cflow.cflow: $(cflow_CFLOW_INPUT) cflow.rc Makefile
 	CFLOWRC=$(top_srcdir)/src/cflow.rc \
-	 cflow -o$@@ $(CFLOW_FLAGS) $(DEFS) \
+	 cflow -ocflow.cflow $(CFLOW_FLAGS) $(DEFS) \
                     $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	            $(CPPFLAGS) \
          $(cflow_CFLOW_INPUT)
