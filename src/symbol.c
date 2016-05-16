@@ -43,7 +43,7 @@ struct table_entry {
 
 /* Calculate the hash of a string.  */
 static size_t
-hash_symbol_hasher(void const *data, unsigned n_buckets)
+hash_symbol_hasher(void const *data, size_t n_buckets)
 {
      struct table_entry const *t = data;
      if (!t->sym)

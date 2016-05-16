@@ -16,6 +16,7 @@
 
 #include <cflow.h>
 #include <parser.h>
+#include <ctype.h>
 
 typedef struct {
      char *name;

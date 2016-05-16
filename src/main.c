@@ -540,7 +540,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
      case OPT_NO_TREE:
 	  print_as_tree = 0;
 	  level_indent[0] = level_indent[1] = NULL;
-	  level_end[0] = level_end[0] = NULL;
+	  level_end[0] = level_end[1] = NULL;
 	  break;
      case 'b':
 	  brief_listing = 1;
