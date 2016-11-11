@@ -236,7 +236,7 @@ tokdel(int beg, int end)
      if (end >= beg) {
 	  if (end < tos)
 	       memmove(token_stack + beg, token_stack + end + 1,
-		       (end - beg + 1) * sizeof(token_stack[0]));
+		       (tos - end - 1) * sizeof(token_stack[0]));
 	  tos -= (end - beg + 1);
      }
 }
