@@ -297,21 +297,35 @@ collect_processor(void *data, void *proc_data)
      return true;
 }
 
+static int
+collect_list_entry(void *item, void *proc_data)
+{
+     Symbol *s = item;
+     struct collect_data *cd = proc_data;
+     if (cd->sel(s)) {
+	  cd->sym[cd->index] = s;
+	  cd->index++;
+     }
+     return 0;
+}
+ 
 size_t
 collect_symbols(Symbol ***return_sym, int (*sel)(Symbol *p),
 		size_t reserved_slots)
 {
      struct collect_data cdata;
-
-     cdata.sym = NULL;
+     size_t size;
+     
+     size = hash_get_n_entries(symbol_table)
+	     + linked_list_size(static_func_list);
+     cdata.sym = xcalloc(size + reserved_slots, sizeof(*cdata.sym));
      cdata.index = 0;
      cdata.sel = sel;
-     hash_do_for_each (symbol_table, collect_processor, &cdata);
-     cdata.sym = calloc(cdata.index + reserved_slots, sizeof(*cdata.sym));
-     if (!cdata.sym)
-	  xalloc_die();
-     cdata.index = 0;
-     hash_do_for_each (symbol_table, collect_processor, &cdata);
+     hash_do_for_each(symbol_table, collect_processor, &cdata);
+     linked_list_iterate(&static_func_list, collect_list_entry, &cdata);
+
+     cdata.sym = xrealloc(cdata.sym,
+			  (cdata.index + reserved_slots) * sizeof(*cdata.sym));
      *return_sym = cdata.sym;
      return cdata.index;
 }
@@ -324,10 +338,7 @@ collect_functions(Symbol ***return_sym)
      struct linked_list_entry *p;
 
      /* Count static functions */
-     snum = 0;
-     if (static_func_list)
-	  for (p = linked_list_head(static_func_list); p; p = p->next)
-	       snum++;
+     snum = linked_list_size(static_func_list);
      
      /* Collect global functions */
      num = collect_symbols(&symbols, symbol_is_function, snum);

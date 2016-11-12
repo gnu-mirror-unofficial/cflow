@@ -17,7 +17,7 @@
 #include <cflow.h>
 
 static struct linked_list *
-deref_linked_list (struct linked_list **plist)
+deref_linked_list(struct linked_list **plist)
 {
      if (!*plist) {
 	  struct linked_list *list = xmalloc(sizeof(*list));
@@ -144,3 +144,16 @@ data_in_list(void *data, struct linked_list *list)
 	       return 1;
      return 0;
 }
+
+size_t
+linked_list_size(struct linked_list *list)
+{
+     size_t size = 0;
+     if (list) {
+	  struct linked_list_entry *p;
+	  for (p = linked_list_head(list); p; p = p->next)
+	       size++;
+     }
+     return size;
+}
+

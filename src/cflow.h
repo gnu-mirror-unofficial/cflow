@@ -198,6 +198,7 @@ void linked_list_iterate(struct linked_list **plist,
 			 int (*itr) (void *, void *), void *data);
 void linked_list_unlink(struct linked_list *list,
 			struct linked_list_entry *ent);
+size_t linked_list_size(struct linked_list *list);
 
 int data_in_list(void *data, struct linked_list *list);
 

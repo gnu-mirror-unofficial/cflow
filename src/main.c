@@ -647,6 +647,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	  break;
      case 'x':
 	  print_option = PRINT_XREF;
+	  SYMBOL_EXCLUDE('s'); /* Exclude static symbols by default */
 	  break;
      case OPT_PREPROCESS:
 	  preprocess_option = 1;
