@@ -1,5 +1,5 @@
 /* This file is part of GNU cflow
-   Copyright (C) 1997, 2005, 2007, 2009-2011, 2014-2016 Sergey
+   Copyright (C) 1997, 2005, 2007, 2009-2011, 2014-2017 Sergey
    Poznyakoff
  
    GNU cflow is free software; you can redistribute it and/or modify
@@ -743,7 +743,7 @@ const char version_etc_copyright[] =
   /* Do *not* mark this string for translation.  %s is a copyright
      symbol suitable for this locale, and %d is the copyright
      year.  */
-  "Copyright %s 2005, 2006, 2009, 2010, 2011, 2014 %d Sergey Poznyakoff";
+  "Copyright %s 2005-%d Sergey Poznyakoff";
 
 int
 main(int argc, char **argv)
