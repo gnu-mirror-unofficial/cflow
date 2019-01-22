@@ -783,12 +783,20 @@ main(int argc, char **argv)
 
      if (arglist) {
 	  struct linked_list_entry *p;
-
-	  for (p = arglist->head; p; p = p->next) {
+	  /* First pass: collect options */
+	  for (p = linked_list_head(arglist); p; ) {
+	       struct linked_list_entry *next = p->next;
 	       char *s = (char*)p->data;
-	       if (s[0] == '-')
+	       if (s[0] == '-') {
 		    pp_option(s);
-	       else if (source(s) == 0)
+		    linked_list_unlink(arglist, p);
+	       }
+	       p = next;
+	  }
+	  /* Second pass: collect sources */
+	  for (p = linked_list_head(arglist); p; p = p->next) {
+	       char *s = (char*)p->data;
+	       if (source(s) == 0)
 		    yyparse();
 	  }
      }
