@@ -401,10 +401,10 @@ tree_output()
 
 	  if (all_functions) {
 	       for (i = 0; i < num; i++) {
-		    if (symbols[i]->callee == NULL)
-			 continue;
-		    direct_tree(0, 0, symbols[i]);
-		    separator();
+		    if (symbols[i]->source) {
+			 direct_tree(0, 0, symbols[i]);
+			 separator();
+		    }
 	       }
 	  }
      }

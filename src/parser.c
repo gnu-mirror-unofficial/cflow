@@ -406,6 +406,12 @@ undo_save_stack()
      save_end = -1;
 }
 
+int
+save_stack_is_empty()
+{
+     return save_end <= 0;
+}
+	  
 char *
 finish_save_stack(char *name)
 {
@@ -1146,7 +1152,8 @@ declare(Ident *ident, int maybe_knr)
 	  && (!maybe_knr || get_knr_args(ident) == 0)
 	  && !(tok.type == LBRACE || tok.type == LBRACE0 || tok.type == TYPE
 	       || tok.type == PARM_WRAPPER))
-	 || (ident->parmcnt < 0 && ident->storage == ExplicitExternStorage)) {
+	 || (ident->parmcnt < 0 && ident->storage == ExplicitExternStorage)
+	 || save_stack_is_empty()) {
 	  undo_save_stack();
 	  /* add_external()?? */
 	  return;
