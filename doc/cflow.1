@@ -13,22 +13,22 @@
 .\"
 .\" You should have received a copy of the GNU General Public License
 .\" along with Cflow.  If not, see <http://www.gnu.org/licenses/>.
-.TH CFLOW 1 "February 27, 2014" "CFLOW"
+.TH CFLOW 1 "February 8, 2019" "CFLOW"
 .SH NAME
 cflow \- generate a C-language flowgraph
 .SH SYNOPSIS
 .nh
 .na
-\fBcflow\fB [\fB\-rxaSblnTv\fR] [\fB\-d\fR \fINUMBER\fR]\
+\fBcflow\fB [\fB\-ASTrxablnv\fR] [\fB\-d\fR \fINUMBER\fR]\
  [\fB\-f\fR \fINAME\fR] [\fB\-i\fR \fICLASSES\fR] [\fB\-o\fR \fIFILE\fR]\
  [\fB\-D\fR \fINAME\fR[\fB=\fIDEFN\fR]] [\fB\-I\fR \fIDIR\fR]\
  [\fB\-m\fR \fINAME\fR] [\fB\-p\fR \fINUMBER\fR]\
  [\fB\-s\fR \fISYMBOL\fB:\fR[\fB=\fR]\fITYPE\fR] [\fB\-U\fR \fINAME\fR]\
- [\fB\-\-depth=\fINUMBER\fR] [\fB\-\-format=\fINAME\fR]\
+ [\fB\-\-all\fR] [\fB\-\-depth=\fINUMBER\fR] [\fB\-\-format=\fINAME\fR]\
  [\fB\-\-include=\fICLASSES\fR] [\fB\-\-output=\fIFILE\fR]\
  [\fB\-\-reverse\fR] [\fB\-\-xref\fR] [\fB\-\-ansi\fR]\
  [\fB\-\-define=\fINAME\fR[\fB=DEFN\fR]]\
- [\fB\-\-include\-dir=\fIDIR\fR] [\fB\-\-main=\fINAME\fR]\
+ [\fB\-\-include\-dir=\fIDIR\fR] [\fB\-\-main=\fINAME\fR] [\fB\-\-no\-main\fR]\
  [\fB\-\-pushdown=\fINUMBER\fR] [\fB\-\-preprocess\fR[\fB=\fICOMMAND\fR]]\
  [\fB\-\-cpp\fR[\fB=\fICOMMAND\fR]]\
  [\fB\-\-symbol=\fISYMBOL\fB:\fR[\fB=\fR]\fITYPE\fR]\
@@ -136,6 +136,14 @@ for header files.
 \fB\-m\fR, \fB\-\-main=\fINAME\fR
 Assume main function is \fINAME\fR
 .TP
+\fB\-\-no\-main\fR
+Assume there's no main function in the program.  This option has the
+same effect as \fB\-\-all\fR, except that, if the program do define
+the \fBmain\fR function, it will be treated as any other functions,
+i.e. it will not be placed at the top of output, but in its
+place as per the lexicographic ordering of function names.  See also the
+description of \fB\-\-all\fR.
+.TP
 \fB\-p\fR, \fB\-\-pushdown=\fINUMBER\fR
 Set initial token stack size to \fINUMBER\fR.
 .TP
@@ -166,6 +174,16 @@ Don't use indentation in parsing (default).
 \fB\-U\fR, \fB\-\-undefine=\fINAME\fR
 Cancel any previous definition of \fINAME\fR.
 .SS Output control
+.TP
+\fB\-A\fR, \fB\-\-all\fR
+Produce graphs for all global functions in the program.  Use this
+option if your program contains functions which are not directly
+reachable from \fBmain()\fR.
+.sp
+The output consist of separate flow graphs for each global function
+defined in the program.  These graphs will be placed after the graph
+for \fBmain()\fR (if it exists), and will be ordered lexicographically by
+the function name.
 .TP
 \fB\-b\fR, \fB\-\-brief\fR
 Brief output.
@@ -247,7 +265,7 @@ Sergey Poznyakoff
 .SH "BUG REPORTS"
 Report bugs to <bug\-cflow@gnu.org>.
 .SH COPYRIGHT
-Copyright \(co 2014 Sergey Poznyakoff
+Copyright \(co 2014-2019 Sergey Poznyakoff
 .br
 .na
 License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>

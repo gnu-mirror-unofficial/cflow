@@ -1331,8 +1331,8 @@ For more information, @xref{Symbols}.
 
 @cindex @option{--no-main}
 @item --no-main
-     There's no main function in the program.  This option has the
-same effect as @option{--all}, except that, if the program defines
+     Assume there's no main function in the program.  This option has
+the same effect as @option{--all}, except that, if the program defines
 the @code{main} function, it will be treated as any other functions.
 
 @cindex @option{-n}
