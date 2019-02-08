@@ -1349,7 +1349,7 @@ the @code{main} function, it will be treated as any other functions.
      Set output file name.  Default is @samp{-}, meaning standard output.
 
 @cindex @option{--omit-arguments}
-@item --ommit-arguments
+@item --omit-arguments
      @bullet{} Do not print argument lists in function
 declarations.  @xref{omit signature parts}. 
 
