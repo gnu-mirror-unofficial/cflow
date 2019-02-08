@@ -605,9 +605,17 @@ expression()
 		    parens_lev++;
 	       } else {
 		    reference(name, line);
+
+		    /* MEMBER_OF can be preceded by a closing paren, as in
+		       (*a)->b
+		    */
+		    while (parens_lev > 0 && tok.type == ')') {
+			 parens_lev--;
+			 nexttoken();
+		    }
+
 		    if (tok.type == MEMBER_OF) {
-			 while (tok.type == MEMBER_OF)
-			      nexttoken();
+			 nexttoken();
 		    } else {
 			 putback();
 		    }
@@ -615,7 +623,7 @@ expression()
 	       break;
 	  case '(':
 	       /* maybe typecast */
-	       if (nexttoken() == TYPE)
+	       if (nexttoken() == TYPE || tok.type == STRUCT)
 		    skip_to(')');
 	       else {
 		    putback();
@@ -624,6 +632,9 @@ expression()
 	       break;
 	  case ')':
 	       parens_lev--;
+	       break;
+	  case MEMBER_OF:
+	       nexttoken();
 	       break;
 	  }
 	  nexttoken();

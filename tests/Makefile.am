@@ -50,6 +50,7 @@ TESTSUITE_AT = \
  include.at\
  invalid.at\
  knr.at\
+ memberof.at\
  multi.at\
  nfarg.at\
  nfparg.at\
