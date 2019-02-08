@@ -1,8 +1,27 @@
-GNU cflow NEWS -- history of user-visible changes. 2016-05-17
-Copyright (C) 2005-2007, 2009-2011, 2014-2017 Sergey Poznyakoff
+GNU cflow NEWS -- history of user-visible changes. 2019-02-08
 See the end of file for copying conditions.
 
 Please send cflow bug reports to <bug-cflow@gnu.org>.
+
+Version 1.5.90 (Git)
+
+* New option --all (-A)
+
+Produce graphs for all global functions in the program.  Use this
+option if your program contains functions which are not directly
+reachable from main().
+
+The output consist of separate flow graphs for each global function
+defined in the program.  These graphs will be placed after the graph
+for main() (if it exists), and will be ordered lexicographically by
+the function name.
+
+* New option --no-main
+
+This option has the same effect as '--all', except that the graph for
+main() function (if it exists) is treated same way as all the other
+graphs, i.e. it will not be placed at the top of output, but in its
+place as per the lexicographic ordering of function names.
 
 
 Version 1.5, 2016-05-17
@@ -99,7 +118,7 @@ Initial version restored from 1997 snapshots.
 ----------------------------------------------------------------------
 * Copyright information:
 
-Copyright (C) 2005-2007, 2009, 2010, 2011, 2016 Sergey Poznyakoff
+Copyright (C) 2005-2019 Sergey Poznyakoff
 
    Permission is granted to anyone to make or distribute verbatim copies
    of this document as received, in any medium, provided that the

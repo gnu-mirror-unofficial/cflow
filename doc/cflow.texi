@@ -30,7 +30,7 @@ Published by the Free Software Foundation,
 51 Franklin Street, Fifth Floor
 Boston, MA 02110-1301, USA
 
-Copyright @copyright{} 2005, 2010, 2014-2017 Sergey Poznyakoff
+Copyright @copyright{} 2005-2019 Sergey Poznyakoff
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.2 or
@@ -209,8 +209,8 @@ main() <int () at whoami.c:25>:
 the function called @code{main}.  It is convenient when analyzing a set
 of input files comprising an entire @code{C} program.  However, there
 are circumstances where a user would want to see only a part of
-the graph starting on particular function.  @command{Cflow}
-allows to select such function using @option{--main} (@option{-m})
+the graph starting on particular function.  One can instruct @command{cflow}
+to start output from the desiredfunction using @option{--main} (@option{-m})
 command line option.  Thus, running
 
 @example
@@ -230,6 +230,14 @@ who_am_i() <int who_am_i (void) at whoami.c:8>:
     printf()
 @end group
 @end example
+
+Many programs (such as libraries or interpreters) define functions
+that are not directly reachable from the main function.  To produce
+flow graph for all functions in the program, use the @option{--all}
+(@option{-A}) option.  The output will then include separate flow
+graphs for each global function defined in the program.  These graphs
+will be placed after the graph for @code{main} (if it exists), and
+will be ordered lexicographically by the function name.
 
 @node Direct and Reverse
 @chapter Two Types of Flow Graphs.
@@ -1200,6 +1208,14 @@ configuration file.
 with a bullet (@bullet{}).
 
 @table @option
+@cindex @option{-A}
+@cindex @option{--all}
+@item -A
+@itemx --all
+     Produce graphs for all global functions in the program.  Use this
+option if your program contains functions, which are not directly
+reachable from @code{main} (@pxref{start symbol}).
+
 @cindex @option{-a}
 @cindex @option{--ansi}
 @cindex @option{--no-ansi}
@@ -1312,6 +1328,12 @@ For more information, @xref{Symbols}.
 @item -m @var{name}
 @itemx --main=@var{name}
      Assume main function to be called @var{name}.  @xref{start symbol}.
+
+@cindex @option{--no-main}
+@item --no-main
+     There's no main function in the program.  This option has the
+same effect as @option{--all}, except that, if the program defines
+the @code{main} function, it will be treated as any other functions.
 
 @cindex @option{-n}
 @cindex @option{--number}

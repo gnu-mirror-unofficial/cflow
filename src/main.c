@@ -1,6 +1,5 @@
 /* This file is part of GNU cflow
-   Copyright (C) 1997, 2005, 2007, 2009-2011, 2014-2017 Sergey
-   Poznyakoff
+   Copyright (C) 1997-2019 Sergey Poznyakoff
  
    GNU cflow is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -44,6 +43,7 @@ enum option_code {
      OPT_NO_TREE,
      OPT_NO_BRIEF,
      OPT_NO_EMACS,
+     OPT_NO_MAIN,
      OPT_NO_VERBOSE,
      OPT_NO_NUMBER,
      OPT_NO_PRINT_LEVEL,
@@ -105,6 +105,8 @@ static struct argp_option options[] = {
        N_("Register SYMBOL with given TYPE, or define an alias (if := is used). Valid types are: keyword (or kw), modifier, qualifier, identifier, type, wrapper. Any unambiguous abbreviation of the above is also accepted"), GROUP_ID+1 },
      { "main", 'm', N_("NAME"), 0,
        N_("Assume main function to be called NAME"), GROUP_ID+1 },
+     { "no-main", OPT_NO_MAIN, NULL, 0,
+       N_("There's no main function; print graphs for all functions in the program") },
      { "define", 'D', N_("NAME[=DEFN]"), 0,
        N_("Predefine NAME as a macro"), GROUP_ID+1 },
      { "undefine", 'U', N_("NAME"), 0,
@@ -121,6 +123,9 @@ static struct argp_option options[] = {
 #define GROUP_ID 20          
      { NULL, 0, NULL, 0,
        N_("Output control:"), GROUP_ID },
+     { "all", 'A', NULL, 0,
+       N_("Show all functions, not only those reachable from main"),
+       GROUP_ID+1 },
      { "number", 'n', NULL, 0,
        N_("* Print line numbers"), GROUP_ID+1 },
      { "no-number", OPT_NO_NUMBER, NULL, OPTION_HIDDEN,
@@ -216,7 +221,7 @@ char *level_begin = "";
 int preprocess_option = 0; /* Do they want to preprocess sources? */
 
 char *start_name = "main"; /* Name of start symbol */
-
+int all_functions;  
 struct linked_list *arglist;        /* List of command line arguments */
 
 /* Given the option_type array and (possibly abbreviated) option argument
@@ -512,6 +517,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
      int num;
      
      switch (key) {
+     case 'A':
+	  all_functions = 1;
+	  break;
      case 'a':
 	  strict_ansi = 1;
 	  break;
@@ -615,6 +623,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	  break;
      case 'm':
 	  start_name = strdup(arg);
+	  break;
+     case OPT_NO_MAIN:
+	  start_name = NULL;
 	  break;
      case 'n':
 	  print_line_numbers = 1;
@@ -721,6 +732,7 @@ void
 xalloc_die(void)
 {
      error(EX_FATAL, ENOMEM, _("Exiting"));
+     abort();
 }
 
 void

@@ -1,6 +1,5 @@
 /* This file is part of GNU cflow
-   Copyright (C) 1997, 2005, 2007, 2009-2010, 2014-2017 Sergey
-   Poznyakoff
+   Copyright (C) 1997-2019 Sergey Poznyakoff
  
    GNU cflow is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -162,6 +161,7 @@ extern int brief_listing;
 extern int reverse_tree;
 extern int out_line;
 extern char *start_name;
+extern int all_functions;
 extern int max_depth;
 extern int emacs_option;
 extern int debug;

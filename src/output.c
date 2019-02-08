@@ -1,6 +1,5 @@
 /* This file is part of GNU cflow
-   Copyright (C) 1997, 2005, 2007, 2009-2011, 2014-2017 Sergey
-   Poznyakoff
+   Copyright (C) 1997-2019 Sergey Poznyakoff
  
    GNU cflow is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -393,11 +392,14 @@ tree_output()
 	       separator();
 	  }
      } else {
-	  main_sym = lookup(start_name);
-	  if (main_sym) {
+	  if ((main_sym = start_name ? lookup(start_name) : NULL) != NULL) {
 	       direct_tree(0, 0, main_sym);
 	       separator();
 	  } else {
+	       all_functions = 1;
+	  }
+
+	  if (all_functions) {
 	       for (i = 0; i < num; i++) {
 		    if (symbols[i]->callee == NULL)
 			 continue;
