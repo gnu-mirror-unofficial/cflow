@@ -235,9 +235,15 @@ Many programs (such as libraries or interpreters) define functions
 that are not directly reachable from the main function.  To produce
 flow graph for all functions in the program, use the @option{--all}
 (@option{-A}) option.  The output will then include separate flow
-graphs for each global function defined in the program.  These graphs
+graphs for each top-level function defined in the program.  These graphs
 will be placed after the graph for @code{main} (if it exists), and
 will be ordered lexicographically by the function name.
+
+When @option{--all} is used twice, graphs for all global functions
+(whether top-level or not) will be displayed.
+
+To disable special handling of the @code{main} function, use the
+@option{--no-main} option.
 
 @node Direct and Reverse
 @chapter Two Types of Flow Graphs.

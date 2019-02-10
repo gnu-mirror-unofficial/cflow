@@ -13,7 +13,7 @@
 .\"
 .\" You should have received a copy of the GNU General Public License
 .\" along with Cflow.  If not, see <http://www.gnu.org/licenses/>.
-.TH CFLOW 1 "February 8, 2019" "CFLOW"
+.TH CFLOW 1 "February 10, 2019" "CFLOW"
 .SH NAME
 cflow \- generate a C-language flowgraph
 .SH SYNOPSIS
@@ -180,10 +180,13 @@ Produce graphs for all global functions in the program.  Use this
 option if your program contains functions which are not directly
 reachable from \fBmain()\fR.
 .sp
-The output consist of separate flow graphs for each global function
+The output consist of separate flow graphs for each top-level function
 defined in the program.  These graphs will be placed after the graph
 for \fBmain()\fR (if it exists), and will be ordered lexicographically by
 the function name.
+.sp
+If used twice, graphs for all global functions (whether top-level or
+not) will be displayed.
 .TP
 \fB\-b\fR, \fB\-\-brief\fR
 Brief output.

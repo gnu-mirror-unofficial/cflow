@@ -518,7 +518,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
      
      switch (key) {
      case 'A':
-	  all_functions = 1;
+	  all_functions++;
 	  break;
      case 'a':
 	  strict_ansi = 1;

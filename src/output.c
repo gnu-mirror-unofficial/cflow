@@ -395,7 +395,7 @@ tree_output()
 	  if ((main_sym = start_name ? lookup(start_name) : NULL) != NULL) {
 	       direct_tree(0, 0, main_sym);
 	       separator();
-	  } else {
+	  } else if (!all_functions) {
 	       all_functions = 1;
 	  }
 
@@ -403,7 +403,7 @@ tree_output()
 	       for (i = 0; i < num; i++) {
 		    if (main_sym != symbols[i]
 			&& symbols[i]->source
-			&& symbols[i]->caller == NULL) {
+			&& (all_functions > 1 || symbols[i]->caller == NULL)) {
 			 direct_tree(0, 0, symbols[i]);
 			 separator();
 		    }

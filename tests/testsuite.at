@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # We need a recent Autotest.
-m4_version_prereq([2.52g])
+m4_version_prereq([2.69])
 
 m4_define([TEST_CFLOW_OPTIONS],[])
 
@@ -78,5 +78,6 @@ m4_include([memberof.at])
 
 m4_include([struct.at])
 m4_include([typedef.at])
+m4_include([all.at])
 
 # End of testsuite.at
