@@ -1,5 +1,5 @@
 # This file is part of GNU cflow testsuite. -*- Autotest -*-
-# Copyright (C) 2014-2019 Sergey Poznyakoff
+# Copyright (C) 2019 Sergey Poznyakoff
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -14,27 +14,46 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-AT_SETUP([K&R C function returning a struct])
-AT_KEYWORDS([struct struct03 ret-struct])
+AT_BANNER([typedefs])
 
-CFLOW_CHECK(
-struct s *
-foo(arg)
-	int arg;
-{
-	bar();
-} 
-int
-main(argc, argv)
-	int argc;
-	char **argv;
-{
-	foo();
-}
+CFLOW_OPT([-x -it],[
+CFLOW_TEST([structs with same members],[typedef typedef00],
+[typedef struct x {
+	char **foo;
+} X;
+typedef struct y {
+	char **foo;
+} Y;
 ],
-[main() <int main (argc, argv) at prog:8>:
-    foo() <struct s *foo (arg) at prog:2>:
-        bar()
+[X t prog:3
+Y t prog:6
 ])
 
-AT_CLEANUP
+CFLOW_TEST([structs with tags matching typedef],[typedef typedef01],
+[typedef struct X {
+	char **foo;
+} X;
+typedef struct Y {
+	char **foo;
+} Y;
+],
+[X t prog:3
+Y t prog:6
+])
+
+CFLOW_TEST([typedef to pointer],[typedef typedef02],
+[typedef struct X {
+	char **foo;
+} **X;
+],
+[X t prog:3
+])
+
+CFLOW_TEST([modifiers],[typedef typedef03],
+[typedef struct X const *Y;
+],
+[Y t prog:1
+])
+
+])
+

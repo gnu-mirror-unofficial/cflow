@@ -60,12 +60,9 @@ TESTSUITE_AT = \
  reverse.at\
  ssblock.at\
  static.at\
- struct00.at\
- struct01.at\
- struct02.at\
- struct03.at\
- struct04.at\
+ struct.at\
  testsuite.at\
+ typedef.at\
  version.at
 
 TESTSUITE = $(srcdir)/testsuite

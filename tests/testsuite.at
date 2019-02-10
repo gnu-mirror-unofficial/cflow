@@ -40,6 +40,13 @@ m4_pushdef([TEST_CFLOW_OPTIONS],[$1])
 $2
 m4_popdef([TEST_CFLOW_OPTIONS])])
 
+m4_pushdef([CFLOW_TEST],
+[AT_SETUP([$1])
+AT_KEYWORDS([$2])
+CFLOW_CHECK(m4_shift(m4_shift($@)))
+AT_CLEANUP
+])
+
 AT_INIT
 
 CFLOW_TEST_INIT
@@ -65,13 +72,11 @@ m4_include([nfarg.at])
 m4_include([hiding.at])
 m4_include([multi.at])
 m4_include([bartest.at])
-m4_include([struct00.at])
-m4_include([struct01.at])
-m4_include([struct02.at])
-m4_include([struct03.at])
-m4_include([struct04.at])
 m4_include([decl01.at])
 m4_include([invalid.at])
 m4_include([memberof.at])
+
+m4_include([struct.at])
+m4_include([typedef.at])
 
 # End of testsuite.at

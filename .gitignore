@@ -8,7 +8,7 @@
 *~
 .bootstrap
 .deps
-.emacs.desktop
+.emacs*
 .gdbinit
 ABOUT-NLS
 ChangeLog
@@ -28,3 +28,8 @@ configure
 gnu
 m4
 stamp-h1
+/cflow-*.tar.*
+*.cflow
+core
+tmp/
+*.patch

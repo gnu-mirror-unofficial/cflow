@@ -15,25 +15,27 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /* tokens */
-#define WORD 257
-#define LBRACE0 258
-#define RBRACE0 259
-#define IDENTIFIER 260
-#define EXTERN 261
-#define STATIC 262
-#define TYPEDEF 263
-#define STRUCT 264
-#define MODIFIER 265
-#define OP 266
-#define UNION 267
-#define ENUM 268
-#define LBRACE '{'
-#define RBRACE '}'
-#define MEMBER_OF 269
-#define TYPE 270
-#define STRING 271
-#define PARM_WRAPPER 272
-#define QUALIFIER 273
+enum {
+     LBRACE = '{',
+     RBRACE = '}',
+     WORD = 257,
+     LBRACE0,
+     RBRACE0,
+     IDENTIFIER,
+     EXTERN,
+     STATIC,
+     TYPEDEF,
+     STRUCT,
+     MODIFIER,
+     OP,
+     UNION,
+     ENUM,
+     MEMBER_OF,
+     TYPE,
+     STRING,
+     PARM_WRAPPER,
+     QUALIFIER
+};
 
 typedef struct {
     char *str;

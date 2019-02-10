@@ -23,6 +23,7 @@ static Hash_table *symbol_table;
 static struct linked_list *static_symbol_list;
 static struct linked_list *auto_symbol_list;
 static struct linked_list *static_func_list;
+static struct linked_list *unit_local_list;
 
 static void
 append_symbol(struct linked_list **plist, Symbol *sp)
@@ -99,7 +100,7 @@ install(char *name, int flags)
      if (((flags & INSTALL_CHECK_LOCAL) &&
 	  canonical_filename && strcmp(filename, canonical_filename)) ||
 	 (flags & INSTALL_UNIT_LOCAL)) {
-	  sym->flag = symbol_temp;
+	  sym->flag = symbol_local;
 	  append_symbol(&static_symbol_list, sym);
      } else
 	  sym->flag = symbol_none;
@@ -222,9 +223,17 @@ static_free(void *data)
 
      if (!t)
 	  return;
-     if (sym->flag == symbol_temp) 
-	  delete_symbol(sym);
-     else {
+     if (sym->flag == symbol_local) {
+	  /* In xref mode, eligible unit-local symbols are retained in
+	     unit_local_list for further processing.
+	     Otherwise, they are deleted. */
+	  if (print_option == PRINT_XREF && include_symbol(sym)) {
+	       unlink_symbol(sym);
+	       linked_list_append(&unit_local_list, sym);
+	  } else {
+	       delete_symbol(sym);
+	  }
+     } else {
 	  unlink_symbol(sym);
 	  if (symbol_is_function(sym))
 	       linked_list_append(&static_func_list, sym);
@@ -317,12 +326,14 @@ collect_symbols(Symbol ***return_sym, int (*sel)(Symbol *p),
      size_t size;
      
      size = hash_get_n_entries(symbol_table)
-	     + linked_list_size(static_func_list);
+	     + linked_list_size(static_func_list)
+	     + linked_list_size(unit_local_list);
      cdata.sym = xcalloc(size + reserved_slots, sizeof(*cdata.sym));
      cdata.index = 0;
      cdata.sel = sel;
      hash_do_for_each(symbol_table, collect_processor, &cdata);
      linked_list_iterate(&static_func_list, collect_list_entry, &cdata);
+     linked_list_iterate(&unit_local_list, collect_list_entry, &cdata);
 
      cdata.sym = xrealloc(cdata.sym,
 			  (cdata.index + reserved_slots) * sizeof(*cdata.sym));

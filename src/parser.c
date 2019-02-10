@@ -379,6 +379,20 @@ save_token(TOKSTK *tokptr)
 	  obstack_1grow(&text_stk, tokptr->type);
 	  need_space = 0;
 	  break;
+     case LBRACE:
+     case LBRACE0:
+	  if (need_space) 
+	       obstack_1grow(&text_stk, ' ');
+	  obstack_1grow(&text_stk, '{');
+	  need_space = 1;
+	  break;
+     case RBRACE:
+     case RBRACE0:
+	  if (need_space) 
+	       obstack_1grow(&text_stk, ' ');
+	  obstack_1grow(&text_stk, '}');
+	  need_space = 1;
+	  break;
      case OP:
 	  obstack_1grow(&text_stk, ' ');
 	  obstack_grow(&text_stk, tokptr->token, strlen(tokptr->token));
@@ -685,9 +699,6 @@ parse_function_declaration(Ident *ident, int parm)
 int
 fake_struct(Ident *ident)
 {
-     Stackpos sp;
-     
-     mark(sp);
      ident->type_end = -1;
      if (tok.type == STRUCT) {
 	  if (nexttoken() == IDENTIFIER) {
@@ -695,15 +706,8 @@ fake_struct(Ident *ident)
 	  }
 	  putback();
 	  skip_struct();
-	  if (tok.type == IDENTIFIER || tok.type == MODIFIER) {
-	       int pos = curs-1;
-	       restore(sp);
-	       if (ident->type_end == -1) {
-		    /* there was no tag. Insert { ... } */
-		    tokdel(curs, pos - 1);
-		    tokins(curs, IDENTIFIER, tok.line, "{ ... }");
-		    debugtoken(&tok, "modified stack");
-	       }
+	  if (tok.type == IDENTIFIER || tok.type == MODIFIER || tok.type == QUALIFIER) {
+	       putback();
 	  } else if (tok.type == '(')
 	       return 0;
 	  else if (tok.type != ';')
@@ -729,9 +733,9 @@ parse_variable_declaration(Ident *ident, int parm)
 	  while (tok.type == MODIFIER || tok.type == QUALIFIER)
 	       nexttoken();
 	  if (tok.type == IDENTIFIER) {
-	       int pos = curs-1;
-	       restore(sp);
 	       if (ident->type_end == -1) {
+		    int pos = curs-1;
+		    restore(sp);
 		    /* there was no tag. Insert { ... } */
 		    tokdel(curs, pos - 1);
 		    tokins(curs, IDENTIFIER, tok.line, "{ ... }");
@@ -772,7 +776,6 @@ parse_variable_declaration(Ident *ident, int parm)
 	  else
 	       expression();
 	  goto select;
-	  break;
      case LBRACE0:
      case LBRACE:
 	  func_body();
@@ -837,8 +840,10 @@ skip_struct()
      }
 
      while (tok.type == PARM_WRAPPER) {
-	  if (skip_balanced('(', ')', 0) == -1)
+	  if (skip_balanced('(', ')', 0) == -1) {
 	      file_error(_("unexpected end of file in struct"), NULL);
+	      return;
+	  }
      }
 }
 

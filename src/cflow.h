@@ -85,8 +85,8 @@ typedef struct {
 
 enum symbol_flag {
      symbol_none,
-     symbol_temp,                  /* Temporary symbol. Must be deleted after
-				      processing of the current module */
+     symbol_local,                 /* Unit-local symbol. Must be deleted after
+				      processing current compilation unit */
      symbol_parm,                  /* Parameter */
      symbol_alias                  /* Alias to another symbol */
 };

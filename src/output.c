@@ -401,7 +401,9 @@ tree_output()
 
 	  if (all_functions) {
 	       for (i = 0; i < num; i++) {
-		    if (main_sym != symbols[i] && symbols[i]->source) {
+		    if (main_sym != symbols[i]
+			&& symbols[i]->source
+			&& symbols[i]->caller == NULL) {
 			 direct_tree(0, 0, symbols[i]);
 			 separator();
 		    }
