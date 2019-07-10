@@ -29,18 +29,21 @@ cflow_SOURCES = \
  parser.h\
  posix.c\
  rc.c\
- symbol.c\
- wordsplit.c\
- wordsplit.h
+ symbol.c
+
+nodist_cflow_SOURCES = wordsplit.c
+
+VPATH += $(top_srcdir)/wordsplit
 
 localedir = $(datadir)/locale
 
 LDADD=../gnu/libgnu.a @LIBINTL@
 AM_CPPFLAGS=\
  -I$(top_srcdir)/gnu -I../ -I../gnu\
+ -I$(top_srcdir)/wordsplit\
  -DLOCALEDIR=\"$(localedir)\"
 AM_LFLAGS=-dvp
-EXTRA_DIST=cflow.rc
+EXTRA_DIST = cflow.rc
 
 CFLOW=$(abs_builddir)/cflow
 CFLOW_FLAGS=-i^s --brief

@@ -390,7 +390,7 @@ case ${GNULIB_SRCDIR--} in
   if git_modules_config submodule.gnulib.url >/dev/null; then
     echo "$0: getting gnulib files..."
     git submodule init || exit $?
-    git submodule update || exit $?
+    git submodule update --init --recursive || exit $?
 
   elif [ ! -d gnulib ]; then
     echo "$0: getting gnulib files..."
