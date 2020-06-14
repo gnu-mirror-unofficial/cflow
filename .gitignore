@@ -1,7 +1,9 @@
 *.a
+*.cflow
 *.la
 *.lo
 *.o
+*.patch
 *.so
 *.tar.[gx]z
 *.tar.bz2
@@ -10,6 +12,7 @@
 .deps
 .emacs*
 .gdbinit
+/cflow-*.tar.*
 ABOUT-NLS
 ChangeLog
 INSTALL
@@ -25,11 +28,8 @@ config.h.in
 config.log
 config.status
 configure
+core
 gnu
 m4
 stamp-h1
-/cflow-*.tar.*
-*.cflow
-core
 tmp/
-*.patch
