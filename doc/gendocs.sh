@@ -4,7 +4,7 @@
 
 scriptversion=2015-02-28.17
 
-# Copyright 2003-2013, 2016 Free Software Foundation, Inc.
+# Copyright 2003-2013, 2016, 2021 Free Software Foundation, Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

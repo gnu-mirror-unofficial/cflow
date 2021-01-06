@@ -1,5 +1,5 @@
 # This file is part of GNU cflow
-# Copyright (C) 2005-2019 Free Software Foundation, Inc.
+# Copyright (C) 2005-2021 Free Software Foundation, Inc.
 #
 # Written by Sergey Poznyakoff
 #
@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-AC_PREREQ(2.63)
+AC_PREREQ(2.64)
 AC_INIT([GNU cflow], [1.6], [bug-cflow@gnu.org])
 AC_CONFIG_SRCDIR([src/cflow.h])
 AC_CONFIG_AUX_DIR([build-aux])

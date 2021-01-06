@@ -6,7 +6,7 @@
 ;; $Id$
 
 ;; This file is part of GNU cflow
-;; Copyright (C) 1994-2019 Sergey Poznyakoff
+;; Copyright (C) 1994-2021 Sergey Poznyakoff
  
 ;; GNU cflow is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by

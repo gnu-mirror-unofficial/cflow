@@ -30,7 +30,7 @@ Published by the Free Software Foundation,
 51 Franklin Street, Fifth Floor
 Boston, MA 02110-1301, USA
 
-Copyright @copyright{} 2005-2019 Sergey Poznyakoff
+Copyright @copyright{} 2005--2021 Sergey Poznyakoff
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.2 or
