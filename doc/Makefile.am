@@ -33,7 +33,7 @@ imprimatur_INPUT=$(info_TEXINFOS) $(cflow_TEXINFOS)
 
 GENDOCS=$(srcdir)/gendocs.sh
 
-TEXI2DVI=texi2dvi -t '@set $(RENDITION)' -E
+TEXI2DVI=texi2dvi -E
 
 # Make sure you set TEXINPUTS.
 # TEXINPUTS=/usr/share/texmf/pdftex/plain/misc/ is ok for most distributions
@@ -41,6 +41,7 @@ TEXI2DVI=texi2dvi -t '@set $(RENDITION)' -E
 manual:
 	TEXINPUTS=$(srcdir):$(top_srcdir)/build-aux:$(TEXINPUTS) \
 	 MAKEINFO="$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS)" \
-	 TEXI2DVI="$(TEXI2DVI) -t @finalout" \
+	 TEXI2DVI="$(TEXI2DVI) -t '@set DISTRIB' -t @finalout" \
 	 $(GENDOCS) $(PACKAGE) '$(PACKAGE_NAME) manual'
 
+manual-rebuild: clean-local manual
