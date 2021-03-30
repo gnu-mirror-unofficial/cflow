@@ -302,7 +302,9 @@ pp_option(const char *arg)
 void
 pp_finalize()
 {
-     char *s = obstack_finish(opt_stack);
+     char *s;
+     obstack_1grow(opt_stack, 0);
+     s = obstack_finish(opt_stack);
      if (!pp_opts)
 	  pp_opts = xstrdup(s);
      else {
