@@ -47,11 +47,11 @@ void maybe_parm_list(int *parm_cnt_return);
 void call(char*, int);
 void reference(char*, int);
 
-int level;                  /* Current nesting level */
-Symbol *caller;             /* Current caller */
-struct obstack text_stk;    /* Obstack for composing declaration line */
+static int level;                  /* Current nesting level */
+static Symbol *caller;             /* Current caller */
+static struct obstack text_stk;    /* Obstack for composing declaration line */
 
-int parm_level;             /* Parameter declaration nesting level */
+static int parm_level;             /* Parameter declaration nesting level */
 
 typedef struct {
      int type;
@@ -61,10 +61,10 @@ typedef struct {
 
 typedef int Stackpos[1];
 
-TOKSTK tok;
-TOKSTK *token_stack;
-int tos;
-int curs;
+static TOKSTK tok;
+static TOKSTK *token_stack;
+static int tos;
+static int curs;
 int token_stack_length = 64;
 int token_stack_increase = 32;
 static int need_space;
@@ -1300,5 +1300,16 @@ reference(char *name, int line)
 	  if (!data_in_list(sp, caller->callee))
 	       linked_list_append(&caller->callee, sp);
      }
+}
+
+/* If the caller is a static symbol, reset it to NULL.  This function
+   is called as a part of cleanup routine at the end of compilation
+   module. */
+void
+reset_static_caller(void)
+{
+     if (caller &&
+	 (caller->storage == StaticStorage || caller->flag == symbol_local))
+	  caller = NULL;
 }
 

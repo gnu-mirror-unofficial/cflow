@@ -243,6 +243,7 @@ static_free(void *data)
 void
 delete_statics()
 {
+     reset_static_caller();
      if (static_symbol_list) {
 	  static_symbol_list->free_data = static_free;
 	  linked_list_destroy(&static_symbol_list);

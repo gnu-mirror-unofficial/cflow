@@ -210,6 +210,7 @@ void pp_option(const char *arg);
 
 void init_parse(void);
 int yyparse(void);
+void reset_static_caller(void);
 
 void output(void);
 void newline(void);
