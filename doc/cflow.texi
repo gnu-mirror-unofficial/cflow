@@ -231,12 +231,15 @@ who_am_i() <int who_am_i (void) at whoami.c:8>:
 @end group
 @end example
 
+Multiple @option{--main} options can be used to introduce several
+start functions.
+
 Many programs (such as libraries or interpreters) define functions
 that are not directly reachable from the main function.  To produce
 flow graph for all functions in the program, use the @option{--all}
 (@option{-A}) option.  The output will then include separate flow
 graphs for each top-level function defined in the program.  These graphs
-will be placed after the graph for @code{main} (if it exists), and
+will be placed after the graphs for start functions (if such exist), and
 will be ordered lexicographically by the function name.
 
 When @option{--all} is used twice, graphs for all global functions
@@ -1333,7 +1336,8 @@ For more information, @xref{Symbols}.
 @cindex @option{--main}     
 @item -m @var{name}
 @itemx --main=@var{name}
-     Assume main function to be called @var{name}.  @xref{start symbol}.
+     Assume main function to be called @var{name}.  Multiple main
+function can be specified.  @xref{start symbol}.
 
 @cindex @option{--no-main}
 @item --no-main

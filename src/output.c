@@ -392,16 +392,21 @@ tree_output()
 	       separator();
 	  }
      } else {
-	  if ((main_sym = start_name ? lookup(start_name) : NULL) != NULL) {
-	       direct_tree(0, 0, main_sym);
-	       separator();
+	  void *state;
+	  
+	  main_sym = first_starter(&state);
+	  if (main_sym) {
+	       do {
+		   direct_tree(0, 0, main_sym);
+		   separator();
+	       } while ((main_sym = next_starter(&state)) != NULL);
 	  } else if (!all_functions) {
 	       all_functions = 1;
 	  }
 
 	  if (all_functions) {
 	       for (i = 0; i < num; i++) {
-		    if (main_sym != symbols[i]
+		    if (symbols[i]->flag != symbol_start
 			&& symbols[i]->source
 			&& (all_functions > 1 || symbols[i]->caller == NULL)) {
 			 direct_tree(0, 0, symbols[i]);

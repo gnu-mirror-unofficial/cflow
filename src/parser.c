@@ -1242,11 +1242,15 @@ get_symbol(char *name)
      
      if (sp) {
 	  for (; sp; sp = sp->next) {
-	       if (sp->type == SymIdentifier && strcmp(sp->name, name) == 0)
+	       if (sp->flag == symbol_start || sp->type == SymIdentifier)
 		    break;
 	  }
-	  if (sp)
+	  if (sp) {
+	       if (sp->flag == symbol_start && sp->type == SymUndefined) {
+		    init_ident(sp, ExternStorage);
+	       }
 	       return sp;
+	  }
      }
      return install_ident(name, ExternStorage);
 }

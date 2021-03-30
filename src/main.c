@@ -196,6 +196,8 @@ int emacs_option;       /* Format and check for use with Emacs cflow-mode */
 int omit_arguments_option;    /* Omit arguments from function declaration string */
 int omit_symbol_names_option; /* Omit symbol name from symbol declaration string */
 
+static int no_main_option;
+
 #define SM_FUNCTIONS   0x0001
 #define SM_DATA        0x0002
 #define SM_STATIC      0x0004
@@ -218,7 +220,6 @@ char *level_begin = "";
 
 int preprocess_option = 0; /* Do they want to preprocess sources? */
 
-char *start_name = "main"; /* Name of start symbol */
 int all_functions;  
 struct linked_list *arglist;        /* List of command line arguments */
 
@@ -620,10 +621,11 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	  print_levels = 0;
 	  break;
      case 'm':
-	  start_name = strdup(arg);
+	  install_starter(arg);
 	  break;
      case OPT_NO_MAIN:
-	  start_name = NULL;
+	  clear_starters();
+	  no_main_option = 1;
 	  break;
      case 'n':
 	  print_line_numbers = 1;
@@ -786,6 +788,9 @@ main(int argc, char **argv)
      if (argp_parse(&argp, argc, argv, ARGP_IN_ORDER, &index, NULL))
 	  exit(EX_USAGE);
 
+     if (!no_main_option)
+	  set_default_starter();
+     
      if (print_option == 0)
 	  print_option = PRINT_TREE;
 

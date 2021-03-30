@@ -20,6 +20,7 @@
 
 static Hash_table *symbol_table;
 
+static struct linked_list *start_symbol_list;
 static struct linked_list *static_symbol_list;
 static struct linked_list *auto_symbol_list;
 static struct linked_list *static_func_list;
@@ -148,14 +149,9 @@ ident_change_storage(Symbol *sp, enum storage storage)
      sp->storage = storage;
 }
 
-Symbol *
-install_ident(char *name, enum storage storage)
+void
+init_ident(Symbol *sp, enum storage storage)
 {
-     Symbol *sp;
-
-     sp = install(name, 
-                  storage != AutoStorage ? 
-                     INSTALL_CHECK_LOCAL : INSTALL_DEFAULT);
      sp->type = SymIdentifier;
      sp->arity = -1;
      sp->storage = ExternStorage;
@@ -166,6 +162,17 @@ install_ident(char *name, enum storage storage)
      sp->caller = sp->callee = NULL;
      sp->level = -1;
      ident_change_storage(sp, storage);
+}
+
+Symbol *
+install_ident(char *name, enum storage storage)
+{
+     Symbol *sp;
+
+     sp = install(name, 
+                  storage != AutoStorage ? 
+                     INSTALL_CHECK_LOCAL : INSTALL_DEFAULT);
+     init_ident(sp, storage);
      return sp;
 }
 
@@ -409,3 +416,60 @@ move_parms(int level)
      }
 }
 
+Symbol *
+install_starter(char *name)
+{
+     Symbol *sp = install(name, 0);
+     sp->flag = symbol_start;
+     append_symbol(&start_symbol_list, sp);
+     return sp;
+}
+
+void
+set_default_starter(void)
+{
+     if (!linked_list_head(start_symbol_list))
+	  install_starter("main");
+}
+
+void
+clear_starters(void)
+{
+     linked_list_destroy(&start_symbol_list);
+}
+
+Symbol *
+first_starter(void *itr)
+{
+     struct linked_list_entry *p = linked_list_head(start_symbol_list);
+     while (p) {
+	  Symbol *sym = p->data;
+	  if (sym->type != SymUndefined) {
+	       *(void**)itr = p->next;
+	       return sym;
+	  }
+	  p = p->next;
+     }
+     *(void**)itr = NULL;
+     return NULL;
+}
+
+Symbol *
+next_starter(void *itr)
+{
+     struct linked_list_entry *p;
+
+     if (!itr)
+	  return NULL;
+     p = *(void**)itr;
+     while (p) {
+	  Symbol *sym = p->data;
+	  if (sym->type != SymUndefined) {
+	       *(void**)itr = p->next;
+	       return sym;
+	  }
+	  p = p->next;
+     }
+     *(void**)itr = NULL;
+     return NULL;
+}

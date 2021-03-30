@@ -85,10 +85,11 @@ typedef struct {
 
 enum symbol_flag {
      symbol_none,
+     symbol_start,
      symbol_local,                 /* Unit-local symbol. Must be deleted after
 				      processing current compilation unit */
      symbol_parm,                  /* Parameter */
-     symbol_alias                  /* Alias to another symbol */
+     symbol_alias,                 /* Alias to another symbol */
 };
 
 typedef struct symbol Symbol;
@@ -183,6 +184,15 @@ extern unsigned input_file_count;
 Symbol *lookup(const char*);
 Symbol *install(char*, int);
 Symbol *install_ident(char *name, enum storage storage);
+void init_ident(Symbol *sp, enum storage storage);
+
+Symbol *install_starter(char *name);
+void set_default_starter(void);
+void clear_starters(void);
+Symbol *first_starter(void *itr);
+Symbol *next_starter(void *itr);
+
+
 void ident_change_storage(Symbol *sp, enum storage storage);
 void delete_autos(int level);
 void delete_statics(void);
