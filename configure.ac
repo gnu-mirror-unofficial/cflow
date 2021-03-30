@@ -17,11 +17,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 AC_PREREQ(2.64)
-AC_INIT([GNU cflow], [1.6], [bug-cflow@gnu.org])
+AC_INIT([GNU cflow], [1.6.90], [bug-cflow@gnu.org],
+        [cflow],
+	[http://www.gnu.org/software/cflow])
 AC_CONFIG_SRCDIR([src/cflow.h])
 AC_CONFIG_AUX_DIR([build-aux])
-AM_INIT_AUTOMAKE([1.11 gnits tar-ustar dist-bzip2 dist-xz std-options
-silent-rules])
+AM_INIT_AUTOMAKE([1.15 gnits tar-ustar dist-bzip2 dist-xz std-options silent-rules])
 AC_CONFIG_HEADER([config.h])
 
 # Enable silent rules by default:
