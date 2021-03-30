@@ -1102,6 +1102,7 @@ get_knr_args(Ident *ident)
      Ident id;
 
      switch (tok.type) {
+     case QUALIFIER:
      case IDENTIFIER:
      case TYPE:
      case STRUCT:
@@ -1120,6 +1121,7 @@ get_knr_args(Ident *ident)
 		    stop = 1;
 		    break;
 	       case TYPE:
+	       case QUALIFIER:
 	       case IDENTIFIER:
 	       case STRUCT:
 		    putback();
