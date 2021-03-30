@@ -437,6 +437,7 @@ output()
 	  xref_output();
      }
      if (print_option & PRINT_TREE) {
+	  eliminate_non_targets();
 	  tree_output();
      }
      fclose(outfile);

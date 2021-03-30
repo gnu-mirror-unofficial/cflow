@@ -85,7 +85,8 @@ typedef struct {
 
 enum symbol_flag {
      symbol_none,
-     symbol_start,
+     symbol_start,                 /* Starter (main, et al.) */
+     symbol_target,
      symbol_local,                 /* Unit-local symbol. Must be deleted after
 				      processing current compilation unit */
      symbol_parm,                  /* Parameter */
@@ -109,9 +110,13 @@ struct symbol {
 	
      int active;                   /* Set to 1 when the symbol's subtree is
 				      being processed, prevent recursion */
-     int expand_line;              /* Output line when this symbol was first
-				      expanded */
+     int expand_line;              /* Number of the output line where this
+				      symbol was first expanded */
 
+     int visible;                  /* Visibility marker.  Symbol will be
+				      shown on output only if its value equals
+				      that of the output_visible global. */
+     
      int token_type;               /* Type of the token */
      char *source;                 /* Source file */
      int def_line;                 /* Source line */
@@ -176,6 +181,8 @@ extern int token_stack_increase;
 extern int symbol_count;
 extern unsigned input_file_count;
 
+extern int output_visible;
+
 #define INSTALL_DEFAULT     0x00
 #define INSTALL_OVERWRITE   0x01
 #define INSTALL_CHECK_LOCAL 0x02
@@ -192,6 +199,8 @@ void clear_starters(void);
 Symbol *first_starter(void *itr);
 Symbol *next_starter(void *itr);
 
+Symbol *install_target(char *name);
+void eliminate_non_targets(void);
 
 void ident_change_storage(Symbol *sp, enum storage storage);
 void delete_autos(int level);

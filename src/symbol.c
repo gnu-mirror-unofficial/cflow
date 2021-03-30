@@ -21,6 +21,7 @@
 static Hash_table *symbol_table;
 
 static struct linked_list *start_symbol_list;
+static struct linked_list *target_symbol_list;
 static struct linked_list *static_symbol_list;
 static struct linked_list *auto_symbol_list;
 static struct linked_list *static_func_list;
@@ -146,6 +147,7 @@ ident_change_storage(Symbol *sp, enum storage storage)
      default:
 	  break;
      }
+     
      sp->storage = storage;
 }
 
@@ -415,13 +417,14 @@ move_parms(int level)
 	  }
      }
 }
-
+
 Symbol *
 install_starter(char *name)
 {
      Symbol *sp = install(name, 0);
      sp->flag = symbol_start;
-     append_symbol(&start_symbol_list, sp);
+     if (!data_in_list(sp, start_symbol_list))
+	  linked_list_append(&start_symbol_list, sp);
      return sp;
 }
 
@@ -473,3 +476,50 @@ next_starter(void *itr)
      *(void**)itr = NULL;
      return NULL;
 }
+
+Symbol *
+install_target(char *name)
+{
+     Symbol *sp = install(name, 0);
+     sp->flag = symbol_target;
+     if (!data_in_list(sp, target_symbol_list))
+	  linked_list_append(&target_symbol_list, sp);
+     return sp;
+}
+
+static void
+mark_callers(Symbol *sym)
+{
+     struct linked_list_entry *p;
+
+     if (sym->active)
+	  return;
+     sym->active = 1;
+     for (p = linked_list_head(sym->caller); p; p = p->next) {
+	  mark_callers((Symbol*)p->data);
+     }
+     sym->visible = 1;
+     sym->active = 0;
+}
+
+/* Eliminate all paths not leading to selected targets */
+void
+eliminate_non_targets(void)
+{
+     struct linked_list_entry *p;
+     
+     p = linked_list_head(target_symbol_list);
+     
+     if (!p)
+	  return;
+     
+     for (; p; p = p->next) {
+	  Symbol *sym = p->data;
+	  if (sym->flag == symbol_target) {
+	       mark_callers(sym);
+	  }
+     }
+     output_visible = 1;
+}
+
+

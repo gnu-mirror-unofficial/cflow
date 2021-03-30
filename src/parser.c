@@ -685,7 +685,8 @@ parse_function_declaration(Ident *ident, int parm)
      case LBRACE:
 	  if (ident->name) {
 	       caller = lookup(ident->name);
-	       if (caller && caller->storage == AutoStorage)
+	       if (caller &&
+		   (caller->storage == AutoStorage || caller->flag == symbol_target))
 		    caller = NULL;
 	       func_body();
 	  }
@@ -1242,11 +1243,14 @@ get_symbol(char *name)
      
      if (sp) {
 	  for (; sp; sp = sp->next) {
-	       if (sp->flag == symbol_start || sp->type == SymIdentifier)
+	       if (sp->flag == symbol_start ||
+		   sp->flag == symbol_target ||
+		   sp->type == SymIdentifier)
 		    break;
 	  }
 	  if (sp) {
-	       if (sp->flag == symbol_start && sp->type == SymUndefined) {
+	       if ((sp->flag == symbol_start || sp->flag == symbol_target)
+		   && sp->type == SymUndefined) {
 		    init_ident(sp, ExternStorage);
 	       }
 	       return sp;

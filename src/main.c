@@ -49,7 +49,8 @@ enum option_code {
      OPT_OMIT_ARGUMENTS,
      OPT_NO_OMIT_ARGUMENTS,
      OPT_OMIT_SYMBOL_NAMES,
-     OPT_NO_OMIT_SYMBOL_NAMES
+     OPT_NO_OMIT_SYMBOL_NAMES,
+     OPT_TARGET,
 };
 
 static struct argp_option options[] = {
@@ -101,10 +102,6 @@ static struct argp_option options[] = {
        N_("set initial token stack size to NUMBER"), GROUP_ID+1 },
      { "symbol", 's', N_("SYMBOL:[=]TYPE"), 0,
        N_("register SYMBOL with given TYPE, or define an alias (if := is used). Valid types are: keyword (or kw), modifier, qualifier, identifier, type, wrapper. Any unambiguous abbreviation of the above is also accepted"), GROUP_ID+1 },
-     { "main", 'm', N_("NAME"), 0,
-       N_("assume main function to be called NAME"), GROUP_ID+1 },
-     { "no-main", OPT_NO_MAIN, NULL, 0,
-       N_("there's no main function; print graphs for all functions in the program") },
      { "define", 'D', N_("NAME[=DEFN]"), 0,
        N_("predefine NAME as a macro"), GROUP_ID+1 },
      { "undefine", 'U', N_("NAME"), 0,
@@ -154,6 +151,13 @@ static struct argp_option options[] = {
        N_("don't print symbol names in declaration strings"), GROUP_ID+1 },
      { "no-omit-symbol-names", OPT_NO_OMIT_SYMBOL_NAMES, NULL, 0,
        N_("print symbol names in declaration strings (default)"), GROUP_ID+1 },
+     { "main", 'm', N_("NAME"), 0,
+       N_("assume main function to be called NAME"), GROUP_ID+1 },
+     { "no-main", OPT_NO_MAIN, NULL, 0,
+       N_("there's no main function; print graphs for all functions in the program") },
+     { "target", OPT_TARGET, N_("NAME"), 0,
+       N_("show only graphs leading from starting symbols to this function"),
+       GROUP_ID+1 },
 #undef GROUP_ID
 #define GROUP_ID 30                 
      { NULL, 0, NULL, 0,
@@ -196,7 +200,7 @@ int emacs_option;       /* Format and check for use with Emacs cflow-mode */
 int omit_arguments_option;    /* Omit arguments from function declaration string */
 int omit_symbol_names_option; /* Omit symbol name from symbol declaration string */
 
-static int no_main_option;
+static int no_main_option; /* Disable start symbols */
 
 #define SM_FUNCTIONS   0x0001
 #define SM_DATA        0x0002
@@ -212,7 +216,9 @@ static int no_main_option;
                            (c)=='u' ? SM_UNDEFINED : 0)
 #define SYMBOL_INCLUDE(c) (symbol_map |= CHAR_TO_SM(c))
 #define SYMBOL_EXCLUDE(c) (symbol_map &= ~CHAR_TO_SM(c))
-int symbol_map;  /* A bitmap of symbols included in the graph. */
+static int symbol_map;  /* A bitmap of symbols included in the graph. */
+
+int output_visible;
 
 char *level_indent[] = { NULL, NULL };
 char *level_end[] = { "", "" };
@@ -675,6 +681,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
      case 'U':
 	  add_preproc_option(key, arg);
 	  break;
+     case OPT_TARGET:
+	  install_target(arg);
+	  break;
      default:
 	  return ARGP_ERR_UNKNOWN;
      }
@@ -703,6 +712,9 @@ include_symbol(Symbol *sym)
      int type = 0;
      
      if (!sym)
+	  return 0;
+
+     if (sym->visible != output_visible)
 	  return 0;
      
      if (sym->type == SymIdentifier) {
