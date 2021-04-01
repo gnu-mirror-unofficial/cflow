@@ -25,12 +25,12 @@ dot_begin(FILE *fp)
 static void
 declare_node(FILE *fp, Symbol *sym)
 {
-     fprintf(fp, "    %s [label=\"%s", sym->name, sym->name);
+     fprintf(fp, "    %s [label=\"", sym->name);
      if (sym->decl)
 	  fprintf(fp, "%s\n%s:%d",
 		  sym->decl, sym->source, sym->def_line);
      else
-	  fprintf(fp, "()");
+	  fprintf(fp, "%s()", sym->name);
      fprintf(fp, "\"]\n");
 }
      
