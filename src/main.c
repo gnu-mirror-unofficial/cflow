@@ -60,7 +60,7 @@ static struct argp_option options[] = {
      { "include", 'i', N_("CLASSES"), 0,
        N_("include specified classes of symbols (see below); prepend CLASSES with ^ or - to exclude them from the output"), GROUP_ID+1 },
      { "format", 'f', N_("NAME"), 0,
-       N_("use given output format NAME; valid names are `gnu' (default) and `posix'"),
+       N_("use given output format NAME; valid names are `gnu' (default), `posix', and `dot'"),
        GROUP_ID+1 },
      { "reverse", 'r', NULL, 0,
        N_("print reverse call tree"), GROUP_ID+1 },
@@ -794,6 +794,7 @@ main(int argc, char **argv)
      
      register_output("gnu", gnu_output_handler, NULL);
      register_output("posix", posix_output_handler, NULL);
+     register_output("dot", dot_output_handler, NULL);
 
      symbol_map = SM_FUNCTIONS|SM_STATIC|SM_UNDEFINED;
 

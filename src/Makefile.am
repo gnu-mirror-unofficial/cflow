@@ -21,6 +21,7 @@ cflow_SOURCES = \
  c.l\
  cflow.h\
  depmap.c\
+ dot.c\
  gnu.c\
  linked-list.c\
  main.c\

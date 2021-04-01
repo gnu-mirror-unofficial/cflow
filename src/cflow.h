@@ -271,6 +271,9 @@ int gnu_output_handler(cflow_output_command cmd,
 int posix_output_handler(cflow_output_command cmd,
 			 FILE *outfile, int line,
 			 void *data, void *handler_data);
+int dot_output_handler(cflow_output_command cmd,
+		       FILE *outfile, int line,
+		       void *data, void *handler_data);
 
 
 typedef struct cflow_depmap *cflow_depmap_t;
