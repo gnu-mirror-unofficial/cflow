@@ -521,6 +521,9 @@ cflow_help(struct argp_state *state)
      argp_state_help (state, stdout,
 		      ARGP_HELP_STD_HELP & ~(ARGP_HELP_BUG_ADDR|ARGP_HELP_EXIT_OK));
 
+     printf ("\n%s\n", _("References:"));
+     printf (" [1]   https://www.gnu.org/software/cflow/manual/html_section/ASCII-Tree.html\n");
+     
      /* Emit bug-reporting address and exit. */
      emit_bug_reporting_address ();
      exit (0);

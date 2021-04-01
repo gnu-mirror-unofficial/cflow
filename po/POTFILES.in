@@ -13,3 +13,4 @@ gnu/getopt.c
 gnu/obstack.c
 gnu/xalloc-die.c
 gnu/xalloc-die.c
+gnu/version-etc.c
