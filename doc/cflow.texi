@@ -1369,18 +1369,6 @@ declarations.  @xref{omit signature parts}.
 signature parts}.  This option is turned on in @samp{posix} output
 mode (@pxref{POSIX Output Format}.
           
-@FIXME{I am not sure whether the one below is needed:     
-@verbatim
-@cindex @option{-P}
-@cindex @option{--print}     
-@item -P @var{opt}
-@itemx --print=@var{opt}
-     Set printing option.  Valid @var{opt} values are: @samp{xref} (or
-@samp{cross-ref}) and @samp{tree}.  Any unambiguous abbreviation of the
-above is also accepted.
-@end verbatim
-}
-
 @cindex @option{-r}
 @cindex @option{--reverse}
 @cindex @option{--no-reverse}

@@ -3,9 +3,13 @@ src/main.c
 src/parser.c
 src/rc.c
 src/symbol.c
+src/output.c
+src/posix.c
 
 gnu/argp-help.c
 gnu/argp-parse.c
 gnu/error.c
 gnu/getopt.c
 gnu/obstack.c
+gnu/xalloc-die.c
+gnu/xalloc-die.c

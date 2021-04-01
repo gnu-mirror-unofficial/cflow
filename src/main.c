@@ -22,7 +22,6 @@
 #include <parser.h>
 #include <version-etc.h>
 
-const char *argp_program_bug_address = "<" PACKAGE_BUGREPORT ">";
 static char doc[] = N_("generate a program flowgraph");
 const char *program_authors[] = {
      "Sergey Poznyakoff",
@@ -30,8 +29,7 @@ const char *program_authors[] = {
 };
 
 enum option_code {
-     OPT_DEFINES = 256,
-     OPT_LEVEL_INDENT,
+     OPT_LEVEL_INDENT = 256,
      OPT_DEBUG,
      OPT_PREPROCESS,
      OPT_NO_PREPROCESS,
@@ -60,17 +58,14 @@ static struct argp_option options[] = {
      { "depth", 'd', N_("NUMBER"), 0,
        N_("set the depth at which the flowgraph is cut off"), GROUP_ID+1 },
      { "include", 'i', N_("CLASSES"), 0,
-       N_("include specified classes of symbols (see below). Prepend CLASSES with ^ or - to exclude them from the output"), GROUP_ID+1 },
+       N_("include specified classes of symbols (see below); prepend CLASSES with ^ or - to exclude them from the output"), GROUP_ID+1 },
      { "format", 'f', N_("NAME"), 0,
-       N_("use given output format NAME. Valid names are `gnu' (default) and `posix'"),
+       N_("use given output format NAME; valid names are `gnu' (default) and `posix'"),
        GROUP_ID+1 },
      { "reverse", 'r', NULL, 0,
        N_("print reverse call tree"), GROUP_ID+1 },
      { "xref", 'x', NULL, 0,
        N_("produce cross-reference listing only"), GROUP_ID+1 },
-     { "print", 'P', N_("OPT"), OPTION_HIDDEN,
-       N_("set printing option to OPT. Valid OPT values are: xref (or cross-ref), tree. Any unambiguous abbreviation of the above is also accepted"),
-       GROUP_ID+1 },
      { "output", 'o', N_("FILE"), 0,
        N_("set output file name (default -, meaning stdout)"),
        GROUP_ID+1 },
@@ -93,7 +88,7 @@ static struct argp_option options[] = {
      { "use-indentation", 'S', NULL, 0,
        N_("rely on indentation"), GROUP_ID+1 },
      { "no-use-indentation", OPT_NO_USE_INDENTATION, NULL, 0,
-       N_("don't rely on intentation (default)"), GROUP_ID+1 },
+       N_("don't rely on indentation (default)"), GROUP_ID+1 },
      { "ansi", 'a', NULL, 0,
        N_("accept only sources in ANSI C"), GROUP_ID+1 },
      { "no-ansi", OPT_NO_ANSI, NULL, 0,
@@ -101,13 +96,14 @@ static struct argp_option options[] = {
      { "pushdown", 'p', N_("NUMBER"), 0,
        N_("set initial token stack size to NUMBER"), GROUP_ID+1 },
      { "symbol", 's', N_("SYMBOL:[=]TYPE"), 0,
-       N_("register SYMBOL with given TYPE, or define an alias (if := is used). Valid types are: keyword (or kw), modifier, qualifier, identifier, type, wrapper. Any unambiguous abbreviation of the above is also accepted"), GROUP_ID+1 },
+       /* TRANSLATORS: Don't translate type names. */
+       N_("register SYMBOL with given TYPE, or define an alias (if := is used); valid types are: keyword (or kw), modifier, qualifier, identifier, type, wrapper, or any unambiguous abbreviation thereof"), GROUP_ID+1 },
      { "define", 'D', N_("NAME[=DEFN]"), 0,
        N_("predefine NAME as a macro"), GROUP_ID+1 },
      { "undefine", 'U', N_("NAME"), 0,
        N_("cancel any previous definition of NAME"), GROUP_ID+1 },
      { "include-dir", 'I', N_("DIR"), 0,
-       N_("add the directory DIR to the list of directories to be searched for header files."), GROUP_ID+1 },
+       N_("add the directory DIR to the list of directories to be searched for header files"), GROUP_ID+1 },
      { "preprocess", OPT_PREPROCESS, N_("COMMAND"), OPTION_ARG_OPTIONAL,
        N_("run the specified preprocessor command"), GROUP_ID+1 },
      { "cpp", 0, NULL, OPTION_ALIAS, NULL, GROUP_ID+1 },
@@ -117,7 +113,7 @@ static struct argp_option options[] = {
 #undef GROUP_ID
 #define GROUP_ID 20          
      { NULL, 0, NULL, 0,
-       N_("output control:"), GROUP_ID },
+       N_("Output control:"), GROUP_ID },
      { "all", 'A', NULL, 0,
        N_("show all functions, not only those reachable from main"),
        GROUP_ID+1 },
@@ -130,7 +126,7 @@ static struct argp_option options[] = {
      { "no-print-level", OPT_NO_PRINT_LEVEL, NULL, 0,
        N_("don't print nesting levels (default)"), GROUP_ID+1 },
      { "level-indent", OPT_LEVEL_INDENT, "ELEMENT", 0,
-       N_("control graph appearance"), GROUP_ID+1 },
+       N_("control graph appearance; see [1] for details"), GROUP_ID+1 },//FIXME
      { "tree", 'T', NULL, 0,
        N_("draw ASCII art tree"), GROUP_ID+1 },
      { "no-tree", OPT_NO_TREE, NULL, 0,
@@ -152,11 +148,12 @@ static struct argp_option options[] = {
      { "no-omit-symbol-names", OPT_NO_OMIT_SYMBOL_NAMES, NULL, 0,
        N_("print symbol names in declaration strings (default)"), GROUP_ID+1 },
      { "main", 'm', N_("NAME"), 0,
-       N_("assume main function to be called NAME"), GROUP_ID+1 },
+       N_("assume main function to be called NAME; multiple options are allowed"),
+       GROUP_ID+1 },
      { "no-main", OPT_NO_MAIN, NULL, 0,
        N_("there's no main function; print graphs for all functions in the program") },
      { "target", OPT_TARGET, N_("NAME"), 0,
-       N_("show only graphs leading from starting symbols to this function"),
+       N_("show only graphs leading from starting symbols to this function; multiple options are allowed"),
        GROUP_ID+1 },
 #undef GROUP_ID
 #define GROUP_ID 30                 
@@ -169,6 +166,7 @@ static struct argp_option options[] = {
      { "debug", OPT_DEBUG, "NUMBER", OPTION_ARG_OPTIONAL,
        N_("set debugging level"), GROUP_ID+1 },
 #undef GROUP_ID     
+     {"help",        '?',          0, OPTION_HIDDEN,  N_("give this help list"), -1},
      { 0, }
 };
 
@@ -188,7 +186,6 @@ int use_indentation;    /* Rely on indentation,
                          * is necessarily surrounded by the curly braces
 			 * in the first column
                          */
-int record_defines;     /* Record macro definitions */
 int strict_ansi;        /* Assume sources to be written in ANSI C */
 int print_line_numbers; /* Print line numbers */
 int print_levels;       /* Print level number near every branch */
@@ -301,27 +298,6 @@ symbol_override(const char *str)
 	  sp->def_line = -1;
 	  sp->ref_line = NULL;
      }
-}
-
-/* Args for --print option */
-static struct option_type print_optype[] = {
-     { "xref", 1, PRINT_XREF },
-     { "cross-ref", 1, PRINT_XREF },
-     { "tree", 1, PRINT_TREE },
-     { 0 },
-};
-
-static void
-set_print_option(char *str)
-{
-     int opt;
-     
-     opt = find_option_type(print_optype, str, 0);
-     if (opt == 0) {
-	  error(EX_USAGE, 0, _("unknown print option: %s"), str);
-	  return;
-     }
-     print_option |= opt;
 }
 
 /* Convert first COUNT bytes of the string pointed to by STR_PTR
@@ -516,6 +492,40 @@ add_preproc_option(int key, const char *arg)
      preprocess_option = 1;
 }
 
+#define end_of_options(opt) \
+     (!(opt)->key && !(opt)->name && !(opt)->doc && !(opt)->group)
+
+/* Override default argp's --help behavior */
+static void
+cflow_help(struct argp_state *state)
+{
+     struct argp_option *opt;
+
+     /*
+      * Unshadow the -? option.
+      *
+      * By default argp shadows (i.e. removes from the help listing), short
+      * options that appear more than once.  The -? option added in the
+      * options array above falls into that category.  To avoid shadowing it,
+      * find the option structure and replace its key with 0.
+      */
+     for (opt = (struct argp_option *) state->root_argp->children[0].argp->options;
+	  !end_of_options(opt); opt++) {
+	  if (opt->key == '?') {
+	       opt->key = 0;
+	       break;
+	  }
+     }
+
+     /* Print the help screen without bug-reporting address.  */
+     argp_state_help (state, stdout,
+		      ARGP_HELP_STD_HELP & ~(ARGP_HELP_BUG_ADDR|ARGP_HELP_EXIT_OK));
+
+     /* Emit bug-reporting address and exit. */
+     emit_bug_reporting_address ();
+     exit (0);
+}
+
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
@@ -533,9 +543,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	  break;
      case OPT_DEBUG:
 	  debug = arg ? atoi(arg) : 1;
-	  break;
-     case 'P':
-	  set_print_option(arg);
 	  break;
      case 'S':
 	  use_indentation = 1;
@@ -565,9 +572,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	  max_depth = atoi(arg);
 	  if (max_depth < 0)
 	       max_depth = 0;
-	  break;
-     case OPT_DEFINES: /* FIXME: Not used. */
-	  record_defines = 1;
 	  break;
      case OPT_EMACS:
 	  emacs_option = 1;
@@ -683,6 +687,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	  break;
      case OPT_TARGET:
 	  install_target(arg);
+	  break;
+     case '?':
+	  cflow_help(state);
 	  break;
      default:
 	  return ARGP_ERR_UNKNOWN;
