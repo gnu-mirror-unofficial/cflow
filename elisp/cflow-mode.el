@@ -1,9 +1,8 @@
 ;;; cflow.el --- major mode for viewing cflow output files.
 
-;; Authors: 1994, 1995, 2005, 2007 Sergey Poznyakoff
+;; Authors: 1994, 1995, 2005, 2007, 2021 Sergey Poznyakoff
 ;; Version: 0.2.1
 ;; Keywords: cflow
-;; $Id$
 
 ;; This file is part of GNU cflow
 ;; Copyright (C) 1994-2021 Sergey Poznyakoff
@@ -55,6 +54,7 @@
 (define-key cflow-mode-map "R" 'cflow-recursion-next)
 (define-key cflow-mode-map "x" 'cflow-goto-expand)
 (define-key cflow-mode-map "E" 'cflow-edit-out-full)
+(define-key cflow-mode-map "c" 'cflow-find-caller)
 
 (define-key cflow-mode-map [menu-bar] (make-sparse-keymap))
 
@@ -143,7 +143,7 @@
       (cond
        ((null pos)
 	(goto-line cflow-recursion-root-line)
-	(error "no more calls."))
+	(error "No more calls."))
        (t
 	(push-mark)
 	(goto-char pos)
@@ -166,7 +166,34 @@
       (push-mark)
       (goto-line num))
      (t
-      (error "not expandable")))))
+      (error "Not expandable")))))
+
+(defun cflow-find-caller ()
+  "Go to the caller of the current function"
+  (interactive)
+  (let ((num (cond
+	      ((save-excursion
+		 (beginning-of-line)
+		 (cond
+		  ((looking-at "^\\( +\\)\\w")
+		   (let ((indent (- (match-end 1) (match-beginning 1))))
+		     (re-search-backward (format "^ \\{,%d\\}\\w" (- indent 1)) nil t)
+		     (- (match-end 0) 1)))
+		  ((looking-at "^\\(\\s-+\\)\\w")
+		   (let ((indent (- (match-end 1) (match-beginning 1))))
+		     (catch 'found
+		       (while (re-search-backward "^\\(\\s-*\\)\\w" nil t)
+			 (if (< (- (match-end 1) (match-beginning 1)) indent)
+			     (throw 'found (match-end 1))))
+		       0)))
+		  (t
+		   0)))))))
+    (cond
+     ((> num 0)
+      (push-mark)
+      (goto-char num))
+     (t
+      (error "At top-level function")))))
 
 (defvar cflow-read-only)
 
