@@ -368,8 +368,8 @@ take effect for both direct and reverse flow graphs.
      The output format described in previous chapters is called
 @dfn{GNU Output}.  Beside this, @command{cflow} is also
 able to produce output format defined in POSIX standard
-(@url{http://www.opengroup.org/onlinepubs/009695399/utilities/cflow.html,The
-Open Group Base Specifications Issue 6: cflow utility}).
+@footnote{@url{http://www.opengroup.org/onlinepubs/009695399/utilities/cflow.html,The
+Open Group Base Specifications Issue 6: cflow utility}}.
 In this format, each line of output
 begins with a @dfn{reference number}, i.e. the ordinal number of this
 line in the output, followed by indentation of fixed amount of columns
@@ -386,7 +386,7 @@ found, the line ends with an empty pair of angle brackets.
 @cindex POSIX Output Format, generating
      This output format is used when either a command line option
 @option{--format=posix} (@option{-f posix}) has been given, or
-environment variable @env{POSIXLY_CORRECT} was set.
+the environment variable @env{POSIXLY_CORRECT} was set.
 
      The output graph in POSIX format for our sample @file{whoami.c}
 file will look as follows:
@@ -410,50 +410,23 @@ analyzing @command{cflow} output expect them to be absent.  If you use
 such a program, add @option{--omit-arguments} option to
 @command{cflow} command line (@pxref{omit signature parts}).
      
-@FIXME{Discuss the differences and the reason
-for existence of each output format.  Explain that more formats
-will appear in the future.}
+@anchor{DOT output format}
+@cindex @option{--format=dot}
+@cindex @option{-f dot}
+@cindex graphviz
+@cindex dot output format described
+     To produce a graphical representation of the flowgraph, use the
+@option{-f dot} (@option{--format=dot}).  This outputs a graph in @dfn{DOT}
+format@footnote{@uref{https://graphviz.org/doc/info/lang.html, The
+DOT Language}}.  To view the output on screen, use @command{graphviz}
+@footnote{@uref{https://graphviz.org/, Graphviz - Graph Visualization
+Software}} @command{dot} program.
 
-     Future versions of @command{cflow} will offer more output
-formats, including @acronym{XML} and @acronym{HTML}
-outputs.  Currently, you can use @command{VCG} tool
-(@url{http://rw4.cs.uni-sb.de/@/users/@/sander/@/html/gsvcg1.html})
-to create graphical representation of the produced graphs.  To
-transform @command{cflow} output to @command{xvcg} input syntax, use
-@command{cflow2vcg} program
-(@url{http://cflow2vcg.sourceforge.net/}).  Both programs are available
-under GPL.
-
-@cindex @command{cflow2vcg}, using with @command{cflow}
-@cindex @command{xvcg}, using with @command{cflow}
-     @command{Cflow2vcg} expects @acronym{POSIX} call graphs, indented
-with exactly one horizontal tabulation character per nesting level,
-with an additional tab character for zeroth level and without argument
-lists in function declaration.  So, to produce an output suitable for
-@command{cflow2vcg}, invoke @command{cflow} as
-follows@footnote{(@xref{ASCII Tree, level-indent}, for the detailed
-description of @option{--level-indent} option}:
+For example, you can create and view the flowgraph of the
+@command{whoami} example program with the following command:
 
 @example
-@group
-@kbd{cflow --format=posix --omit-arguments \
-      --level-indent='0=\t' --level-indent='1=\t' \
-      --level-indent=start='\t'}
-@end group
-@end example
-
-     You can use the following script to visualize call graphs using
-the three tools:
-
-@example
-@group
-#! /bin/sh
-
-cflow --format=posix --omit-arguments \
-      --level-indent='0=\t' --level-indent='1=\t' \
-      --level-indent=start='\t' $* |
-  cflow2vcg | xvcg -
-@end group
+cflow -f dot whoami.c | dot -Txlib
 @end example
 
 @node Recursive Calls
@@ -1278,7 +1251,8 @@ mode when visiting this file.  Implies @option{--format=gnu}.  @xref{--emacs}.
 @item -f @var{name}
 @itemx --format=@var{name}
      Use given output format @var{name}.  Valid names are @code{gnu}
-(@pxref{GNU Output Format}) and @code{posix} (@pxref{POSIX Output Format}).
+(@pxref{GNU Output Format}), @code{posix} (@pxref{POSIX Output
+Format}), and @code{dot} (@pxref{DOT output format}).
 
 @cindex @option{-?}
 @cindex @option{--help}
