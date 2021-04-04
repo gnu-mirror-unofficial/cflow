@@ -5,6 +5,9 @@
 --symbol __const:=const
 --symbol __restrict:=restrict
 --symbol __extension__:qualifier
+--symbol typeof:wrapper
+--symbol __typeof:=typeof
+--symbol __typeof__:=typeof
 --symbol __attribute__:wrapper
 --symbol __asm__:wrapper
 --symbol __nonnull:wrapper

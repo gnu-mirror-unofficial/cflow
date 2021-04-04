@@ -594,6 +594,14 @@ expression()
 	  switch (tok.type) {
 	  case ';':
 	       return;
+	  case PARM_WRAPPER:
+	       if (skip_balanced('(', ')', 0) == -1) {
+		    file_error(_("unexpected end of file in expression"),
+			       NULL);
+		    return;
+	       }
+	       putback();
+	       break;
 	  case LBRACE:
 	  case LBRACE0:
 	  case RBRACE:
@@ -637,12 +645,23 @@ expression()
 	       break;
 	  case '(':
 	       /* maybe typecast */
-	       if (nexttoken() == TYPE || tok.type == STRUCT)
-		    skip_to(')');
-	       else {
-		    putback();
+	       if (nexttoken() == TYPE || tok.type == STRUCT) {
+		    if (skip_balanced('(', ')', 1) == -1) {
+			 file_error(_("unexpected end of file in expression"),
+				    NULL);
+			 return;
+		    }
+		    if (tok.type == LBRACE || tok.type == LBRACE0) {
+			 if (skip_balanced('{', '}', 1) == -1) {
+			      file_error(_("unexpected end of file in expression"),
+					 NULL);
+			      return;
+			 }
+		    }
+	       } else {
 		    parens_lev++;
 	       }
+	       putback();
 	       break;
 	  case ')':
 	       parens_lev--;
@@ -895,6 +914,7 @@ dcl(Ident *idptr)
 			       NULL);
 		    return 1;
 	       }
+	       putback();	       
 	  } else if (tok.type == IDENTIFIER) {
 	       int type;
 	       
@@ -1066,7 +1086,7 @@ func_body()
 	       parse_declaration(&ident, 0);
 	       break;
 	  case LBRACE0:
-	  case '{':
+	  case LBRACE:
 	       level++;
 	       break;
 	  case RBRACE0:
@@ -1080,7 +1100,7 @@ func_body()
 	       }
 	       /* else: */
 	       /* FALLTHRU */
-	  case '}':
+	  case RBRACE:
 	       delete_autos(level);
 	       level--;
 	       break;
@@ -1088,10 +1108,10 @@ func_body()
 	       if (verbose)
 		    file_error(_("unexpected end of file in function body"),
 			       NULL);
-	       caller = NULL;
-	       return;
+	       goto end;
 	  }
      }
+end:
      caller = NULL;
 }
 

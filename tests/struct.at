@@ -119,3 +119,15 @@ CFLOW_TEST([array of structs],
 ]])
 ])
 
+CFLOW_TEST([union in typedefs],
+[struct struct07 union typedef],
+[int foo(int status)
+{
+    /*
+     * The following construct is a simplified expansion of the
+     * WTERMSIG macro from glibc.
+     */
+    int x = (((((union { unisgned __in; int __i; }) { .__in = (status) }).__i)) & 0x7f);
+}],
+[foo() <int foo (int status) at prog:1>
+])

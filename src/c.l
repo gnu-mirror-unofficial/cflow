@@ -76,9 +76,7 @@ typedef              return TYPEDEF;
 struct               {yylval.str = "struct"; return STRUCT;}
 union                {yylval.str = "union"; return STRUCT;}
 enum                 {yylval.str = "enum"; return STRUCT;}
-\*                   { yylval.str = "*";
-		       return MODIFIER;
-		   }
+\*                   {yylval.str = "*"; return MODIFIER;}
      /* Operators
       *
       */
