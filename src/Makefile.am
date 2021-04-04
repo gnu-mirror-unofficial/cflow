@@ -30,18 +30,17 @@ cflow_SOURCES = \
  parser.h\
  posix.c\
  rc.c\
- symbol.c
+ symbol.c\
+ wordsplit/wordsplit.c
 
-nodist_cflow_SOURCES = wordsplit.c
-
-VPATH += $(top_srcdir)/wordsplit
+nodist_cflow_SOURCES = wordsplit/wordsplit.h
 
 localedir = $(datadir)/locale
 
 LDADD=../gnu/libgnu.a @LIBINTL@
 AM_CPPFLAGS=\
  -I$(top_srcdir)/gnu -I../ -I../gnu\
- -I$(top_srcdir)/wordsplit\
+ -I$(srcdir)/wordsplit\
  -DLOCALEDIR=\"$(localedir)\"
 AM_LFLAGS=-dvp
 EXTRA_DIST = cflow.rc

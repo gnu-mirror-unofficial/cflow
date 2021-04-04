@@ -22,7 +22,7 @@ AC_INIT([GNU cflow], [1.6.91], [bug-cflow@gnu.org],
 	[http://www.gnu.org/software/cflow])
 AC_CONFIG_SRCDIR([src/cflow.h])
 AC_CONFIG_AUX_DIR([build-aux])
-AM_INIT_AUTOMAKE([1.15 gnits tar-ustar dist-bzip2 dist-xz std-options silent-rules])
+AM_INIT_AUTOMAKE([1.15 gnits tar-ustar dist-bzip2 dist-xz std-options silent-rules subdir-objects])
 AC_CONFIG_HEADER([config.h])
 
 # Enable silent rules by default:

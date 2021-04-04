@@ -5,5 +5,5 @@
 	path = doc/imprimatur
 	url = git://git.gnu.org.ua/imprimatur.git
 [submodule "wordsplit"]
-	path = wordsplit
+	path = src/wordsplit
 	url = git://git.gnu.org.ua/wordsplit.git

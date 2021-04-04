@@ -176,14 +176,14 @@
   (let ((num (save-excursion
 	       (beginning-of-line)
 	       (cond
-		((looking-at "^\\( +\\)\\w")
+		((looking-at "^\\( +\\)\\S-")
 		 (let ((indent (- (match-end 1) (match-beginning 1))))
-		   (re-search-backward (format "^ \\{,%d\\}\\w" (- indent 1)) nil t)
+		   (re-search-backward (format "^ \\{,%d\\}\\S-" (- indent 1)) nil t)
 		   (- (match-end 0) 1)))
-		((looking-at "^\\(\\s-+\\)\\w")
+		((looking-at "^\\(\\s-+\\)\\S-")
 		 (let ((indent (- (match-end 1) (match-beginning 1))))
 		   (catch 'found
-		     (while (re-search-backward "^\\(\\s-*\\)\\w" nil t)
+		     (while (re-search-backward "^\\(\\s-*\\)\\S-" nil t)
 		       (if (< (- (match-end 1) (match-beginning 1)) indent)
 			   (throw 'found (match-end 1))))
 		     0)))
@@ -200,9 +200,9 @@
   (let ((pos (save-excursion
 	       (beginning-of-line)
 	       (cond
-		((looking-at "^\\( +\\)\\w")
+		((looking-at "^\\( +\\)\\S-")
 		 (let ((indent (- (match-end 1) (match-beginning 1)))
-		       (rx (format "^%s\\w" (match-string 0))))
+		       (rx (format "^%s\\S-" (match-string 0))))
 		   (let ((pos nil)
 			 (stop (if (> advance 0) 'eobp 'bobp)))
 		     (while (not pos)
@@ -210,17 +210,17 @@
 			   (error "No more calls"))
 		       (forward-line advance)
 		       (cond
-			((looking-at "^\\( +\\)\\w")
+			((looking-at "^\\( *\\)\\S-")
 			 (let ((l (- (match-end 1) (match-beginning 1))))
 			   (cond
 			    ((= l indent)
 			     (setq count (1- count))
 			     (if (= count 0)
-				 (setq pos (- (match-end 0) 1))))
+				 (setq pos (match-end 1))))
 			    ((< l indent)
 			     (error "No more calls")))))))
 		     pos)))
-		((looking-at "^\\w")
+		((looking-at "^\\S-")
 		 (error "At top-level function"))
 		(t
 		 (error "Not at function"))))))
