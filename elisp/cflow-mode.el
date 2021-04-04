@@ -55,6 +55,8 @@
 (define-key cflow-mode-map "x" 'cflow-goto-expand)
 (define-key cflow-mode-map "E" 'cflow-edit-out-full)
 (define-key cflow-mode-map "c" 'cflow-find-caller)
+(define-key cflow-mode-map "n" 'cflow-next-function)
+(define-key cflow-mode-map "p" 'cflow-prev-function)
 
 (define-key cflow-mode-map [menu-bar] (make-sparse-keymap))
 
@@ -171,29 +173,68 @@
 (defun cflow-find-caller ()
   "Go to the caller of the current function"
   (interactive)
-  (let ((num (cond
-	      ((save-excursion
-		 (beginning-of-line)
-		 (cond
-		  ((looking-at "^\\( +\\)\\w")
-		   (let ((indent (- (match-end 1) (match-beginning 1))))
-		     (re-search-backward (format "^ \\{,%d\\}\\w" (- indent 1)) nil t)
-		     (- (match-end 0) 1)))
-		  ((looking-at "^\\(\\s-+\\)\\w")
-		   (let ((indent (- (match-end 1) (match-beginning 1))))
-		     (catch 'found
-		       (while (re-search-backward "^\\(\\s-*\\)\\w" nil t)
-			 (if (< (- (match-end 1) (match-beginning 1)) indent)
-			     (throw 'found (match-end 1))))
-		       0)))
-		  (t
-		   0)))))))
+  (let ((num (save-excursion
+	       (beginning-of-line)
+	       (cond
+		((looking-at "^\\( +\\)\\w")
+		 (let ((indent (- (match-end 1) (match-beginning 1))))
+		   (re-search-backward (format "^ \\{,%d\\}\\w" (- indent 1)) nil t)
+		   (- (match-end 0) 1)))
+		((looking-at "^\\(\\s-+\\)\\w")
+		 (let ((indent (- (match-end 1) (match-beginning 1))))
+		   (catch 'found
+		     (while (re-search-backward "^\\(\\s-*\\)\\w" nil t)
+		       (if (< (- (match-end 1) (match-beginning 1)) indent)
+			   (throw 'found (match-end 1))))
+		     0)))
+		(t
+		 0)))))
     (cond
      ((> num 0)
       (push-mark)
       (goto-char num))
      (t
       (error "At top-level function")))))
+
+(defun cflow-goto-sibling (count advance)
+  (let ((pos (save-excursion
+	       (beginning-of-line)
+	       (cond
+		((looking-at "^\\( +\\)\\w")
+		 (let ((indent (- (match-end 1) (match-beginning 1)))
+		       (rx (format "^%s\\w" (match-string 0))))
+		   (let ((pos nil)
+			 (stop (if (> advance 0) 'eobp 'bobp)))
+		     (while (not pos)
+		       (if (funcall stop)
+			   (error "No more calls"))
+		       (forward-line advance)
+		       (cond
+			((looking-at "^\\( +\\)\\w")
+			 (let ((l (- (match-end 1) (match-beginning 1))))
+			   (cond
+			    ((= l indent)
+			     (setq count (1- count))
+			     (if (= count 0)
+				 (setq pos (- (match-end 0) 1))))
+			    ((< l indent)
+			     (error "No more calls")))))))
+		     pos)))
+		((looking-at "^\\w")
+		 (error "At top-level function"))
+		(t
+		 (error "Not at function"))))))
+    (goto-char pos)))
+
+(defun cflow-next-function (&optional arg)
+  "Go to the next function at this nesting level"
+  (interactive "P")
+  (cflow-goto-sibling (or arg 1) 1))
+
+(defun cflow-prev-function (&optional arg)
+  "Go to the previous function at this nesting level"
+  (interactive "P")
+  (cflow-goto-sibling (or arg 1) -1))
 
 (defvar cflow-read-only)
 
