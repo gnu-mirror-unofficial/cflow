@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 AC_PREREQ(2.64)
-AC_INIT([GNU cflow], [1.6.91], [bug-cflow@gnu.org],
+AC_INIT([GNU cflow], [1.6.92], [bug-cflow@gnu.org],
         [cflow],
 	[http://www.gnu.org/software/cflow])
 AC_CONFIG_SRCDIR([src/cflow.h])

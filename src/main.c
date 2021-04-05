@@ -272,10 +272,24 @@ symbol_override(const char *str)
 	  error(EX_USAGE, 0, _("%s: no symbol type supplied"), str);
      else {
 	  name = strndup(str, ptr - str);
+	  if (!name)
+	       xalloc_die();
 	  if (ptr[1] == '=') {
-	       Symbol *alias = lookup(ptr+2);
-	       if (!alias) {
-		    alias = install(xstrdup(ptr+2), INSTALL_OVERWRITE);
+	       Symbol *alias;
+
+	       ptr += 2;
+	       if (strcmp(name, ptr) == 0) {
+		    error(EX_USAGE, 0, _("cyclic alias: %s -> %s"), name, ptr);
+	       }
+	       
+	       alias = lookup(ptr);
+	       if (alias) {
+		    if (strcmp(alias->name, name) == 0) {
+			 error(EX_USAGE, 0, _("cyclic alias: %s -> %s -> %s"),
+			       name, ptr, alias->name);
+		    }
+	       } else {
+		    alias = install(xstrdup(ptr), INSTALL_OVERWRITE);
 		    alias->type = SymToken;
 		    alias->token_type = 0;
 		    alias->source = NULL;

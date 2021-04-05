@@ -31,9 +31,8 @@ cflow_SOURCES = \
  posix.c\
  rc.c\
  symbol.c\
- wordsplit/wordsplit.c
-
-nodist_cflow_SOURCES = wordsplit/wordsplit.h
+ wordsplit/wordsplit.c\
+ wordsplit/wordsplit.h
 
 localedir = $(datadir)/locale
 

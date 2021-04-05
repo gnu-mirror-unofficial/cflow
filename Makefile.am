@@ -21,7 +21,6 @@ ACLOCAL_AMFLAGS = -I m4 -I doc/imprimatur
 SUBDIRS = gnu src elisp po doc tests
 
 EXTRA_DIST = ChangeLog.2007
-EXTRA_DIST += wordsplit/wordsplit.c wordsplit/wordsplit.h
 
 # Define the following variables in order to use the ChangeLog rule below:
 #  prev_change_log  [optional]  Name of the previous ChangeLog file.
