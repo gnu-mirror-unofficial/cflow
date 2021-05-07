@@ -298,6 +298,7 @@ struct collect_data {
      Symbol **sym;
      int (*sel)(Symbol *p);
      size_t index;
+     size_t count;
 };
 
 static bool
@@ -308,9 +309,10 @@ collect_processor(void *data, void *proc_data)
      Symbol *s;
      for (s = t->sym; s; s = s->next) {
 	  if (cd->sel(s)) {
-	       if (cd->sym)
-		    cd->sym[cd->index] = s;
-	       cd->index++;
+	       if (cd->index == cd->count) {
+		    cd->sym = x2nrealloc(cd->sym, &cd->count, sizeof(cd->sym[0]));
+	       }
+	       cd->sym[cd->index++] = s;
 	  }
      }
      return true;
@@ -322,8 +324,10 @@ collect_list_entry(void *item, void *proc_data)
      Symbol *s = item;
      struct collect_data *cd = proc_data;
      if (cd->sel(s)) {
-	  cd->sym[cd->index] = s;
-	  cd->index++;
+	  if (cd->index == cd->count) {
+	       cd->sym = x2nrealloc(cd->sym, &cd->count, sizeof(cd->sym[0]));
+	  }
+	  cd->sym[cd->index++] = s;
      }
      return 0;
 }
@@ -333,12 +337,9 @@ collect_symbols(Symbol ***return_sym, int (*sel)(Symbol *p),
 		size_t reserved_slots)
 {
      struct collect_data cdata;
-     size_t size;
      
-     size = hash_get_n_entries(symbol_table)
-	     + linked_list_size(static_func_list)
-	     + linked_list_size(unit_local_list);
-     cdata.sym = xcalloc(size + reserved_slots, sizeof(*cdata.sym));
+     cdata.sym = NULL;
+     cdata.count = 0;
      cdata.index = 0;
      cdata.sel = sel;
      hash_do_for_each(symbol_table, collect_processor, &cdata);
