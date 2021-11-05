@@ -95,6 +95,7 @@ install(char *name, int flags)
      memset(sym, 0, sizeof(*sym));
      sym->type = SymUndefined;
      sym->name = name;
+     sym->ord = -1;
 
      tp = xmalloc(sizeof(*tp));
      tp->sym = sym;

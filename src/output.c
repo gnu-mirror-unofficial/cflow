@@ -364,12 +364,12 @@ tree_output()
 	       for (p = linked_list_head(symbols[i]->callee); p;
 		    p = p->next) {
 		    Symbol *s = (Symbol*) p->data;
-		    if (symbol_is_function(s))
-			 depmap_set(depmap, i, ((Symbol*)p->data)->ord);
+		    if (s->ord != -1 && symbol_is_function(s))
+			 depmap_set(depmap, i, s->ord);
 	       }		    
 	  }
      }
-     
+
      depmap_tc(depmap);
 
      /* Mark recursive calls */
