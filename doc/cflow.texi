@@ -234,6 +234,14 @@ who_am_i() <int who_am_i (void) at whoami.c:8>:
 Multiple @option{--main} options can be used to introduce several
 start functions.
 
+@cindex end symbol
+@cindex @option{--target} command line option introduced
+You can also cut off the graph at arbitrary symbol or symbols: the
+@option{--target} option sets the name of the @dfn{end symbol}, i.e. a
+symbol below which @command{cflow} will not descend.  Of course, both
+@option{--main} and @option{--target} can be used together, and
+multiple @option{--target} options are allowed.
+
 Many programs (such as libraries or interpreters) define functions
 that are not directly reachable from the main function.  To produce
 flow graph for all functions in the program, use the @option{--all}
@@ -1307,9 +1315,11 @@ For more information, @xref{Symbols}.
      Use @var{string} when indenting to each new level.  @xref{ASCII Tree}.
 
 @cindex @option{-m}
-@cindex @option{--main}     
+@cindex @option{--main}
+@cindex @option{--start}
 @item -m @var{name}
 @itemx --main=@var{name}
+@itemx --start=@var{name}
      Assume main function to be called @var{name}.  Multiple main
 function can be specified.  @xref{start symbol}.
 
@@ -1421,8 +1431,13 @@ printed after output line number (if @option{--number} or
 @item -T
 @itemx --tree
      @bullet{} Use ASCII art to print graph.  @xref{ASCII Tree}.
- 
-@cindex @option{--usage}    
+
+@cindex @option{--target}
+@item --target=@var{sym}
+     Show only graphs leading from start symbols to this function.
+Multiple options are allowed.  @xref{start symbol}.
+
+@cindex @option{--usage}
 @item --usage
      Give a short usage message.
 

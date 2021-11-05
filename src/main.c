@@ -148,12 +148,15 @@ static struct argp_option options[] = {
      { "no-omit-symbol-names", OPT_NO_OMIT_SYMBOL_NAMES, NULL, 0,
        N_("print symbol names in declaration strings (default)"), GROUP_ID+1 },
      { "main", 'm', N_("NAME"), 0,
-       N_("assume main function to be called NAME; multiple options are allowed"),
+       N_("start graph at this function; multiple options are allowed"),
+       GROUP_ID+1 },
+     { "start", 0, NULL, OPTION_ALIAS,
+       NULL,
        GROUP_ID+1 },
      { "no-main", OPT_NO_MAIN, NULL, 0,
        N_("there's no main function; print graphs for all functions in the program") },
      { "target", OPT_TARGET, N_("NAME"), 0,
-       N_("show only graphs leading from starting symbols to this function; multiple options are allowed"),
+       N_("show only graphs leading from start symbols to this function; multiple options are allowed"),
        GROUP_ID+1 },
 #undef GROUP_ID
 #define GROUP_ID 30                 
