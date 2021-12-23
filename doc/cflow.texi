@@ -21,7 +21,7 @@
 @end direntry
 @dircategory Emacs
 @direntry
-* cflow mode: (cflow)cflow mode.  Major mode for visiting cflow charts.
+* cflow mode: (cflow)Emacs.  Major mode for visiting cflow charts.
 @end direntry
 @end ifinfo
 
