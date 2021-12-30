@@ -1,9 +1,9 @@
-GNU cflow NEWS -- history of user-visible changes. 2021-11-05
+GNU cflow NEWS -- history of user-visible changes. 2021-12-30
 See the end of file for copying conditions.
 
 Please send cflow bug reports to <bug-cflow@gnu.org>.
 
-Version 1.6.92 (git)
+Version 1.7, 2021-12-30
 
 * Multiple start functions are allowed
 
